@@ -1,7 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('shopify_metafields_app_root'))
-    return alert('App')
-
   const loadAppButton = document.getElementById('load_app')
 
   loadAppButton.addEventListener('click', () => {
@@ -15,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
         // Send message to script file
         chrome.tabs.sendMessage(tabs[0].id, { loadApp: true }, response => {
           console.log(response)
+          loadAppButton.setAttribute('disabled', true)
           window.close()
         })
       }

@@ -1,6 +1,6 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom'
-import Frame, { FrameContext } from 'react-frame-component'
+import Frame from 'react-frame-component'
 import { AppProvider } from '@shopify/polaris'
 import '@shopify/polaris/styles.css'
 import './App.css'
@@ -9,8 +9,6 @@ import App from './App'
 // ------------------------------------------------------------------------------
 
 function AppInIframe() {
-  const { document, window } = useContext(FrameContext)
-
   return (
     <Frame
       head={[
@@ -22,16 +20,9 @@ function AppInIframe() {
         />,
       ]}
     >
-      <div className="MFE">
-        <h1>Metafields App</h1>
-        <p>
-          {window.Shopify && window.Shopify.shop && window.Shopify.shop.domain}
-        </p>
-        <pre>{window.Shopify && JSON.stringify(window.Shopify.shop)}</pre>
-        <AppProvider>
-          <App />
-        </AppProvider>
-      </div>
+      <AppProvider>
+        <App />
+      </AppProvider>
     </Frame>
   )
 }
@@ -77,6 +68,7 @@ chrome.runtime.onMessage.addListener((request, sender, response) => {
     response({
       extensionLoaded: true,
     })
+    return true
   }
 })
 

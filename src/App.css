@@ -8,7 +8,7 @@
   height: 100%;
   z-index: 449;
   width: calc(100% - 240px);
-  background-color: rgba(0, 0, 0, 0.3);
+  background-color: rgba(31, 37, 51, 0.5);
   transition: all .25s;
   cursor: pointer;
 }
