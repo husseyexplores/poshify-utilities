@@ -14,7 +14,7 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "node ./scripts/build-non-split.js",
+    "build": "node ./custom-scripts/build-non-split.js",
     "build:split": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
