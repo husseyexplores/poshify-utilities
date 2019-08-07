@@ -1,0 +1,45 @@
+.shopify_metafields_app_overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  transform: translateX(100%);
+  height: 100%;
+  z-index: 449;
+  width: calc(100% - 240px);
+  background-color: rgba(0, 0, 0, 0.3);
+  transition: all .25s;
+  cursor: pointer;
+}
+
+.shopify_metafields_app_root {
+  z-index: 450;
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  top: 50%;
+  transform: translateY(-50%) translateX(100%);
+  background: #fff;
+  width: calc(100% - 250px);
+  transition: all .25s;
+}
+
+.shopify_metafields_app_root > iframe {
+  width: 100%;
+  height: 100%;
+  border: 1px solid #dadada;
+  border-radius: 3px;
+  box-shadow: 0 0 0 1px rgba(63,63,68,.05), 0 1px 3px 0 rgba(63,63,68,.15);
+  min-height: 600px;
+  background: #fff;
+}
+
+@media (max-width: 768px) {
+  .shopify_metafields_app_root {
+    width: 100%;
+  }
+  .shopify_metafields_app_overlay {
+    width: 100%;
+  }
+}

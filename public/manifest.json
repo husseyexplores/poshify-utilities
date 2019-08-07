@@ -6,14 +6,22 @@
   "author": "Husseyexplores",
   "version": "0.1.0",
   "browser_action": {
-    "default_icon": "icon.png",
-    "default_popup": "src/popup.html"
+    "default_icon": "/img/128.png",
+    "default_popup": "/popup.html"
+  },
+  "icons": {
+    "16": "/img/16.png",
+    "48": "/img/48.png",
+    "128": "/img/128.png"
   },
   "content_scripts": [
     {
       "matches": ["https://*.myshopify.com/admin/*"],
-      "css": ["/static/css/app.css"],
-      "js": ["/static/js/main.js"]
+      "css": ["/static/css/bundle.css"],
+      "js": ["/static/js/bundle.js"]
     }
+  ],
+  "web_accessible_resources":[
+    "/static/css/bundle.css"
   ]
 }
