@@ -1,15 +1,19 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
-  "icons": [
+  "manifest_version": 2,
+  "short_name": "Shopify Metafields Editor",
+  "name": "Shopify Metafields Editor",
+  "description": "Edit Shopify Metafields without any app for free!",
+  "author": "Husseyexplores",
+  "version": "0.1.0",
+  "browser_action": {
+    "default_icon": "icon.png",
+    "default_popup": "src/popup.html"
+  },
+  "content_scripts": [
     {
-      "src": "favicon.ico",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
+      "matches": ["https://*.myshopify.com/admin/*"],
+      "css": ["/static/css/app.css"],
+      "js": ["/static/js/main.js"]
     }
-  ],
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  ]
 }
