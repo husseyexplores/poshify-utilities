@@ -9,34 +9,31 @@
   z-index: 449;
   width: calc(100% - 240px);
   background-color: rgba(31, 37, 51, 0.5);
-  transition: all .25s;
+  transition: all .3s ease;
   cursor: pointer;
 }
 
-.shopify_metafields_app_root {
-  z-index: 450;
-  position: fixed;
-  right: 0;
-  bottom: 0;
-  top: 50%;
-  transform: translateY(-50%) translateX(100%);
-  background: #fff;
-  width: calc(100% - 250px);
-  transition: all .25s;
-}
-
 .shopify_metafields_app_root > iframe {
-  width: 100%;
+  width: calc(100% - 250px);
   height: 100%;
-  border: 1px solid #dadada;
   border-radius: 3px;
   box-shadow: 0 0 0 1px rgba(63,63,68,.05), 0 1px 3px 0 rgba(63,63,68,.15);
-  min-height: 600px;
   background: #fff;
+  border: 1px solid #dadada;
+  transition: all .3s ease;
+
+  opacity: 0;
+  position: fixed;
+  z-index: 450;
+  top: calc(50% + 56px);
+  right: 0;
+  max-height: 80vh;
+  min-height: 500px;
+  transform: translateY(-54%) translateX(100%); /* default state is hidden/not in viewport */
 }
 
 @media (max-width: 768px) {
-  .shopify_metafields_app_root {
+  .shopify_metafields_app_root > iframe {
     width: 100%;
   }
   .shopify_metafields_app_overlay {
