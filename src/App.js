@@ -15,8 +15,7 @@ import SelectResourceType from './components/SelectResourceType'
 import SearchInput from './components/SearchInput'
 import SearchResults from './components/SearchResults'
 
-import '@shopify/polaris/styles.css'
-import { async } from 'q'
+import { getShopifyAdminURL } from './utils'
 
 // ------------------------------------------------------------------
 
@@ -36,7 +35,10 @@ function App() {
   useEffect(() => {
     ;(async () => {
       setIsLoadingResource(true)
-      const resourceListURL = `/admin/${resourceType}.json?fields=id,title,handle,image,product_type,customer,fisrt_name,last_name,email,total_price,name&page=${currPageNum}&limit=${resultsPerPage}&status=any`
+      const resourceListURL = getShopifyAdminURL(resourceType, {
+        page: currPageNum,
+        limit: resultsPerPage,
+      })
 
       const { data } = await axios.get(resourceListURL)
       const list = data[resourceType] || []
