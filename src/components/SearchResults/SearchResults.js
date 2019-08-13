@@ -10,6 +10,7 @@ import {
   Caption,
   DisplayText,
   Icon,
+  TextStyle,
 } from '@shopify/polaris'
 import { getSizedImageUrl } from '@shopify/theme-images'
 import { ImageMajorMonotone } from '@shopify/polaris-icons'
@@ -20,8 +21,6 @@ import { rangeNum, resourceTypesArr, resourceTypesMap } from '../../utils'
 
 // ------------------------------------------------------------------
 
-// TODO: impelement row soring
-
 class SearchResults extends Component {
   state = {
     isModalOpen: false,
@@ -30,7 +29,11 @@ class SearchResults extends Component {
   }
 
   handleModalOpen = data => () => {
-    this.setState({ isModalOpen: true, modalData: data })
+    this.setState({
+      isModalOpen: true,
+      modalData: data,
+      resourceType: this.props.resourceType,
+    })
   }
 
   handleModalClose = () => {
@@ -57,7 +60,7 @@ class SearchResults extends Component {
         </Button>,
         <div key={id + 'title'}>
           <Button plain onClick={this.handleModalOpen(item)} textAlign="left">
-            {title}
+            <TextStyle variation="strong">{title}</TextStyle>
             {product_type && (
               <div style={{ textAlign: 'left' }}>
                 <Caption>
@@ -77,7 +80,6 @@ class SearchResults extends Component {
         columnContentTypes={['text', 'text', 'text']}
         headings={['', 'Title', 'Handle']}
         rows={rows}
-        sortable={[false, true, true]}
         defaultSortDirection="ascending"
         initialSortColumnIndex={1}
       />
@@ -106,7 +108,7 @@ class SearchResults extends Component {
         </Button>,
         <div key={id + 'name'}>
           <Button plain onClick={this.handleModalOpen(item)} textAlign="left">
-            {fullName}
+            <TextStyle variation="strong">{fullName}</TextStyle>
             <div style={{ textAlign: 'left' }}>
               <Caption>
                 <span style={{ color: '#444' }}>{email}</span>
@@ -121,9 +123,8 @@ class SearchResults extends Component {
       <DataTable
         verticalAlign="middle"
         columnContentTypes={['text', 'text']}
-        headings={['', 'Name']}
+        headings={['', 'Customers']}
         rows={rows}
-        sortable={[false, true]}
         defaultSortDirection="ascending"
         initialSortColumnIndex={1}
       />
@@ -134,7 +135,7 @@ class SearchResults extends Component {
     const { items } = this.props
 
     const rows = items.map(item => {
-      const { id, customer, total_price, email, name } = item
+      const { id, customer, total_price, email, name, created_at } = item
 
       /*
       This is tripy. It should work without `customer` check to my understanding.
@@ -147,7 +148,7 @@ class SearchResults extends Component {
       const last_name = customer ? customer.last_name : ''
       let fullName = `${first_name || ''} ${last_name || ''}`.trim()
       if (!fullName) {
-        fullName = '<Unknown>'
+        fullName = '<Unknown name>'
       }
 
       return [
@@ -157,24 +158,31 @@ class SearchResults extends Component {
           textAlign="left"
           onClick={this.handleModalOpen(item)}
         >
-          <Avatar customer name={fullName} />
+          <TextStyle variation="bold">{name}</TextStyle>
         </Button>,
         <div key={id + 'title'}>
           <Button plain textAlign="left" onClick={this.handleModalOpen(item)}>
-            {fullName}
+            <TextStyle variation="strong">{fullName}</TextStyle>
             <div style={{ textAlign: 'left' }}>
               <Caption>
                 <span style={{ color: '#444' }}>
-                  {name} | {email} |{' '}
-                  {new Intl.NumberFormat('en-US', {
-                    style: 'currency',
-                    currency: 'USD',
-                  }).format(total_price)}
+                  {email || '<Unknown email>'}
                 </span>
               </Caption>
             </div>
           </Button>
         </div>,
+        <Caption key={id + '_' + created_at}>
+          {new Date(created_at).toLocaleString()}
+        </Caption>,
+        <Caption key={id + 'total'}>
+          {total_price
+            ? new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+              }).format(total_price)
+            : '<Unknown price>'}
+        </Caption>,
       ]
     })
 
@@ -182,9 +190,8 @@ class SearchResults extends Component {
       <DataTable
         verticalAlign="middle"
         columnContentTypes={['text', 'text']}
-        headings={['', 'Title']}
+        headings={['Name', 'Customer', 'Created at', 'Total']}
         rows={rows}
-        sortable={[false, true]}
         defaultSortDirection="ascending"
         initialSortColumnIndex={1}
       />
@@ -213,7 +220,6 @@ class SearchResults extends Component {
         columnContentTypes={['text', 'text']}
         headings={['Title', 'Handle']}
         rows={rows}
-        sortable={[true, true]}
         defaultSortDirection="ascending"
         initialSortColumnIndex={1}
       />
@@ -223,13 +229,20 @@ class SearchResults extends Component {
   renderDataTable = () => {
     const { resourceType } = this.props
 
-    return resourceType === 'products'
-      ? this.renderProductsTable()
-      : resourceType === 'customers'
-      ? this.renderCustomersTable()
-      : resourceType === 'orders'
-      ? this.renderOrdersTable()
-      : this.renderGenericTable()
+    switch (resourceType) {
+      case 'products':
+        return this.renderProductsTable()
+
+      case 'customers':
+        return this.renderCustomersTable()
+
+      case 'orders':
+      case 'draft_orders':
+        return this.renderOrdersTable()
+
+      default:
+        return this.renderGenericTable()
+    }
   }
 
   render() {
@@ -259,7 +272,6 @@ class SearchResults extends Component {
             columnContentTypes={['text', 'text', 'text']}
             headings={['', '...', '...']}
             rows={[]}
-            defaultSortDirection="ascending"
             initialSortColumnIndex={1}
           />
         )}

@@ -40,3 +40,9 @@
     width: 100%;
   }
 }
+
+/* Polaris customizations */
+.Polaris-DataTable__Cell,
+.Polaris-DataTable__Heading {
+  padding: 0.8rem 1.6rem;
+}
