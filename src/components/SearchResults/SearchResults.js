@@ -252,6 +252,7 @@ class SearchResults extends Component {
     return (
       <>
         <EditMetafieldsModal
+          resourceType={resourceType}
           active={isModalOpen}
           handleModalClose={this.handleModalClose}
           data={modalData}
