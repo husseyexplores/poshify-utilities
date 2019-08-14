@@ -2,7 +2,9 @@ import { keyBy } from 'lodash'
 
 // ------------------------------------------------------------------
 
-export function arrangeMetafieldsByNamespace(metafields) {
+export const delimeter = '<-DLMTR!->'
+
+export function lookupNamespace(metafields) {
   return metafields.reduce((map, metafield) => {
     if (!Array.isArray(map[metafield.namespace])) {
       map[metafield.namespace] = []
@@ -10,6 +12,27 @@ export function arrangeMetafieldsByNamespace(metafields) {
     map[metafield.namespace].push(metafield)
     return map
   }, {})
+}
+
+export function byNamespaceDotKey(metafields) {
+  return metafields
+    .map(({ namespace, key, ...rest }) => ({
+      namespaceDotKey: `${namespace}.${key}`,
+      namespace,
+      key,
+      ...rest,
+    }))
+    .sort((a, b) => {
+      const nskA = a.namespaceDotKey.toUpperCase() // ignore upper and lowercase
+      const nskB = b.namespaceDotKey.toUpperCase() // ignore upper and lowercase
+      if (nskA < nskB) {
+        return -1
+      }
+      if (nskA > nskB) {
+        return 1
+      }
+      return 0
+    })
 }
 
 export const resourceTypesArr = [
@@ -87,4 +110,17 @@ export function getShopifyAdminURL(
     .join('&')
 
   return `/admin/${resourceType}.json` + (qs.length ? `?${qs}` : '')
+}
+
+export function getResourceMetafieldsURL(
+  resourceType,
+  id,
+  subResourceType,
+  subResourceId
+) {
+  if (!subResourceType) {
+    return `/admin/${resourceType}/${id}/metafields.json`
+  }
+
+  return `/admin/${resourceType}/${id}/${subResourceType}/${subResourceId}/metafields.json`
 }
