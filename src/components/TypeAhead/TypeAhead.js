@@ -40,8 +40,14 @@ class TypeAhead extends Component {
           )
 
           // keep isOpen to false if the filteredOptions only has one option that is already entered (i.e exist in the input field)
+          const disabled = this.props.disabled || false
+
+          // hide the dropdown menu if not disabled
+          // and if it only contains one item in the dropdown,
+          // make sure it is different from the currently selected option
           isOpen =
             isOpen &&
+            !disabled &&
             !(
               filteredOptions.length === 1 &&
               filteredOptions[0] === selectedItem
@@ -68,6 +74,7 @@ class TypeAhead extends Component {
                   {...getInputProps({
                     placeholder: this.props.placeholder,
                     onFocus: openMenu,
+                    disabled: this.props.disabled || false,
                   })}
                   className="Polaris-TextField__Input"
                 />
