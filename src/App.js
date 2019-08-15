@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import {
   AppProvider,
   Page,
@@ -8,6 +8,8 @@ import {
   Stack,
   Pagination,
   Caption,
+  Toast,
+  Frame,
 } from '@shopify/polaris'
 import axios from 'axios'
 
@@ -21,6 +23,8 @@ import { getShopifyAdminURL } from './utils'
 
 // TODO: Fix memory leak erorr
 
+export const AppContext = React.createContext()
+
 function App() {
   const [resourceType, setResourceType] = useState('products')
   const [searchQuery, setSearchQuery] = useState('')
@@ -30,6 +34,36 @@ function App() {
   const [isLoadingCount, setIsLoadingCount] = useState(true)
   const [resourceList, setResourceList] = useState([])
   const [isLoadingResource, setIsLoadingResource] = useState(true)
+  const [toastState, setToastState] = useState({
+    showToast: false,
+    toastMsg: '',
+    error: false,
+    duration: 3000,
+  })
+  const contextValue = useRef({
+    toast: {
+      info: (msg, dur) => {
+        setToastState(state => ({
+          toastMsg: msg,
+          error: false,
+          showToast: true,
+          duration: dur || state.duration,
+        }))
+      },
+      error: (msg, dur) => {
+        setToastState(state => ({
+          toastMsg: msg,
+          error: true,
+          showToast: true,
+          duration: dur || state.duration,
+        }))
+      },
+    },
+  })
+
+  const hideToast = () => {
+    setToastState(state => ({ ...state, showToast: false }))
+  }
 
   // Data that needs to be fetched everytime an options is changed. e.g: resourceType, currPageNum
   useEffect(() => {
@@ -74,48 +108,61 @@ function App() {
 
   return (
     <AppProvider>
-      <Page title="Metafields Editor">
-        <Layout>
-          <Layout.Section>
-            <Card>
-              <Card.Section>
-                <Stack wrap={false} alignment="leading" spacing="tight">
-                  <Stack.Item>
-                    <SelectResourceType onChange={setResourceType} />
-                  </Stack.Item>
-                  <Stack.Item fill>
-                    <SearchInput onChange={setSearchQuery} />
-                  </Stack.Item>
-                </Stack>
-              </Card.Section>
-              <Card.Section>
-                <Stack.Item fill>
-                  <SearchResults
-                    resourceType={resourceType}
-                    items={resourceList}
-                    loading={isLoadingResource}
-                  />
-                  <div style={{ textAlign: 'center' }}>
-                    <Pagination
-                      hasPrevious={!isLoadingCount && currPageNum > 1}
-                      onPrevious={decrementPageNum}
-                      hasNext={!isLoadingCount && currPageNum < totalPageNums}
-                      onNext={IncrementPageNum}
-                    />
-                    {!isLoadingCount && (
-                      <div style={{ color: '#444', marginTop: '10px' }}>
-                        <Caption>
-                          Page {currPageNum} of {totalPageNums}
-                        </Caption>
+      <AppContext.Provider value={contextValue.current}>
+        <Page title="Metafields Editor">
+          <Frame>
+            <Layout>
+              {toastState.showToast && (
+                <Toast
+                  content={toastState.toastMsg}
+                  onDismiss={hideToast}
+                  duration={toastState.duration}
+                />
+              )}
+              <Layout.Section>
+                <Card>
+                  <Card.Section>
+                    <Stack wrap={false} alignment="leading" spacing="tight">
+                      <Stack.Item>
+                        <SelectResourceType onChange={setResourceType} />
+                      </Stack.Item>
+                      <Stack.Item fill>
+                        <SearchInput onChange={setSearchQuery} />
+                      </Stack.Item>
+                    </Stack>
+                  </Card.Section>
+                  <Card.Section>
+                    <Stack.Item fill>
+                      <SearchResults
+                        resourceType={resourceType}
+                        items={resourceList}
+                        loading={isLoadingResource}
+                      />
+                      <div style={{ textAlign: 'center' }}>
+                        <Pagination
+                          hasPrevious={!isLoadingCount && currPageNum > 1}
+                          onPrevious={decrementPageNum}
+                          hasNext={
+                            !isLoadingCount && currPageNum < totalPageNums
+                          }
+                          onNext={IncrementPageNum}
+                        />
+                        {!isLoadingCount && (
+                          <div style={{ color: '#444', marginTop: '10px' }}>
+                            <Caption>
+                              Page {currPageNum} of {totalPageNums}
+                            </Caption>
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                </Stack.Item>
-              </Card.Section>
-            </Card>
-          </Layout.Section>
-        </Layout>
-      </Page>
+                    </Stack.Item>
+                  </Card.Section>
+                </Card>
+              </Layout.Section>
+            </Layout>
+          </Frame>
+        </Page>
+      </AppContext.Provider>
     </AppProvider>
   )
 }

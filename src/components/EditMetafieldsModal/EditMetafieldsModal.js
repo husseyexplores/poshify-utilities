@@ -1,7 +1,6 @@
-import React, { useState, useEffect, useRef } from 'react'
+import React from 'react'
 import PropTypes from 'prop-types'
-import { Modal, Spinner, TextContainer } from '@shopify/polaris'
-import axios, { CancelToken } from 'axios'
+import { Modal } from '@shopify/polaris'
 
 import EditMetafieldsForm from '../EditMetafieldsForm'
 
@@ -11,18 +10,14 @@ import { resourceTypesArr } from '../../utils'
 
 /*
   TODO:
-  - Fetch the metafield of the resource on modal open
-  - Fetch the variants for products & articles for blogs
-  - Show the variants and articles in accordions
-  - Upon expanding the accordion, fetch the variant/artcle metafield
-  - Cancel the ongoing request(s) on modal close
+  - Fetch the variants for products
+  - Show the variants in accordions
 
-  - Change the metafields form to display values as {namespace}.{key} in a select
-  - Show typeahead in `namespace` field (on create/edit)
-  - Show textfield in `key` field (on create/edit)
-    -- If existing namespace.key is found, err out
-  - Error handling for all fields on blur
-  - Better support for JSON.
+  - Better error handling in the form
+    -- namespace => min 3 char
+    -- key => min 3 char
+    -- value => can not be empty
+    -- json_string should be valid json
 */
 
 function EditMetafieldsModal({

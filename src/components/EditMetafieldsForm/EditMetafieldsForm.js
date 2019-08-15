@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useRef } from 'react'
+import React, { useEffect, useReducer, useRef, useContext } from 'react'
 import PropTypes from 'prop-types'
 import {
   ChoiceList,
@@ -6,11 +6,13 @@ import {
   TextField,
   FormLayout,
   Select,
+  ButtonGroup,
 } from '@shopify/polaris'
 import axios, { CancelToken } from 'axios'
 
+import { AppContext } from '../../App'
 import TypeAhead from '../TypeAhead'
-
+import { OverlaySpinner } from '../Spinners'
 import {
   lookupNamespace as _lookupByNamespace,
   byNamespaceDotKey,
@@ -55,6 +57,7 @@ async function getResourceMetafields(source, resourceType, id) {
 // ------------------------------------------------------------------
 
 function EditMetafieldsForm({ resource, resourceType }) {
+  const { toast } = useContext(AppContext)
   const [state, setState] = useReducer(reducer, getInitialState())
   const reqCancellerRef = useRef(null)
 
@@ -68,15 +71,31 @@ function EditMetafieldsForm({ resource, resourceType }) {
       resource.id
     )
     const formattedMetafields = byNamespaceDotKey(metafields)
+    const { selectedNamespace, selectedKey } = state
+
+    const fetchedMetafield =
+      formattedMetafields.find(
+        ({ namespace, key }) =>
+          namespace === selectedNamespace && key === selectedKey
+      ) || {}
+
     setState({
       isRequesting: false,
       metafields: formattedMetafields,
       lookupByNamespace: _lookupByNamespace(formattedMetafields),
-      selectedMetafield: formattedMetafields[0] || null,
-      selectedNamespace: metafields[0] ? metafields[0].namespace : '',
-      selectedKey: metafields[0] ? metafields[0].key : '',
-      metafieldValue: metafields[0] ? metafields[0].value : '',
-      saveAs: metafields[0] ? metafields[0].value_type : 'string',
+      selectedMetafield: fetchedMetafield.namespace
+        ? fetchedMetafield
+        : formattedMetafields[0] || null,
+      selectedNamespace:
+        fetchedMetafield.namespace ||
+        (metafields[0] ? metafields[0].namespace : ''),
+      selectedKey:
+        fetchedMetafield.key || (metafields[0] ? metafields[0].key : ''),
+      metafieldValue:
+        fetchedMetafield.value || (metafields[0] ? metafields[0].value : ''),
+      saveAs:
+        fetchedMetafield.value_type ||
+        (metafields[0] ? metafields[0].value_type : 'string'),
       namespaceOptions: [
         ...new Set(metafields.map(({ namespace }) => namespace)),
       ],
@@ -140,9 +159,6 @@ function EditMetafieldsForm({ resource, resourceType }) {
       // warn/err the user
       keyErr = (
         <span>
-          key `{selectedKey}` already exists on this namespace. <br /> Please
-          change the key to create a new metafield or modify the existing
-          metafield by selecting:{' '}
           <Button
             plain
             onClick={() => {
@@ -152,7 +168,8 @@ function EditMetafieldsForm({ resource, resourceType }) {
             }}
           >
             {selectedNamespace}.{selectedKey}
-          </Button>
+          </Button>{' '}
+          already exists on this namespace.
         </span>
       )
     } else {
@@ -169,7 +186,7 @@ function EditMetafieldsForm({ resource, resourceType }) {
   }
 
   const handleSaveAsChange = value => {
-    setState({ saveAs: value })
+    setState({ saveAs: Array.isArray(value) ? value[0] : 'string' })
   }
 
   const deleteMetafield = () => {
@@ -182,18 +199,52 @@ function EditMetafieldsForm({ resource, resourceType }) {
       .then(() => {
         // Reinitialize form
         setState({ isDeleting: false })
-        return fetchResourceMetafields()
+        fetchResourceMetafields()
+        toast.info('Success!')
       })
       .catch(e => {
         setState({ isDeleting: false, isRequesting: false })
         console.log(e)
+        toast.error('An error occured.')
       })
   }
-  const handleFormSubmit = () => {}
+
+  const handleFormSubmit = () => {
+    // Create or update metafeild
+    setState({ isUpdating: true, isRequesting: true })
+    const { selectedNamespace, selectedKey, saveAs, metafieldValue } = state
+    const url = getResourceMetafieldsURL(resourceType, resource.id)
+    axios({
+      url,
+      method: 'POST',
+      headers: {
+        'content-type': 'application/json',
+      },
+      data: {
+        metafield: {
+          namespace: selectedNamespace, // min 3 chars
+          key: selectedKey, // min 3 chars
+          value: metafieldValue, // can't be blank
+          value_type: saveAs, // can't be empty if set to 'string'
+        },
+      },
+    })
+      .then(resp => {
+        setState({ isUpdating: false })
+        fetchResourceMetafields()
+        toast.info('Success!')
+      })
+      .catch(e => {
+        setState({ isUpdating: false, isRequesting: false })
+        console.log(e)
+        toast.error('An error occured!')
+      })
+  }
 
   const {
     isRequesting,
     isDeleting,
+    isUpdating,
     namespaceOptions,
     selectedNamespace,
     selectedKey,
@@ -208,11 +259,11 @@ function EditMetafieldsForm({ resource, resourceType }) {
   const hasErrors = Object.keys(errors).some(k => Boolean(errors[k]))
 
   return (
-    <div>
+    <OverlaySpinner loading={isRequesting}>
       <FormLayout>
         <Select
           disabled={isRequesting}
-          label="Select metafied"
+          label="Select metafield"
           options={[
             { label: 'Create new metafield', value: '' },
             ...metafields.map(m => ({
@@ -225,25 +276,29 @@ function EditMetafieldsForm({ resource, resourceType }) {
             selectedMetafield ? selectedNamespace + delimeter + selectedKey : ''
           }
         />
-        <TypeAhead
-          label="Namespace"
-          placeholder="instructions"
-          options={namespaceOptions}
-          onChange={handleNamespaceChange}
-          value={selectedNamespace}
-          name="namespace"
-          disabled={isEditting || isRequesting}
-        />
+        <FormLayout.Group>
+          <TypeAhead
+            label="Namespace"
+            placeholder="instructions"
+            options={namespaceOptions}
+            onChange={handleNamespaceChange}
+            value={selectedNamespace}
+            name="namespace"
+            disabled={isEditting || isRequesting}
+          />
+          <TextField
+            label="Key"
+            placeholder="wash"
+            onChange={handleKeyChange}
+            value={selectedKey}
+            name="key"
+            error={errors.key ? errors.key : false}
+            disabled={isEditting || isRequesting}
+          />
+        </FormLayout.Group>
         <TextField
-          label="Key"
-          placeholder="wash"
-          onChange={handleKeyChange}
-          value={selectedKey}
-          name="key"
-          error={errors.key ? errors.key : false}
-          disabled={isEditting || isRequesting}
-        />
-        <TextField
+          multiline={saveAs !== 'integer' && 5}
+          type={saveAs === 'integer' ? 'number' : 'text'}
           disabled={isRequesting}
           label="Value"
           placeholder="Cold water"
@@ -261,27 +316,30 @@ function EditMetafieldsForm({ resource, resourceType }) {
           selected={saveAs || 'string'}
           onChange={handleSaveAsChange}
         />
-        <div style={{ textAlign: 'right' }}>
-          {isEditting && (
+        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          <ButtonGroup>
+            {isEditting && (
+              <Button
+                loading={isDeleting}
+                destructive
+                disabled={isRequesting}
+                onClick={deleteMetafield}
+              >
+                Delete
+              </Button>
+            )}
             <Button
-              loading={isDeleting}
-              destructive
-              disabled={isRequesting}
-              onClick={deleteMetafield}
+              loading={isUpdating}
+              primary
+              disabled={hasErrors || isRequesting}
+              onClick={handleFormSubmit}
             >
-              Delete
+              {isEditting ? 'Update' : 'Create'}
             </Button>
-          )}
-          <Button
-            primary
-            disabled={hasErrors || isRequesting}
-            onClick={handleFormSubmit}
-          >
-            {isEditting ? 'Update' : 'Create'}
-          </Button>
+          </ButtonGroup>
         </div>
       </FormLayout>
-    </div>
+    </OverlaySpinner>
   )
 }
 
