@@ -41,6 +41,55 @@
   }
 }
 
+.centered_loading_wrapper {
+  position: relative;
+
+}
+.centered_loading_content {
+  transition: opacity 0.2s;
+  opacity: 1;
+}
+.centered_loading_content.is_loading {
+  position: relative;
+  opacity: 0.5;
+}
+
+/* invisible overlay */
+.centered_loading_wrapper.is_loading::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0);
+  z-index: 98;
+}
+.centered_loading_wrapper.is_loading::after {
+  content: "";
+  position: absolute;
+  top: 42%;
+  left: 49%;
+  transform: translate(-50%, -50%);
+  width: 30px;
+  height: 30px;
+  z-index: 99;
+  background: url("data:image/svg+xml;base64,PHN2ZyB2aWV3Qm94PSIwIDAgMjAgMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHBhdGggZD0iTTcuMjI5IDEuMTczYTkuMjUgOS4yNSAwIDEgMCAxMS42NTUgMTEuNDEyIDEuMjUgMS4yNSAwIDEgMC0yLjQtLjY5OCA2Ljc1IDYuNzUgMCAxIDEtOC41MDYtOC4zMjkgMS4yNSAxLjI1IDAgMSAwLS43NS0yLjM4NXoiIGZpbGw9IiM5MTlFQUIiLz48L3N2Zz4K");
+  animation-name: spin;
+  animation-iteration-count: infinite;
+  animation-duration: 0.7s;
+  animation-timing-function: linear;
+
+}
+
+
+@keyframes spin {
+  from {transform:rotate(0deg);}
+  to {transform:rotate(360deg);}
+}
+
 /* Polaris customizations */
 .Polaris-DataTable__Cell,
 .Polaris-DataTable__Heading {
