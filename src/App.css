@@ -90,6 +90,14 @@
   to {transform:rotate(360deg);}
 }
 
+
+.Styled-Hr {
+  margin: 3rem auto;
+  width: 80%;
+  border: none;
+  border-top: 1px solid #ccc;
+}
+
 /* Polaris customizations */
 .Polaris-DataTable__Cell,
 .Polaris-DataTable__Heading {

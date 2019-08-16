@@ -2,7 +2,9 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Modal } from '@shopify/polaris'
 
-import EditMetafieldsForm from '../EditMetafieldsForm'
+import EditMetafieldsForm, {
+  FormWrapperWithVariants,
+} from '../EditMetafieldsForm'
 
 import { resourceTypesArr } from '../../utils'
 
@@ -34,8 +36,14 @@ function EditMetafieldsModal({
         title={resource && resource.title ? resource.title : '<Blank>'}
       >
         <Modal.Section subdued>
-          {resource && resource.id && (
+          {resource && resource.id && resourceType !== 'products' && (
             <EditMetafieldsForm
+              resource={resource}
+              resourceType={resourceType}
+            />
+          )}
+          {resource && resource.id && resourceType === 'products' && (
+            <FormWrapperWithVariants
               resource={resource}
               resourceType={resourceType}
             />

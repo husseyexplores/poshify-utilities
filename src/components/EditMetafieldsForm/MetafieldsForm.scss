@@ -1,0 +1,13 @@
+.Metafields-Form {
+  .Polaris-ChoiceList__Choices {
+    display: flex;
+    align-items: center;
+    & > li:not(:first-child) {
+      margin-left: 30px;
+    }
+  }
+
+  .Polaris-Choice {
+    cursor: pointer;
+  }
+}

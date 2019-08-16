@@ -2,11 +2,12 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import classnames from 'classnames'
 
-function OverlaySpinner({ loading, children }) {
+function OverlaySpinner({ loading, children, className }) {
   if (!children) return null
 
   const wrapperClasses = classnames('centered_loading_wrapper', {
     is_loading: loading,
+    [`${className}`]: typeof className === 'string',
   })
   const contentClasses = classnames('centered_loading_content', {
     is_loading: loading,
@@ -22,6 +23,7 @@ function OverlaySpinner({ loading, children }) {
 OverlaySpinner.propTypes = {
   loading: PropTypes.bool.isRequired,
   children: PropTypes.any,
+  className: PropTypes.string,
 }
 
 OverlaySpinner.defaultProps = {

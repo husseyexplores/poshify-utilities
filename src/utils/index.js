@@ -37,12 +37,16 @@ export function byNamespaceDotKey(metafields) {
 
 export const resourceTypesArr = [
   {
+    title: 'Articles',
+    value: 'articles',
+  },
+  {
     title: 'Blogs',
     value: 'blogs',
   },
   {
     title: 'Collections',
-    value: 'collection_listings',
+    value: 'collections',
   },
   {
     title: 'Customers',
@@ -63,7 +67,6 @@ export const resourceTypesArr = [
   {
     title: 'Products',
     value: 'products',
-    thumbnail: true,
   },
   {
     title: 'Shop',
@@ -114,13 +117,13 @@ export function getShopifyAdminURL(
 
 export function getResourceMetafieldsURL(
   resourceType,
-  id,
-  subResourceType,
-  subResourceId
+  resourceId,
+  parentResource,
+  parentResourceId
 ) {
-  if (!subResourceType) {
-    return `/admin/${resourceType}/${id}/metafields.json`
+  if (!parentResource) {
+    return `/admin/${resourceType}/${resourceId}/metafields.json`
   }
 
-  return `/admin/${resourceType}/${id}/${subResourceType}/${subResourceId}/metafields.json`
+  return `/admin/${parentResource}/${parentResourceId}/${resourceType}/${resourceId}/metafields.json`
 }

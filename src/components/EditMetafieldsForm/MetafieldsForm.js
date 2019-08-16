@@ -12,7 +12,7 @@ import axios, { CancelToken } from 'axios'
 
 import { AppContext } from '../../App'
 import TypeAhead from '../TypeAhead'
-import { OverlaySpinner } from '../Spinners'
+import { OverlaySpinner } from '../../common/components/Spinners'
 import {
   lookupNamespace as _lookupByNamespace,
   byNamespaceDotKey,
@@ -20,6 +20,8 @@ import {
   delimeter,
   getResourceMetafieldsURL,
 } from '../../utils'
+
+import './MetafieldsForm.scss'
 
 // ------------------------------------------------------------------
 
@@ -37,6 +39,7 @@ const getInitialState = () => {
     saveAs: 'string',
     namespaceOptions: [],
     errors: {},
+    hadErrors: false,
   }
 }
 
@@ -44,8 +47,7 @@ function reducer(state, changes) {
   return { ...state, ...changes }
 }
 
-async function getResourceMetafields(source, resourceType, id) {
-  const url = getResourceMetafieldsURL(resourceType, id)
+async function getResourceMetafields(url, source) {
   try {
     const resp = await axios.get(url, { cancelToken: source.token })
     return resp.data.metafields
@@ -54,9 +56,27 @@ async function getResourceMetafields(source, resourceType, id) {
   }
 }
 
+function checkTextForErrors(value, minLen = 3) {
+  const _value = value.trim()
+  if (_value < minLen) return `Field must contain ${minLen} or more chars`
+}
+
+function checkJSONForErrors(jsonString) {
+  try {
+    JSON.parse(jsonString)
+  } catch (error) {
+    return 'Invalid JSON'
+  }
+}
+
 // ------------------------------------------------------------------
 
-function EditMetafieldsForm({ resource, resourceType }) {
+function MetafieldsForm({
+  resource,
+  resourceType,
+  parentResource,
+  parentResourceType,
+}) {
   const { toast } = useContext(AppContext)
   const [state, setState] = useReducer(reducer, getInitialState())
   const reqCancellerRef = useRef(null)
@@ -64,43 +84,52 @@ function EditMetafieldsForm({ resource, resourceType }) {
   const fetchResourceMetafields = async () => {
     setState({ isRequesting: true })
     reqCancellerRef.current = CancelToken.source()
-    const source = reqCancellerRef.current
-    const metafields = await getResourceMetafields(
-      source,
+    const url = getResourceMetafieldsURL(
       resourceType,
-      resource.id
+      resource.id,
+      parentResourceType,
+      parentResource && parentResource.id
     )
-    const formattedMetafields = byNamespaceDotKey(metafields)
-    const { selectedNamespace, selectedKey } = state
+    const source = reqCancellerRef.current
+    try {
+      const metafields = await getResourceMetafields(url, source)
+      const formattedMetafields = byNamespaceDotKey(metafields)
+      const { selectedNamespace, selectedKey } = state
 
-    const fetchedMetafield =
-      formattedMetafields.find(
-        ({ namespace, key }) =>
-          namespace === selectedNamespace && key === selectedKey
-      ) || {}
+      const fetchedMetafield =
+        formattedMetafields.find(
+          ({ namespace, key }) =>
+            namespace === selectedNamespace && key === selectedKey
+        ) || {}
 
-    setState({
-      isRequesting: false,
-      metafields: formattedMetafields,
-      lookupByNamespace: _lookupByNamespace(formattedMetafields),
-      selectedMetafield: fetchedMetafield.namespace
-        ? fetchedMetafield
-        : formattedMetafields[0] || null,
-      selectedNamespace:
-        fetchedMetafield.namespace ||
-        (metafields[0] ? metafields[0].namespace : ''),
-      selectedKey:
-        fetchedMetafield.key || (metafields[0] ? metafields[0].key : ''),
-      metafieldValue:
-        fetchedMetafield.value || (metafields[0] ? metafields[0].value : ''),
-      saveAs:
-        fetchedMetafield.value_type ||
-        (metafields[0] ? metafields[0].value_type : 'string'),
-      namespaceOptions: [
-        ...new Set(metafields.map(({ namespace }) => namespace)),
-      ],
-      errors: {},
-    })
+      setState({
+        isRequesting: false,
+        metafields: formattedMetafields,
+        lookupByNamespace: _lookupByNamespace(formattedMetafields),
+        selectedMetafield: fetchedMetafield.namespace
+          ? fetchedMetafield
+          : formattedMetafields[0] || null,
+        selectedNamespace:
+          fetchedMetafield.namespace ||
+          (metafields[0] ? metafields[0].namespace : ''),
+        selectedKey:
+          fetchedMetafield.key || (metafields[0] ? metafields[0].key : ''),
+        metafieldValue:
+          fetchedMetafield.value || (metafields[0] ? metafields[0].value : ''),
+        saveAs:
+          fetchedMetafield.value_type ||
+          (metafields[0] ? metafields[0].value_type : 'string'),
+        namespaceOptions: [
+          ...new Set(metafields.map(({ namespace }) => namespace)),
+        ],
+        errors: {},
+        hadErrors: false,
+      })
+    } catch (e) {
+      if (!axios.isCancel(e)) {
+        console.log(e)
+      }
+    }
   }
 
   // Fetch metafields data
@@ -108,6 +137,11 @@ function EditMetafieldsForm({ resource, resourceType }) {
     ;(async () => {
       fetchResourceMetafields()
     })()
+    return () => {
+      reqCancellerRef.current &&
+        typeof reqCancellerRef.current.cancel === 'function' &&
+        reqCancellerRef.current.cancel('Form closed!')
+    }
   }, [resource]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleNamspceDotKeyChange = value => {
@@ -192,7 +226,14 @@ function EditMetafieldsForm({ resource, resourceType }) {
   const deleteMetafield = () => {
     setState({ isDeleting: true, isRequesting: true })
     const { selectedMetafield } = state
-    const url = `/admin/${resourceType}/${resource.id}/metafields/${selectedMetafield.id}.json`
+    const urlPart = getResourceMetafieldsURL(
+      resourceType,
+      resource.id,
+      parentResourceType,
+      parentResource && parentResource.id
+    ).split('.json')[0]
+    const url = `${urlPart}/${selectedMetafield.id}.json`
+
     reqCancellerRef.current = CancelToken.source()
     axios
       .delete(url, { cancelToken: reqCancellerRef.current.token })
@@ -200,20 +241,33 @@ function EditMetafieldsForm({ resource, resourceType }) {
         // Reinitialize form
         setState({ isDeleting: false })
         fetchResourceMetafields()
-        toast.info('Success!')
+        toast.info('Metafield deleted')
       })
       .catch(e => {
-        setState({ isDeleting: false, isRequesting: false })
-        console.log(e)
-        toast.error('An error occured.')
+        if (!axios.isCancel(e)) {
+          setState({ isDeleting: false, isRequesting: false })
+          console.log(e)
+          toast.error('An error occured.')
+        }
       })
   }
 
   const handleFormSubmit = () => {
     // Create or update metafeild
     setState({ isUpdating: true, isRequesting: true })
-    const { selectedNamespace, selectedKey, saveAs, metafieldValue } = state
-    const url = getResourceMetafieldsURL(resourceType, resource.id)
+    const {
+      selectedNamespace,
+      selectedKey,
+      saveAs,
+      metafieldValue,
+      selectedMetafield,
+    } = state
+    const url = getResourceMetafieldsURL(
+      resourceType,
+      resource.id,
+      parentResourceType,
+      parentResource && parentResource.id
+    )
     axios({
       url,
       method: 'POST',
@@ -232,12 +286,15 @@ function EditMetafieldsForm({ resource, resourceType }) {
       .then(resp => {
         setState({ isUpdating: false })
         fetchResourceMetafields()
-        toast.info('Success!')
+        const isEditting = Boolean(selectedMetafield)
+        toast.info(isEditting ? 'Metafield updated' : 'Metafield created')
       })
       .catch(e => {
-        setState({ isUpdating: false, isRequesting: false })
-        console.log(e)
-        toast.error('An error occured!')
+        if (!axios.isCancel(e)) {
+          setState({ isUpdating: false, isRequesting: false })
+          console.log(e)
+          toast.error('An error occured!')
+        }
       })
   }
 
@@ -259,7 +316,7 @@ function EditMetafieldsForm({ resource, resourceType }) {
   const hasErrors = Object.keys(errors).some(k => Boolean(errors[k]))
 
   return (
-    <OverlaySpinner loading={isRequesting}>
+    <OverlaySpinner loading={isRequesting} className="Metafields-Form">
       <FormLayout>
         <Select
           disabled={isRequesting}
@@ -313,7 +370,7 @@ function EditMetafieldsForm({ resource, resourceType }) {
             { label: 'Integer', value: 'integer' },
             { label: 'JSON String', value: 'json_string' },
           ]}
-          selected={saveAs || 'string'}
+          selected={[saveAs] || ['string']}
           onChange={handleSaveAsChange}
         />
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
@@ -345,14 +402,20 @@ function EditMetafieldsForm({ resource, resourceType }) {
 
 // ------------------------------------------------------------------
 
-EditMetafieldsForm.propTypes = {
+MetafieldsForm.propTypes = {
   resource: PropTypes.object.isRequired,
-  resourceType: PropTypes.oneOf(resourceTypesArr.map(({ value }) => value))
-    .isRequired,
+  resourceType: PropTypes.oneOf([
+    ...resourceTypesArr.map(({ value }) => value),
+    'variants',
+  ]).isRequired,
+  parentResource: PropTypes.object,
+  parentResourceType: PropTypes.oneOf(
+    resourceTypesArr.map(({ value }) => value)
+  ),
 }
 
-EditMetafieldsForm.defaultProps = {
+MetafieldsForm.defaultProps = {
   onChange: () => {},
 }
 
-export default EditMetafieldsForm
+export default MetafieldsForm
