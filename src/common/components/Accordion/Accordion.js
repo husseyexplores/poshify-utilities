@@ -14,11 +14,6 @@ import './Accordion.scss'
 
 // ------------------------------------------------------------------
 
-const content = `Exercitation in fugiat est ut ad ea cupidatat ut in
-cupidatat occaecat ut occaecat consequat est minim minim
-esse tempor laborum consequat esse adipisicing eu
-reprehenderit enim.`
-
 function PolarisAccordion({
   unmountHidden,
   allowMultipleExpanded,
