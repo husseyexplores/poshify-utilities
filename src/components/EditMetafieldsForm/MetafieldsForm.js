@@ -8,66 +8,70 @@ import {
   Select,
   ButtonGroup,
 } from '@shopify/polaris'
+import { withFormik } from 'formik'
 import axios, { CancelToken } from 'axios'
 
 import { AppContext } from '../../App'
-import TypeAhead from '../TypeAhead'
+import TypeAhead from '../../common/components/TypeAhead'
 import { OverlaySpinner } from '../../common/components/Spinners'
 import {
-  lookupNamespace as _lookupByNamespace,
+  makeMetafieldsMap,
+  lookupByNamespace as _lookupByNamespace,
   byNamespaceDotKey,
   resourceTypesArr,
   delimeter,
   getResourceMetafieldsURL,
+  makeObject,
+  capitalize,
 } from '../../utils'
 
 import './MetafieldsForm.scss'
 
 // ------------------------------------------------------------------
 
-const getInitialState = () => {
-  return {
-    isRequesting: true,
-    isDeleting: false,
-    isUpdating: false,
-    metafields: [], // ,
-    lookupByNamespace: null,
-    selectedMetafield: null,
-    selectedNamespace: '',
-    selectedKey: '',
-    metafieldValue: '',
-    saveAs: 'string',
-    namespaceOptions: [],
-    errors: {},
-    hadErrors: false,
+const type = v => typeof v
+function formatErr(errs) {
+  if (!errs) return null
+  if (type(errs) === 'string') {
+    return capitalize(errs)
   }
+
+  if (Array.isArray(errs)) {
+    const errors = []
+    errs.forEach((errMsg, i) => {
+      const hasNextErrMsg = Boolean(errs[i + 1])
+      errors.push(errMsg)
+      hasNextErrMsg && errors.push(<br key={i} />)
+    })
+    return errors
+  }
+
+  return errs
 }
 
-function reducer(state, changes) {
-  return { ...state, ...changes }
-}
-
-async function getResourceMetafields(url, source) {
+async function getResourceMetafields(url, cancelToken) {
   try {
-    const resp = await axios.get(url, { cancelToken: source.token })
+    const resp = await axios.get(url, { cancelToken })
     return resp.data.metafields
   } catch (err) {
     throw err
   }
 }
 
-function checkTextForErrors(value, minLen = 3) {
-  const _value = value.trim()
-  if (_value < minLen) return `Field must contain ${minLen} or more chars`
+const initialState = {
+  isFetching: true,
+  isDeleting: false,
+
+  metafields: [],
+  metafieldsMap: null, // {}
+  lookupByNamespace: null, // {}
+  namespaceOptions: [],
 }
 
-function checkJSONForErrors(jsonString) {
-  try {
-    JSON.parse(jsonString)
-  } catch (error) {
-    return 'Invalid JSON'
-  }
-}
+const reducer = (state, changes) => ({
+  ...state,
+  ...changes,
+})
 
 // ------------------------------------------------------------------
 
@@ -76,55 +80,79 @@ function MetafieldsForm({
   resourceType,
   parentResource,
   parentResourceType,
+  // initialValues,
+  values,
+  errors,
+  touched,
+  dirty,
+  isValid,
+  isSubmitting,
+  setFieldValue,
+  setFieldTouched,
+  setValues,
+  setTouched,
+  handleBlur,
+  handleSubmit,
+  setSubmitting,
+  setErrors,
+  resetForm,
 }) {
   const { toast } = useContext(AppContext)
-  const [state, setState] = useReducer(reducer, getInitialState())
+  const [state, setState] = useReducer(reducer, initialState)
   const reqCancellerRef = useRef(null)
 
   const fetchResourceMetafields = async () => {
-    setState({ isRequesting: true })
+    setState({ isFetching: true })
     reqCancellerRef.current = CancelToken.source()
-    const url = getResourceMetafieldsURL(
+    const url = getResourceMetafieldsURL({
       resourceType,
-      resource.id,
+      resourceId: resource.id,
       parentResourceType,
-      parentResource && parentResource.id
-    )
-    const source = reqCancellerRef.current
+      parentResourceId: parentResource && parentResource.id,
+    })
+
+    const cancelToken = reqCancellerRef.current.token
     try {
-      const metafields = await getResourceMetafields(url, source)
-      const formattedMetafields = byNamespaceDotKey(metafields)
-      const { selectedNamespace, selectedKey } = state
+      const metafields = await getResourceMetafields(url, cancelToken)
+      const formattedMetafields = byNamespaceDotKey(metafields) // we also convert integer values into strings here, for the sake for formik/dirty handling. If we don't do this here, we would need to do this in multiple places, scattered everywhere.
+
+      const { namespace, key } = values
 
       const fetchedMetafield =
         formattedMetafields.find(
-          ({ namespace, key }) =>
-            namespace === selectedNamespace && key === selectedKey
+          m => m.namespace === namespace && m.key === key
         ) || {}
 
+      const metafieldsMap = makeMetafieldsMap(formattedMetafields)
       setState({
-        isRequesting: false,
+        isFetching: false,
         metafields: formattedMetafields,
         lookupByNamespace: _lookupByNamespace(formattedMetafields),
-        selectedMetafield: fetchedMetafield.namespace
+        metafieldsMap,
+        namespaceOptions: [
+          ...new Set(metafields.map(({ namespace }) => namespace)),
+        ],
+      })
+
+      const updatedValues = {
+        ...values,
+        selectedMf: fetchedMetafield.namespace
           ? fetchedMetafield
           : formattedMetafields[0] || null,
-        selectedNamespace:
+        namespace:
           fetchedMetafield.namespace ||
           (metafields[0] ? metafields[0].namespace : ''),
-        selectedKey:
-          fetchedMetafield.key || (metafields[0] ? metafields[0].key : ''),
-        metafieldValue:
+        key: fetchedMetafield.key || (metafields[0] ? metafields[0].key : ''),
+        value:
           fetchedMetafield.value || (metafields[0] ? metafields[0].value : ''),
         saveAs:
           fetchedMetafield.value_type ||
           (metafields[0] ? metafields[0].value_type : 'string'),
-        namespaceOptions: [
-          ...new Set(metafields.map(({ namespace }) => namespace)),
-        ],
-        errors: {},
-        hadErrors: false,
-      })
+        metafieldsMap,
+      }
+      setValues(updatedValues)
+      resetForm(updatedValues)
+      setErrors({})
     } catch (e) {
       if (!axios.isCancel(e)) {
         console.log(e)
@@ -144,95 +172,73 @@ function MetafieldsForm({
     }
   }, [resource]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleNamspceDotKeyChange = value => {
-    const { metafields, saveAs: _saveAs } = state
+  const handleNamspceDotKeyChange = val => {
+    const { saveAs: _saveAs, metafieldsMap } = values
+    if (!touched.selectedMf) setFieldTouched('selectedMf', true)
+    setTouched({ namespace: false, key: false, value: false, saveAs: false })
 
-    if (!value) {
-      return setState({
-        selectedMetafield: null,
-        selectedNamespace: '',
-        selectedKey: '',
-        metafieldValue: '',
+    if (!val) {
+      setValues({
+        ...values,
+        selectedMf: null,
+        namespace: '',
+        key: '',
+        value: '',
         saveAs: 'string',
       })
+      setErrors({})
+      return
     }
 
-    const [selectedNamespace, selectedKey] = value.split(delimeter)
-    const selectedMetafield = metafields.find(
-      ({ namespace, key }) =>
-        namespace === selectedNamespace && key === selectedKey
-    )
+    const [namespace, key] = val.split(delimeter)
+    const existingMetafield = metafieldsMap[namespace + '.' + key]
 
-    const metafieldValue = selectedMetafield ? selectedMetafield.value : ''
-    const saveAs = selectedMetafield ? selectedMetafield.value_type : _saveAs
-
-    setState({
-      selectedMetafield,
-      selectedNamespace,
-      selectedKey,
-      metafieldValue,
+    const value = existingMetafield ? existingMetafield.value : ''
+    const saveAs = existingMetafield ? existingMetafield.value_type : _saveAs
+    const updatedValues = {
+      ...values,
+      selectedMf: existingMetafield,
+      namespace,
+      key,
+      value,
       saveAs,
-      errors: {},
-    })
-  }
-
-  const handleNamespaceChange = value => {
-    setState({ selectedNamespace: value ? value.trim() : '' })
-  }
-
-  const handleKeyChange = value => {
-    const { metafields, selectedNamespace, errors } = state
-    const selectedKey = value ? value.trim() : ''
-    const selectedMetafield = metafields.find(
-      ({ namespace, key }) =>
-        namespace === selectedNamespace && key === selectedKey
-    )
-
-    let keyErr
-    if (selectedMetafield) {
-      // warn/err the user
-      keyErr = (
-        <span>
-          <Button
-            plain
-            onClick={() => {
-              handleNamspceDotKeyChange(
-                selectedNamespace + delimeter + selectedKey
-              )
-            }}
-          >
-            {selectedNamespace}.{selectedKey}
-          </Button>{' '}
-          already exists on this namespace.
-        </span>
-      )
-    } else {
-      keyErr = false
     }
 
-    setState({ selectedKey, errors: { ...errors, key: keyErr } })
+    setValues(updatedValues)
+    setErrors({})
+    resetForm(updatedValues)
+  }
+
+  const handleNamespaceChange = val => {
+    // prevent preceeding spaces
+    setFieldValue('namespace', val || '')
+  }
+
+  const handleKeyChange = val => {
+    // prevent preceeding spaces
+    setFieldValue('key', val || '')
   }
 
   const handleMetafieldValueChange = value => {
-    setState({
-      metafieldValue: value,
-    })
+    setFieldValue('value', value)
   }
 
   const handleSaveAsChange = value => {
-    setState({ saveAs: Array.isArray(value) ? value[0] : 'string' })
+    setFieldValue('saveAs', Array.isArray(value) ? value[0] : 'string')
+    !touched.saveAs && setFieldTouched('saveAs', true)
+    !touched.value && setFieldTouched('value', true)
   }
 
   const deleteMetafield = () => {
-    setState({ isDeleting: true, isRequesting: true })
-    const { selectedMetafield } = state
-    const urlPart = getResourceMetafieldsURL(
+    setState({ isDeleting: true })
+    const { selectedMf } = values
+    const urlParts = getResourceMetafieldsURL({
       resourceType,
-      resource.id,
+      resourceId: resource.id,
       parentResourceType,
-      parentResource && parentResource.id
-    ).split('.json')[0]
-    const url = `${urlPart}/${selectedMetafield.id}.json`
+      parentResourceId: parentResource && parentResource.id,
+    }).split('.json')
+    const url = `${urlParts[0]}/${selectedMf.id}.json${urlParts[1]}`
 
     reqCancellerRef.current = CancelToken.source()
     axios
@@ -245,29 +251,25 @@ function MetafieldsForm({
       })
       .catch(e => {
         if (!axios.isCancel(e)) {
-          setState({ isDeleting: false, isRequesting: false })
+          setState({ isDeleting: false })
           console.log(e)
-          toast.error('An error occured.')
+          toast.error('Unexpected error occured!')
         }
       })
   }
 
   const handleFormSubmit = () => {
     // Create or update metafeild
-    setState({ isUpdating: true, isRequesting: true })
-    const {
-      selectedNamespace,
-      selectedKey,
-      saveAs,
-      metafieldValue,
-      selectedMetafield,
-    } = state
-    const url = getResourceMetafieldsURL(
+    const { namespace, key, saveAs, value, selectedMf } = values
+    setSubmitting(true)
+
+    const url = getResourceMetafieldsURL({
       resourceType,
-      resource.id,
+      resourceId: resource.id,
       parentResourceType,
-      parentResource && parentResource.id
-    )
+      parentResourceId: parentResource && parentResource.id,
+    })
+
     axios({
       url,
       method: 'POST',
@@ -276,50 +278,44 @@ function MetafieldsForm({
       },
       data: {
         metafield: {
-          namespace: selectedNamespace, // min 3 chars
-          key: selectedKey, // min 3 chars
-          value: metafieldValue, // can't be blank
-          value_type: saveAs, // can't be empty if set to 'string'
+          namespace,
+          key,
+          value: saveAs === 'integer' ? Number(value) : value,
+          value_type: saveAs,
         },
       },
     })
       .then(resp => {
-        setState({ isUpdating: false })
-        fetchResourceMetafields()
-        const isEditting = Boolean(selectedMetafield)
+        setSubmitting(false)
+        resetForm(values)
+        const isEditting = Boolean(selectedMf)
+        !isEditting && fetchResourceMetafields()
         toast.info(isEditting ? 'Metafield updated' : 'Metafield created')
       })
       .catch(e => {
-        if (!axios.isCancel(e)) {
-          setState({ isUpdating: false, isRequesting: false })
-          console.log(e)
-          toast.error('An error occured!')
-        }
+        if (axios.isCancel(e)) return
+        const serverErrors = (e.response.data && e.response.data.errors) || {}
+        setSubmitting(false)
+        setErrors({
+          ...errors,
+          ...makeObject(serverErrors, 'otherErrors'),
+        })
+        toast.error('An error occured!')
       })
+    handleSubmit() // to increment the counter in formik, just in case
   }
 
-  const {
-    isRequesting,
-    isDeleting,
-    isUpdating,
-    namespaceOptions,
-    selectedNamespace,
-    selectedKey,
-    metafieldValue,
-    saveAs,
-    selectedMetafield,
-    metafields,
-    errors,
-  } = state
+  const { isFetching, isDeleting, metafields, namespaceOptions } = state
 
-  const isEditting = Boolean(selectedMetafield)
-  const hasErrors = Object.keys(errors).some(k => Boolean(errors[k]))
+  const { namespace, key, value, saveAs, selectedMf } = values
+  const isEditting = Boolean(selectedMf)
 
   return (
-    <OverlaySpinner loading={isRequesting} className="Metafields-Form">
+    <OverlaySpinner loading={isFetching} className="Metafields-Form">
       <FormLayout>
         <Select
-          disabled={isRequesting}
+          name="selectedMf"
+          disabled={isFetching}
           label="Select metafield"
           options={[
             { label: 'Create new metafield', value: '' },
@@ -329,41 +325,77 @@ function MetafieldsForm({
             })),
           ]}
           onChange={handleNamspceDotKeyChange}
-          value={
-            selectedMetafield ? selectedNamespace + delimeter + selectedKey : ''
-          }
+          value={selectedMf ? namespace + delimeter + key : ''}
         />
         <FormLayout.Group>
           <TypeAhead
+            name="namespace"
             label="Namespace"
             placeholder="instructions"
+            onBlur={handleBlur}
             options={namespaceOptions}
             onChange={handleNamespaceChange}
-            value={selectedNamespace}
-            name="namespace"
-            disabled={isEditting || isRequesting}
+            value={namespace}
+            disabled={isEditting || isFetching}
+            error={
+              touched.namespace && errors.namespace
+                ? formatErr(errors.namespace)
+                : false
+            }
           />
           <TextField
+            name="key"
             label="Key"
             placeholder="wash"
             onChange={handleKeyChange}
-            value={selectedKey}
-            name="key"
-            error={errors.key ? errors.key : false}
-            disabled={isEditting || isRequesting}
+            onBlur={handleBlur}
+            value={key}
+            error={
+              touched.key && errors.key ? (
+                errors.key === 'METAFIELD_ALREADY_EXISTS' ? (
+                  <span>
+                    <Button
+                      plain
+                      onClick={() => {
+                        setFieldValue('selectedMf', namespace + delimeter + key)
+                      }}
+                    >
+                      {namespace}.{key}
+                    </Button>{' '}
+                    already exists on this namespace.
+                  </span>
+                ) : (
+                  formatErr(errors.key)
+                )
+              ) : (
+                false
+              )
+            }
+            disabled={isEditting || isFetching}
           />
         </FormLayout.Group>
         <TextField
+          name="value"
           multiline={saveAs !== 'integer' && 5}
           type={saveAs === 'integer' ? 'number' : 'text'}
-          disabled={isRequesting}
+          disabled={isFetching}
           label="Value"
-          placeholder="Cold water"
-          value={metafieldValue}
+          placeholder={
+            saveAs === 'string'
+              ? 'Cold water'
+              : saveAs === 'integer'
+              ? '100'
+              : '{"key": "value"}'
+          }
+          value={saveAs === 'integer' && !Number(value) ? '' : value}
           onChange={handleMetafieldValueChange}
+          onBlur={handleBlur}
+          error={
+            touched.value && errors.value ? formatErr(errors.value) : false
+          }
         />
         <ChoiceList
-          disabled={isRequesting}
+          disabled={isFetching}
           title={'Save as:'}
           choices={[
             { label: 'String', value: 'string' },
@@ -379,16 +411,22 @@ function MetafieldsForm({
               <Button
                 loading={isDeleting}
                 destructive
-                disabled={isRequesting}
+                disabled={isSubmitting || isFetching}
                 onClick={deleteMetafield}
               >
                 Delete
               </Button>
             )}
             <Button
-              loading={isUpdating}
+              loading={isSubmitting}
               primary
-              disabled={hasErrors || isRequesting}
+              disabled={
+                !isValid ||
+                !dirty ||
+                Object.keys(errors).length > 0 ||
+                isSubmitting ||
+                isFetching
+              }
               onClick={handleFormSubmit}
             >
               {isEditting ? 'Update' : 'Create'}
@@ -412,10 +450,81 @@ MetafieldsForm.propTypes = {
   parentResourceType: PropTypes.oneOf(
     resourceTypesArr.map(({ value }) => value)
   ),
+  // formik props
+  initialValues: PropTypes.object,
+  values: PropTypes.object,
+  errors: PropTypes.object,
+  touched: PropTypes.object,
+  dirty: PropTypes.bool,
+  isValid: PropTypes.bool,
+  isSubmitting: PropTypes.bool,
+  isValidating: PropTypes.bool,
+  validateOnChange: PropTypes.bool,
+  validateOnBlur: PropTypes.bool,
+  setValues: PropTypes.func,
+  setFieldValue: PropTypes.func,
+  setErrors: PropTypes.func,
+  setTouched: PropTypes.func,
+  setFieldTouched: PropTypes.func,
+  handleChange: PropTypes.func,
+  handleBlur: PropTypes.func,
+  handleSubmit: PropTypes.func,
+  setSubmitting: PropTypes.func,
+  resetForm: PropTypes.func,
 }
 
 MetafieldsForm.defaultProps = {
   onChange: () => {},
 }
 
-export default MetafieldsForm
+export default withFormik({
+  enableReinitialize: true,
+  mapPropsToValues: props => ({
+    resource: props.resource, // to force reinitialization
+    metafieldsMap: {}, // needed in validator
+
+    selectedMf: null,
+    namespace: '',
+    key: '',
+    value: '',
+    saveAs: 'string',
+  }),
+  validate: values => {
+    const errors = {}
+    const { namespace, key, value, saveAs, metafieldsMap } = values
+
+    if (namespace.length < 3 || namespace.trim().length === 0) {
+      errors.namespace = 'Must contain at least 3 chars'
+    } else if (namespace.length > 20) {
+      errors.namespace = 'Max char limit is 20'
+    }
+    const existingMetafield = metafieldsMap[namespace + '.' + 'key']
+    if (key.length < 3 || key.trim().length === 0) {
+      errors.key = 'Must contain at least 3 chars'
+    } else if (namespace.length > 30) {
+      errors.key = 'Max char limit is 30'
+    } else if (existingMetafield) {
+      // Metafield already exist, notify to the user
+      errors.key = 'METAFIELD_ALREADY_EXISTS'
+    }
+
+    if (saveAs === 'string' && !value.trim().length) {
+      errors.value = `Can't be blank`
+    }
+
+    if (saveAs === 'integer' && !Number.isInteger(Number(value))) {
+      errors.value = `Must be an integer`
+    }
+
+    if (saveAs === 'json_string') {
+      try {
+        JSON.parse(value)
+      } catch (e) {
+        errors.value = 'Invalid JSON'
+      }
+    }
+
+    return errors
+  },
+  handleSubmit: () => {},
+})(MetafieldsForm)

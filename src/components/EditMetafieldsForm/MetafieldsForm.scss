@@ -10,4 +10,8 @@
   .Polaris-Choice {
     cursor: pointer;
   }
+
+  .Polaris-TextField--multiline > .Polaris-TextField__Input {
+    max-height: 700px;
+  }
 }

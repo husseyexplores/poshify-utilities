@@ -10,18 +10,6 @@ import { resourceTypesArr } from '../../utils'
 
 // ------------------------------------------------------------------
 
-/*
-  TODO:
-  - Fetch the variants for products
-  - Show the variants in accordions
-
-  - Better error handling in the form
-    -- namespace => min 3 char
-    -- key => min 3 char
-    -- value => can not be empty
-    -- json_string should be valid json
-*/
-
 function EditMetafieldsModal({
   active,
   handleModalClose,
