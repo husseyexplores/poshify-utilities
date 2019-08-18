@@ -4,7 +4,7 @@ import { keyBy } from 'lodash'
 
 export const delimeter = '<-DLMTR!->'
 
-export function lookupNamespace(metafields) {
+export function lookupByNamespace(metafields) {
   return metafields.reduce((map, metafield) => {
     if (!Array.isArray(map[metafield.namespace])) {
       map[metafield.namespace] = []
@@ -14,12 +14,21 @@ export function lookupNamespace(metafields) {
   }, {})
 }
 
+export function makeMetafieldsMap(metafields) {
+  // 'namespace.key': {...}
+  return metafields.reduce((map, metafield) => {
+    map[metafield.namespace + '.' + metafield.key] = metafield
+    return map
+  }, {})
+}
+
 export function byNamespaceDotKey(metafields) {
   return metafields
-    .map(({ namespace, key, ...rest }) => ({
+    .map(({ namespace, key, value, ...rest }) => ({
       namespaceDotKey: `${namespace}.${key}`,
       namespace,
       key,
+      value: String(value),
       ...rest,
     }))
     .sort((a, b) => {
@@ -115,15 +124,33 @@ export function getShopifyAdminURL(
   return `/admin/${resourceType}.json` + (qs.length ? `?${qs}` : '')
 }
 
-export function getResourceMetafieldsURL(
+export function getResourceMetafieldsURL({
   resourceType,
   resourceId,
-  parentResource,
-  parentResourceId
-) {
-  if (!parentResource) {
-    return `/admin/${resourceType}/${resourceId}/metafields.json`
+  parentResourceType,
+  parentResourceId,
+  limit = 250,
+  page = 1,
+}) {
+  if (!parentResourceType) {
+    return `/admin/${resourceType}/${resourceId}/metafields.json?limit=${limit}&page=${page}`
   }
 
-  return `/admin/${parentResource}/${parentResourceId}/${resourceType}/${resourceId}/metafields.json`
+  return `/admin/${parentResourceType}/${parentResourceId}/${resourceType}/${resourceId}/metafields.json?limit=${limit}&page=${page}`
+}
+
+export function makeObject(obj, fallbackKey) {
+  if (typeof obj === 'object' && Array.isArray(obj) === false) {
+    return obj
+  }
+
+  if (typeof fallbackKey !== 'string')
+    throw new Error(
+      `Expected the fallback key to be a string, but got ${typeof fallbackKey}`
+    )
+  return { [fallbackKey]: obj }
+}
+
+export function capitalize(str) {
+  return str.charAt(0).toUpperCase() + str.slice(1)
 }
