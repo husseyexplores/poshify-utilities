@@ -2,33 +2,30 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { Modal } from '@shopify/polaris'
 
-import EditMetafieldsForm, {
-  FormWrapperWithVariants,
-} from '../EditMetafieldsForm'
+import MetafieldsForm from './MetafieldsForm'
+import FormWrapperWithVariants from './FormWrapperWithVariants'
 
 import { resourceTypesArr } from '../../utils'
 
 // ------------------------------------------------------------------
 
-function EditMetafieldsModal({
+function MetafieldsFormWithModal({
   active,
   handleModalClose,
   resourceType,
-  data: resource,
+  resource,
 }) {
   return (
-    <div>
+    <div className="MF-Modal-Wrapper">
       <Modal
+        large
         open={active}
         onClose={handleModalClose}
         title={resource && resource.title ? resource.title : '<Blank>'}
       >
         <Modal.Section subdued>
           {resource && resource.id && resourceType !== 'products' && (
-            <EditMetafieldsForm
-              resource={resource}
-              resourceType={resourceType}
-            />
+            <MetafieldsForm resource={resource} resourceType={resourceType} />
           )}
           {resource && resource.id && resourceType === 'products' && (
             <FormWrapperWithVariants
@@ -44,14 +41,14 @@ function EditMetafieldsModal({
 
 // ------------------------------------------------------------------
 
-EditMetafieldsModal.propTypes = {
+MetafieldsFormWithModal.propTypes = {
   resourceType: PropTypes.oneOf(resourceTypesArr.map(({ value }) => value))
     .isRequired,
   active: PropTypes.bool.isRequired,
   handleModalClose: PropTypes.func.isRequired,
-  data: PropTypes.object,
+  resource: PropTypes.object,
 }
 
-EditMetafieldsModal.defaultProps = {}
+MetafieldsFormWithModal.defaultProps = {}
 
-export default EditMetafieldsModal
+export default MetafieldsFormWithModal

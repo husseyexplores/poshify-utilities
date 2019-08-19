@@ -335,6 +335,7 @@ function MetafieldsForm({
             onBlur={handleBlur}
             options={namespaceOptions}
             onChange={handleNamespaceChange}
+            dropdownTitle="Existing namespace(s)"
             value={namespace}
             disabled={isEditting || isFetching}
             error={
@@ -512,11 +513,19 @@ export default withFormik({
       errors.value = `Can't be blank`
     }
 
-    if (saveAs === 'integer' && !Number.isInteger(Number(value))) {
-      errors.value = `Must be an integer`
+    if (saveAs === 'integer') {
+      if (value === '') {
+        errors.value = `Can't be blank`
+      } else if (!Number.isInteger(Number(value))) {
+        errors.value = `Must be an integer`
+      }
     }
 
-    if (saveAs === 'json_string') {
+    if (saveAs === 'json_string' && value.length === 0) {
+      errors.value = `Can't be blank`
+    }
+
+    if (saveAs === 'json_string' && value.length > 0) {
       try {
         JSON.parse(value)
       } catch (e) {
