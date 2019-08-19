@@ -132,6 +132,10 @@ export function getResourceMetafieldsURL({
   limit = 250,
   page = 1,
 }) {
+  if (resourceType === 'shop') {
+    return `/admin/metafields.json?limit=${limit}&page=${page}`
+  }
+
   if (!parentResourceType) {
     return `/admin/${resourceType}/${resourceId}/metafields.json?limit=${limit}&page=${page}`
   }

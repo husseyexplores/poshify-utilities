@@ -98,6 +98,27 @@
   border-top: 1px solid #ccc;
 }
 
+.Search-MF-Pagination-Caption-Wrapper {
+  color: '#444';
+  margin-top: 10px;
+}
+
+.Search-MF-Pagination-Wrapper {
+  margin-top: 20px;
+}
+
+@media (min-width: 48.0625em) {
+  .MF-Modal-Wrapper .Polaris-Modal-Dialog__Modal {
+    max-width: 90rem;
+  }
+}
+
+/* Utilities */
+.text-center {
+  text-align: center;
+}
+
+
 /* Polaris customizations */
 .Polaris-DataTable__Cell,
 .Polaris-DataTable__Heading {

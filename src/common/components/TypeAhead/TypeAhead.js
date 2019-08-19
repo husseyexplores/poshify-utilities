@@ -13,6 +13,7 @@ function TypeAhead({
   placeholder,
   options,
   label,
+  dropdownTitle,
   name,
   value,
   error,
@@ -53,6 +54,7 @@ function TypeAhead({
         const menuOpen =
           isOpen &&
           !isDisabled &&
+          filteredOptions.length > 0 &&
           !(filteredOptions.length === 1 && filteredOptions[0] === selectedItem)
 
         return (
@@ -127,6 +129,9 @@ function TypeAhead({
                 } Polaris-PositionedOverlay`}
                 style={{ width: '100%' }}
               >
+                {menuOpen && dropdownTitle && (
+                  <p className="Polaris-OptionList__Title">{dropdownTitle}</p>
+                )}
                 <ul className="Polaris-OptionList">
                   <li>
                     <ul
@@ -177,6 +182,7 @@ function TypeAhead({
 
 TypeAhead.propTypes = {
   label: PropTypes.string,
+  dropdownTitle: PropTypes.string,
   placeholder: PropTypes.string,
   initialValue: PropTypes.string,
   name: PropTypes.string,
@@ -190,6 +196,7 @@ TypeAhead.propTypes = {
 
 TypeAhead.defaultProps = {
   label: '',
+  dropdownTitle: '',
   placeholder: '',
   initialValue: '',
   disabled: false,

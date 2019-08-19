@@ -5,7 +5,7 @@ import { resourceTypesArr, resourceTypesMap } from '../../utils'
 
 // ------------------------------------------------------------------
 
-function SelectResourceType({ onChange }) {
+function SelectResourceType({ onChange, disabled }) {
   const [active, setActive] = useState(false)
   const [selectedItem, setSelectedItem] = useState(resourceTypesMap.products)
 
@@ -22,7 +22,7 @@ function SelectResourceType({ onChange }) {
   }
 
   const activator = (
-    <Button disclosure onClick={togglePopover}>
+    <Button disclosure onClick={togglePopover} disabled={disabled}>
       {selectedItem.title}
     </Button>
   )
@@ -44,10 +44,14 @@ function SelectResourceType({ onChange }) {
 
 SelectResourceType.propTypes = {
   onChange: PropTypes.func,
+  disabled: PropTypes.bool,
+  loading: PropTypes.bool,
 }
 
 SelectResourceType.defaultProps = {
   onChange: () => {},
+  disabled: false,
+  loading: false,
 }
 
 export default SelectResourceType

@@ -1,26 +1,25 @@
-import React, { useState } from 'react'
+import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { TextField, Icon } from '@shopify/polaris'
 import { SearchMinor } from '@shopify/polaris-icons'
 
 // ------------------------------------------------------------------
 
-function SearchInput({ onChange }) {
-  const [query, setQuery] = useState('')
-
-  const handleChange = value => {
-    if (value.trim() === '') return
-
-    setQuery(value)
-    onChange(value)
-  }
+function SearchInput({ value, onChange, placeholder, disabled }) {
+  const memoizedOnChange = useCallback(
+    value => {
+      onChange(value)
+    },
+    [onChange]
+  )
 
   return (
     <TextField
-      placeholder="Search title"
-      value={query}
-      onChange={handleChange}
+      placeholder={placeholder}
+      value={value}
+      onChange={memoizedOnChange}
       prefix={<Icon source={SearchMinor} />}
+      disabled={disabled}
     />
   )
 }
@@ -29,10 +28,16 @@ function SearchInput({ onChange }) {
 
 SearchInput.propTypes = {
   onChange: PropTypes.func,
+  value: PropTypes.string,
+  placeholder: PropTypes.string,
+  disabled: PropTypes.bool,
 }
 
 SearchInput.defaultProps = {
   onChange: () => {},
+  value: '',
+  placeholder: 'Search',
+  disabled: false,
 }
 
 export default SearchInput
