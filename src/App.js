@@ -14,8 +14,8 @@ import {
 import axios from 'axios'
 
 import SelectResourceType from './components/SelectResourceType'
-import SearchInput from './components/SearchInput'
-import SearchResults from './components/SearchResults'
+import SearchInput from './components/Search'
+import ResourceList from './components/ResourceList'
 import MetafieldsForm, {
   MetafieldsFormWithModal,
 } from './components/MetafieldsForm'
@@ -248,7 +248,7 @@ function App() {
                     <Stack.Item fill>
                       {resourceType !== 'shop' && (
                         <>
-                          <SearchResults
+                          <ResourceList
                             resourceType={resourceType}
                             items={resourceList}
                             loading={isLoadingResource}
