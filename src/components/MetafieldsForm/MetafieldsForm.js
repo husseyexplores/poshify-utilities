@@ -499,7 +499,7 @@ export default withFormik({
     } else if (namespace.length > 20) {
       errors.namespace = 'Max char limit is 20'
     }
-    const existingMetafield = metafieldsMap[namespace + '.' + 'key']
+    const existingMetafield = metafieldsMap[namespace + '.' + key]
     if (key.length < 3 || key.trim().length === 0) {
       errors.key = 'Must contain at least 3 chars'
     } else if (namespace.length > 30) {
@@ -532,7 +532,6 @@ export default withFormik({
         errors.value = 'Invalid JSON'
       }
     }
-
     return errors
   },
   handleSubmit: () => {},
