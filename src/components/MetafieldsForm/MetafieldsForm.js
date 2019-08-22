@@ -1,4 +1,10 @@
-import React, { useEffect, useReducer, useRef, useContext } from 'react'
+import React, {
+  useEffect,
+  useReducer,
+  useRef,
+  useContext,
+  useCallback,
+} from 'react'
 import PropTypes from 'prop-types'
 import {
   ChoiceList,
@@ -99,9 +105,20 @@ function MetafieldsForm({
 }) {
   const { toast } = useContext(AppContext)
   const [state, setState] = useReducer(reducer, initialState)
+  const unmounted = useRef(false)
   const reqCancellerRef = useRef(null)
 
-  const fetchResourceMetafields = async () => {
+  useEffect(() => {
+    unmounted.current = false
+
+    return () => {
+      unmounted.current = true
+    }
+  })
+
+  const fetchResourceMetafields = useCallback(async () => {
+    if (unmounted.current) return
+
     setState({ isFetching: true })
     reqCancellerRef.current = CancelToken.source()
     const url = getResourceMetafieldsURL({
@@ -158,10 +175,20 @@ function MetafieldsForm({
         console.log(e)
       }
     }
-  }
+  }, [
+    parentResource,
+    parentResourceType,
+    resetForm,
+    resource.id,
+    resourceType,
+    setErrors,
+    setValues,
+    values,
+  ])
 
   // Fetch metafields data
   useEffect(() => {
+    if (unmounted.current) return
     ;(async () => {
       fetchResourceMetafields()
     })()
@@ -172,64 +199,82 @@ function MetafieldsForm({
     }
   }, [resource]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const handleNamspceDotKeyChange = val => {
-    const { saveAs: _saveAs, metafieldsMap } = values
-    if (!touched.selectedMf) setFieldTouched('selectedMf', true)
-    setTouched({ namespace: false, key: false, value: false, saveAs: false })
+  const handleNamspceDotKeyChange = useCallback(
+    val => {
+      const { saveAs: _saveAs, metafieldsMap } = values
+      if (!touched.selectedMf) setFieldTouched('selectedMf', true)
+      setTouched({ namespace: false, key: false, value: false, saveAs: false })
 
-    if (!val) {
-      setValues({
+      if (!val) {
+        setValues({
+          ...values,
+          selectedMf: null,
+          namespace: '',
+          key: '',
+          value: '',
+          saveAs: 'string',
+        })
+        setErrors({})
+        return
+      }
+
+      const [namespace, key] = val.split(delimeter)
+      const existingMetafield = metafieldsMap[namespace + '.' + key]
+
+      const value = existingMetafield ? existingMetafield.value : ''
+      const saveAs = existingMetafield ? existingMetafield.value_type : _saveAs
+      const updatedValues = {
         ...values,
-        selectedMf: null,
-        namespace: '',
-        key: '',
-        value: '',
-        saveAs: 'string',
-      })
-      setErrors({})
-      return
-    }
+        selectedMf: existingMetafield,
+        namespace,
+        key,
+        value,
+        saveAs,
+      }
+      resetForm(updatedValues)
+    },
+    [
+      resetForm,
+      setErrors,
+      setFieldTouched,
+      setTouched,
+      setValues,
+      touched,
+      values,
+    ]
+  )
 
-    const [namespace, key] = val.split(delimeter)
-    const existingMetafield = metafieldsMap[namespace + '.' + key]
+  const handleNamespaceChange = useCallback(
+    val => {
+      setFieldValue('namespace', val || '')
+    },
+    [setFieldValue]
+  )
 
-    const value = existingMetafield ? existingMetafield.value : ''
-    const saveAs = existingMetafield ? existingMetafield.value_type : _saveAs
-    const updatedValues = {
-      ...values,
-      selectedMf: existingMetafield,
-      namespace,
-      key,
-      value,
-      saveAs,
-    }
+  const handleKeyChange = useCallback(
+    val => {
+      setFieldValue('key', val || '')
+    },
+    [setFieldValue]
+  )
 
-    setValues(updatedValues)
-    setErrors({})
-    resetForm(updatedValues)
-  }
+  const handleMetafieldValueChange = useCallback(
+    value => {
+      setFieldValue('value', value)
+    },
+    [setFieldValue]
+  )
 
-  const handleNamespaceChange = val => {
-    // prevent preceeding spaces
-    setFieldValue('namespace', val || '')
-  }
+  const handleSaveAsChange = useCallback(
+    value => {
+      setFieldValue('saveAs', Array.isArray(value) ? value[0] : 'string')
+      !touched.saveAs && setFieldTouched('saveAs', true)
+      !touched.value && setFieldTouched('value', true)
+    },
+    [setFieldTouched, setFieldValue, touched.saveAs, touched.value]
+  )
 
-  const handleKeyChange = val => {
-    // prevent preceeding spaces
-    setFieldValue('key', val || '')
-  }
-
-  const handleMetafieldValueChange = value => {
-    setFieldValue('value', value)
-  }
-
-  const handleSaveAsChange = value => {
-    setFieldValue('saveAs', Array.isArray(value) ? value[0] : 'string')
-    !touched.saveAs && setFieldTouched('saveAs', true)
-    !touched.value && setFieldTouched('value', true)
-  }
-
-  const deleteMetafield = () => {
+  const deleteMetafield = useCallback(() => {
     setState({ isDeleting: true })
     const { selectedMf } = values
     const urlParts = getResourceMetafieldsURL({
@@ -244,21 +289,30 @@ function MetafieldsForm({
     axios
       .delete(url, { cancelToken: reqCancellerRef.current.token })
       .then(() => {
-        // Reinitialize form
+        toast.info('Metafield deleted')
+        if (unmounted.current) return
+
         setState({ isDeleting: false })
         fetchResourceMetafields()
-        toast.info('Metafield deleted')
       })
       .catch(e => {
-        if (!axios.isCancel(e)) {
-          setState({ isDeleting: false })
-          console.log(e)
-          toast.error('Unexpected error occured!')
-        }
+        if (axios.isCancel(e)) return
+        console.log(e)
+        if (unmounted.current) return
+        setState({ isDeleting: false })
+        toast.error('Unexpected error occured!')
       })
-  }
+  }, [
+    fetchResourceMetafields,
+    parentResource,
+    parentResourceType,
+    resource,
+    resourceType,
+    toast,
+    values,
+  ])
 
-  const handleFormSubmit = () => {
+  const handleFormSubmit = useCallback(() => {
     // Create or update metafeild
     const { namespace, key, saveAs, value, selectedMf } = values
     setSubmitting(true)
@@ -268,7 +322,7 @@ function MetafieldsForm({
       resourceId: resource.id,
       parentResourceType,
       parentResourceId: parentResource && parentResource.id,
-    })
+    }).split('?')[0]
 
     axios({
       url,
@@ -286,24 +340,54 @@ function MetafieldsForm({
       },
     })
       .then(resp => {
-        setSubmitting(false)
-        resetForm(values)
         const isEditting = Boolean(selectedMf)
-        !isEditting && fetchResourceMetafields()
         toast.info(isEditting ? 'Metafield updated' : 'Metafield created')
+        if (unmounted.current) return
+        resetForm(values)
+        !isEditting && fetchResourceMetafields()
       })
       .catch(e => {
+        toast.error('An error occured!')
         if (axios.isCancel(e)) return
+        console.log(e)
+        if (unmounted.current) return
+
         const serverErrors = (e.response.data && e.response.data.errors) || {}
         setSubmitting(false)
         setErrors({
           ...errors,
           ...makeObject(serverErrors, 'otherErrors'),
         })
-        toast.error('An error occured!')
       })
     handleSubmit() // to increment the counter in formik, just in case
-  }
+  }, [
+    errors,
+    fetchResourceMetafields,
+    handleSubmit,
+    parentResource,
+    parentResourceType,
+    resetForm,
+    resource,
+    resourceType,
+    setErrors,
+    setSubmitting,
+    toast,
+    values,
+  ])
+
+  const handleExistingMfError = useCallback(() => {
+    const { namespace, key, metafieldsMap } = values
+    const mf = metafieldsMap[namespace + '.' + key]
+    const updatedValues = {
+      ...values,
+      selectedMf: mf.namespace + delimeter + mf.key,
+      namespace: mf.namespace,
+      key: mf.key,
+      value: mf.value,
+      saveAs: mf.value_type,
+    }
+    resetForm(updatedValues)
+  }, [resetForm, values])
 
   const { isFetching, isDeleting, metafields, namespaceOptions } = state
 
@@ -355,12 +439,7 @@ function MetafieldsForm({
               touched.key && errors.key ? (
                 errors.key === 'METAFIELD_ALREADY_EXISTS' ? (
                   <span>
-                    <Button
-                      plain
-                      onClick={() => {
-                        setFieldValue('selectedMf', namespace + delimeter + key)
-                      }}
-                    >
+                    <Button plain onClick={handleExistingMfError}>
                       {namespace}.{key}
                     </Button>{' '}
                     already exists on this namespace.
@@ -492,7 +571,7 @@ export default withFormik({
   }),
   validate: values => {
     const errors = {}
-    const { namespace, key, value, saveAs, metafieldsMap } = values
+    const { selectedMf, namespace, key, value, saveAs, metafieldsMap } = values
 
     if (namespace.length < 3 || namespace.trim().length === 0) {
       errors.namespace = 'Must contain at least 3 chars'
@@ -504,7 +583,7 @@ export default withFormik({
       errors.key = 'Must contain at least 3 chars'
     } else if (namespace.length > 30) {
       errors.key = 'Max char limit is 30'
-    } else if (existingMetafield) {
+    } else if (existingMetafield && !selectedMf) {
       // Metafield already exist, notify to the user
       errors.key = 'METAFIELD_ALREADY_EXISTS'
     }
