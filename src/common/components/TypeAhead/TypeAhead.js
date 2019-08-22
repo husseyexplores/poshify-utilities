@@ -3,7 +3,10 @@ import PropTypes from 'prop-types'
 import Downshift from 'downshift'
 import classname from 'classnames'
 
+import './TypeAhead.scss'
+
 // ------------------------------------------------------------------
+
 let id = 0
 const getId = () => `typeahead-${id++}`
 
@@ -58,7 +61,7 @@ function TypeAhead({
           !(filteredOptions.length === 1 && filteredOptions[0] === selectedItem)
 
         return (
-          <div>
+          <div className="Polaris-TypeAhead__Wrapper">
             {label && (
               <div className="Polaris-Labelled__LabelWrapper">
                 <div className="Polaris-Label">
@@ -116,61 +119,56 @@ function TypeAhead({
               </div>
             )}
 
-            <div
-              style={{
-                position: 'relative',
-                width: '100%',
-                marginTop: '3px',
-              }}
-            >
+            <div className="Polaris-TypeAhead-Menu__Wrapper">
               <div
-                className={`${
-                  isOpen ? 'Polaris-Card' : ''
-                } Polaris-PositionedOverlay`}
-                style={{ width: '100%' }}
+                className={classname(
+                  'Polaris-PositionedOverlay Polaris-TypeAhead-Menu__Inner-Wrapper',
+                  {
+                    'Polaris-Card': menuOpen,
+                  }
+                )}
               >
                 {menuOpen && dropdownTitle && (
                   <p className="Polaris-OptionList__Title">{dropdownTitle}</p>
                 )}
-                <ul className="Polaris-OptionList">
-                  <li>
-                    <ul
-                      className="Polaris-OptionList__Options"
-                      {...getMenuProps()}
-                    >
-                      {menuOpen
-                        ? filteredOptions.map((item, index) => (
-                            <li
-                              key={item}
-                              {...getItemProps({
-                                className: 'Polaris-OptionList-Option',
-                                tabIndex: '-1',
-                                key: item,
-                                index,
-                                item,
-                                style: {
-                                  fontWeight:
-                                    selectedItem === item ? 'bold' : 'normal',
-                                },
-                              })}
+                <div className="Polaris-OptionList">
+                  <ul
+                    className="Polaris-OptionList__Options"
+                    {...getMenuProps()}
+                  >
+                    {menuOpen
+                      ? filteredOptions.map((item, index) => (
+                          <li
+                            key={item}
+                            {...getItemProps({
+                              className:
+                                'Polaris-OptionList-Option' + selectedItem ===
+                                item
+                                  ? ' font-bold'
+                                  : '',
+                              tabIndex: '-1',
+                              index,
+                              item,
+                            })}
+                          >
+                            <button
+                              tabIndex="0"
+                              type="button"
+                              className={classname(
+                                'Polaris-OptionList-Option__SingleSelectOption',
+                                {
+                                  'Polaris-OptionList-Option--focused':
+                                    highlightedIndex === index,
+                                }
+                              )}
                             >
-                              <button
-                                tabIndex="0"
-                                type="button"
-                                className={`Polaris-OptionList-Option__SingleSelectOption ${
-                                  highlightedIndex === index
-                                    ? 'Polaris-OptionList-Option--focused'
-                                    : ''
-                                }`}
-                              >
-                                {item}
-                              </button>
-                            </li>
-                          ))
-                        : null}
-                    </ul>
-                  </li>
-                </ul>
+                              {item}
+                            </button>
+                          </li>
+                        ))
+                      : null}
+                  </ul>
+                </div>
               </div>
             </div>
           </div>

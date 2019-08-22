@@ -1,0 +1,21 @@
+.Polaris-TypeAhead__Wrapper {
+
+  .Polaris-OptionList__Options {
+    max-height: 250px;
+    overflow-y: auto;
+  }
+}
+
+.Polaris-TypeAhead-Menu__Wrapper {
+  position: relative;
+  width: 100%;
+  margin-top: 3px;
+}
+
+.Polaris-TypeAhead-Menu__Inner-Wrapper {
+  width: 100%;
+}
+
+.font-bold {
+  font-weight: 700;
+}
