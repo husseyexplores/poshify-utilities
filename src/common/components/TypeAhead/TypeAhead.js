@@ -141,11 +141,7 @@ function TypeAhead({
                           <li
                             key={item}
                             {...getItemProps({
-                              className:
-                                'Polaris-OptionList-Option' + selectedItem ===
-                                item
-                                  ? ' font-bold'
-                                  : '',
+                              className: 'Polaris-OptionList-Option',
                               tabIndex: '-1',
                               index,
                               item,
@@ -159,6 +155,7 @@ function TypeAhead({
                                 {
                                   'Polaris-OptionList-Option--focused':
                                     highlightedIndex === index,
+                                  'font-bold': highlightedIndex === index,
                                 }
                               )}
                             >
