@@ -48,34 +48,42 @@ export const resourceTypesArr = [
   {
     title: 'Articles',
     value: 'articles',
+    search: 'ONLINE_STORE_ARTICLE',
   },
   {
     title: 'Blogs',
     value: 'blogs',
+    search: 'ONLINE_STORE_BLOG',
   },
   {
     title: 'Collections',
     value: 'collections',
+    search: 'COLLECTION',
   },
   {
     title: 'Customers',
     value: 'customers',
+    search: 'CUSTOMER',
   },
   {
     title: 'Draft Orders',
     value: 'draft_orders',
+    search: 'DRAFT_ORDER',
   },
   {
     title: 'Orders',
     value: 'orders',
+    search: 'ORDER',
   },
   {
     title: 'Pages',
     value: 'pages',
+    search: 'ONLINE_STORE_PAGE',
   },
   {
     title: 'Products',
     value: 'products',
+    search: 'PRODUCT',
   },
   {
     title: 'Shop',
@@ -100,7 +108,7 @@ export function getShopifyAdminURL(
   { page = 1, limit = 20, ...rest } = {}
 ) {
   const fieldsMap = {
-    customers: 'id,fisrt_name,last_name,email',
+    customers: 'id,first_name,last_name,email',
     orders: 'id,customer,total_price,email,name,created_at',
     draft_orders: 'id,customer,total_price,email,name,created_at',
     products: 'id,title,handle,product_type,image',
@@ -157,4 +165,51 @@ export function makeObject(obj, fallbackKey) {
 
 export function capitalize(str) {
   return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+// Not using at the moment. Shopify Search API is buggy.
+export function getGqlSearchQuery(
+  resourceType,
+  { term, first = 10, after = null } = {}
+) {
+  return JSON.stringify({
+    operationName: 'QuickSearch',
+    variables: {
+      first,
+      query: term,
+      types: resourceTypesMap[resourceType].search, // could be an array of types
+      after,
+    },
+    query: `
+      query QuickSearch($query: String!, $first: Int!, $after: String, $types: [SearchResultType!]) {
+        shop {
+          id
+          search(query: $query, first: $first, after: $after, types: $types) {
+            resultsAfterCount
+            edges {
+              cursor
+              node {
+                title
+                description
+                url
+                image {
+                  src
+                  originalSrc
+                  __typename
+                }
+                reference {
+                  id
+                  __typename
+                }
+                __typename
+              }
+              __typename
+            }
+            __typename
+          }
+          __typename
+        }
+      }
+    `,
+  })
 }

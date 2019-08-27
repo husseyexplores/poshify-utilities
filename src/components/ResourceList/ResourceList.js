@@ -114,9 +114,9 @@ function renderProductsTable(items, handleModalOpen) {
 
 function renderCustomersTable(items, handleModalOpen) {
   const rows = items.map(item => {
-    const { id, fisrt_name, last_name, email } = item
+    const { id, first_name, last_name, email } = item
+    let fullName = `${first_name || ''} ${last_name || ''}`.trim()
 
-    let fullName = `${fisrt_name || ''} ${last_name || ''}`.trim()
     if (!fullName) {
       fullName = '<Unknown>'
     }
@@ -168,7 +168,8 @@ function renderOrdersTable(items, handleModalOpen) {
     */
     const first_name = customer ? customer.first_name : ''
     const last_name = customer ? customer.last_name : ''
-    let fullName = `${first_name || ''} ${last_name || ''}`.trim()
+    let fullName = `${first_name} ${last_name}`.trim()
+
     if (!fullName) {
       fullName = '<Unknown name>'
     }

@@ -90,7 +90,6 @@ FormWrapperWithVariants.propTypes = {
   resource: PropTypes.shape({
     id: PropTypes.number.isRequired,
     title: PropTypes.string.isRequired,
-    handle: PropTypes.string.isRequired,
   }).isRequired,
 }
 

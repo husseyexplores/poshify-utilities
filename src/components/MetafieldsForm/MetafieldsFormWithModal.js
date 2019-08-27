@@ -9,6 +9,16 @@ import { resourceTypesArr } from '../../utils'
 
 // ------------------------------------------------------------------
 
+function getTitle(r) {
+  const DEFAULT_TITLE = '<Unknown>'
+  if (!r) return DEFAULT_TITLE
+  const first_name = r.first_name || ''
+  const last_name = r.last_name || ''
+  const fullName = [first_name, last_name].filter(Boolean).join(' ')
+
+  return r.title || r.name || fullName || DEFAULT_TITLE
+}
+
 function MetafieldsFormWithModal({
   active,
   handleModalClose,
@@ -21,7 +31,7 @@ function MetafieldsFormWithModal({
         large
         open={active}
         onClose={handleModalClose}
-        title={resource && resource.title ? resource.title : '<Blank>'}
+        title={getTitle(resource)}
       >
         <Modal.Section subdued>
           {resource && resource.id && resourceType !== 'products' && (

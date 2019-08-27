@@ -14,7 +14,7 @@ import {
 import axios from 'axios'
 
 import SelectResourceType from './components/SelectResourceType'
-import SearchInput from './components/Search'
+import Search from './components/Search'
 import ResourceList from './components/ResourceList'
 import MetafieldsForm, {
   MetafieldsFormWithModal,
@@ -27,7 +27,6 @@ import { getShopifyAdminURL } from './utils'
 /*
 TODO:
   -- confirmation before delete
-  -- Search functionality
   -- pagination / load more metafields (in case there are more than 250)
   -- JSON editor
 */
@@ -147,6 +146,10 @@ function App() {
     setToastState(state => ({ ...state, showToast: false }))
   }, [])
 
+  const onClearButtonClick = useCallback(() => {
+    setSearchQuery('')
+  }, [])
+
   // Data that needs to be fetched everytime an options is changed. e.g: resourceType, currPageNum
   useEffect(() => {
     if (resourceType === 'shop') return
@@ -199,6 +202,7 @@ function App() {
       setResourceType(type)
       setSearchQuery('')
       setResourceList(null)
+      setCurrPageNum(1)
     },
     [resourceType]
   )
@@ -234,7 +238,9 @@ function App() {
                         />
                       </Stack.Item>
                       <Stack.Item fill>
-                        <SearchInput
+                        <Search
+                          resourceType={resourceType}
+                          onClearButtonClick={onClearButtonClick}
                           onChange={setSearchQuery}
                           value={searchQuery}
                           disabled={
