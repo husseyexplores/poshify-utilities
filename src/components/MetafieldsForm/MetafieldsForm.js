@@ -4,6 +4,7 @@ import React, {
   useRef,
   useContext,
   useCallback,
+  useState,
 } from 'react'
 import PropTypes from 'prop-types'
 import {
@@ -14,12 +15,16 @@ import {
   Select,
   ButtonGroup,
 } from '@shopify/polaris'
+import ReactJSONView from 'react-json-view'
 import { withFormik } from 'formik'
+import cx from 'classnames'
 import axios, { CancelToken } from 'axios'
 
 import { AppContext } from '../../App'
 import TypeAhead from '../../common/components/TypeAhead'
 import { OverlaySpinner } from '../../common/components/Spinners'
+import ConfirmModal from '../../common/components/ConfirmModal'
+
 import {
   makeMetafieldsMap,
   lookupByNamespace as _lookupByNamespace,
@@ -29,6 +34,7 @@ import {
   getResourceMetafieldsURL,
   makeObject,
   capitalize,
+  sortMetafields,
 } from '../../utils'
 
 import './MetafieldsForm.scss'
@@ -55,13 +61,37 @@ function formatErr(errs) {
   return errs
 }
 
-async function getResourceMetafields(url, cancelToken) {
-  try {
-    const resp = await axios.get(url, { cancelToken })
-    return resp.data.metafields
-  } catch (err) {
-    throw err
+async function getResourceMetafields(url, ref) {
+  let limit = url.match(/limit=(\d+)/)
+  limit = limit ? Number(limit[1]) : 250
+
+  const helperFetch = async (_url, arr) => {
+    try {
+      const resp = await axios.get(_url, {
+        cancelToken: new CancelToken(c => {
+          if (ref && ref.current) {
+            ref.current = c
+          }
+        }),
+      })
+      arr = arr.concat(resp.data.metafields) // eslint-disable-line no-param-reassign
+
+      // base case if metafields are less than the max limit
+      if (resp.data.metafields.length < limit) {
+        return arr
+      }
+
+      let currPageNum = _url.match(/page=(\d+)/)
+      currPageNum = currPageNum ? Number(currPageNum[1]) : 1
+      const nextPageNum = currPageNum + 1
+      const newUrl = _url.replace(/page=\d+/gi, `page=${nextPageNum}`)
+      return await helperFetch(newUrl, arr)
+    } catch (err) {
+      throw err
+    }
   }
+
+  return await helperFetch(url, [])
 }
 
 const initialState = {
@@ -105,6 +135,8 @@ function MetafieldsForm({
 }) {
   const { toast } = useContext(AppContext)
   const [state, setState] = useReducer(reducer, initialState)
+  const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false)
+  const [isJsonEditor, setIsJsonEditor] = useState(false)
   const unmounted = useRef(false)
   const reqCancellerRef = useRef(null)
 
@@ -120,7 +152,7 @@ function MetafieldsForm({
     if (unmounted.current) return
 
     setState({ isFetching: true })
-    reqCancellerRef.current = CancelToken.source()
+
     const url = getResourceMetafieldsURL({
       resourceType,
       resourceId: resource.id,
@@ -128,9 +160,8 @@ function MetafieldsForm({
       parentResourceId: parentResource && parentResource.id,
     })
 
-    const cancelToken = reqCancellerRef.current.token
     try {
-      const metafields = await getResourceMetafields(url, cancelToken)
+      const metafields = await getResourceMetafields(url, reqCancellerRef)
       const formattedMetafields = byNamespaceDotKey(metafields) // we also convert integer values into strings here, for the sake for formik/dirty handling. If we don't do this here, we would need to do this in multiple places, scattered everywhere.
 
       const { namespace, key } = values
@@ -194,8 +225,8 @@ function MetafieldsForm({
     })()
     return () => {
       reqCancellerRef.current &&
-        typeof reqCancellerRef.current.cancel === 'function' &&
-        reqCancellerRef.current.cancel('Form closed!')
+        typeof reqCancellerRef.current === 'function' &&
+        reqCancellerRef.current()
     }
   }, [resource]) // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -206,6 +237,10 @@ function MetafieldsForm({
       setTouched({ namespace: false, key: false, value: false, saveAs: false })
 
       if (!val) {
+        if (isJsonEditor) {
+          setIsJsonEditor(false)
+        }
+
         setValues({
           ...values,
           selectedMf: null,
@@ -215,6 +250,7 @@ function MetafieldsForm({
           saveAs: 'string',
         })
         setErrors({})
+
         return
       }
 
@@ -231,15 +267,23 @@ function MetafieldsForm({
         value,
         saveAs,
       }
+      if (
+        existingMetafield &&
+        existingMetafield.value_type !== 'json_string' &&
+        isJsonEditor
+      ) {
+        setIsJsonEditor(false)
+      }
       resetForm(updatedValues)
     },
     [
+      isJsonEditor,
       resetForm,
       setErrors,
       setFieldTouched,
       setTouched,
       setValues,
-      touched,
+      touched.selectedMf,
       values,
     ]
   )
@@ -265,35 +309,95 @@ function MetafieldsForm({
     [setFieldValue]
   )
 
-  const handleSaveAsChange = useCallback(
-    value => {
-      setFieldValue('saveAs', Array.isArray(value) ? value[0] : 'string')
-      !touched.saveAs && setFieldTouched('saveAs', true)
-      !touched.value && setFieldTouched('value', true)
+  const handleReactJSONViewChange = useCallback(
+    val => {
+      setFieldValue('value', JSON.stringify(val.updated_src))
     },
-    [setFieldTouched, setFieldValue, touched.saveAs, touched.value]
+    [setFieldValue]
   )
 
+  const handleSaveAsChange = useCallback(
+    val => {
+      setFieldValue('saveAs', Array.isArray(val) ? val[0] : 'string')
+      !touched.saveAs && setFieldTouched('saveAs', true)
+      values.value && !touched.value && setFieldTouched('value', true)
+      if (val[0] !== 'json_string' && isJsonEditor) {
+        setIsJsonEditor(false)
+      }
+    },
+    [
+      isJsonEditor,
+      setFieldTouched,
+      setFieldValue,
+      touched.saveAs,
+      touched.value,
+      values.value,
+    ]
+  )
+
+  const openConfirmDeleteModal = () => {
+    setConfirmDeleteModalOpen(true)
+  }
+
+  const closeConfirmDeleteModal = () => {
+    setConfirmDeleteModalOpen(false)
+  }
+
   const deleteMetafield = useCallback(() => {
+    setConfirmDeleteModalOpen(false)
     setState({ isDeleting: true })
-    const { selectedMf } = values
+    const { selectedMf: mfToDelete } = values
     const urlParts = getResourceMetafieldsURL({
       resourceType,
       resourceId: resource.id,
       parentResourceType,
       parentResourceId: parentResource && parentResource.id,
     }).split('.json')
-    const url = `${urlParts[0]}/${selectedMf.id}.json${urlParts[1]}`
+    const url = `${urlParts[0]}/${mfToDelete.id}.json`
 
-    reqCancellerRef.current = CancelToken.source()
     axios
-      .delete(url, { cancelToken: reqCancellerRef.current.token })
+      .delete(url, {
+        cancelToken: new CancelToken(c => (reqCancellerRef.current = c)),
+      })
       .then(() => {
         toast.info('Metafield deleted')
         if (unmounted.current) return
 
-        setState({ isDeleting: false })
-        fetchResourceMetafields()
+        // update the state...
+        const metafields = state.metafields.filter(
+          ({ id }) => id !== mfToDelete.id
+        )
+
+        const metafieldsMap = state.metafieldsMap
+        delete metafieldsMap[mfToDelete.namespace + '.' + mfToDelete.key]
+
+        const lookupByNamespace = _lookupByNamespace(metafields)
+
+        setState({
+          isDeleting: false,
+          isFetching: false,
+          metafields,
+          lookupByNamespace,
+          metafieldsMap,
+          namespaceOptions: [
+            ...new Set(metafields.map(({ namespace }) => namespace)),
+          ],
+        })
+
+        const mf = metafields[0] || null
+
+        const updatedValues = {
+          ...values,
+          selectedMf: mf,
+          namespace: mf ? mf.namespace : '',
+          key: mf ? mf.key : '',
+          value: mf ? mf.value : '',
+          saveAs: mf ? mf.value_type : '',
+          metafieldsMap,
+        }
+        setValues(updatedValues)
+        resetForm(updatedValues)
+        setErrors({})
       })
       .catch(e => {
         if (axios.isCancel(e)) return
@@ -303,11 +407,14 @@ function MetafieldsForm({
         toast.error('Unexpected error occured!')
       })
   }, [
-    fetchResourceMetafields,
     parentResource,
     parentResourceType,
-    resource,
+    resetForm,
+    resource.id,
     resourceType,
+    setErrors,
+    setValues,
+    state,
     toast,
     values,
   ])
@@ -344,7 +451,45 @@ function MetafieldsForm({
         toast.info(isEditting ? 'Metafield updated' : 'Metafield created')
         if (unmounted.current) return
         resetForm(values)
-        !isEditting && fetchResourceMetafields()
+
+        // Created new? update the state
+        if (!isEditting) {
+          // formatted metafield
+          const mf = byNamespaceDotKey(resp.data.metafield)
+          const metafields = sortMetafields(state.metafields.concat(mf))
+
+          const metafieldsMap = state.metafieldsMap
+          metafieldsMap[mf.namespace + '.' + mf.key] = mf
+
+          const lookupByNamespace = state.lookupByNamespace
+          if (!Array.isArray(lookupByNamespace[mf.namespace])) {
+            lookupByNamespace[mf.namespace] = []
+          }
+          lookupByNamespace[mf.namespace].push(mf)
+
+          setState({
+            isFetching: false,
+            metafields,
+            lookupByNamespace,
+            metafieldsMap,
+            namespaceOptions: [
+              ...new Set(metafields.map(({ namespace }) => namespace)),
+            ],
+          })
+
+          const updatedValues = {
+            ...values,
+            selectedMf: mf,
+            namespace: mf.namespace,
+            key: mf.key,
+            value: mf.value,
+            saveAs: mf.value_type,
+            metafieldsMap,
+          }
+          setValues(updatedValues)
+          resetForm(updatedValues)
+          setErrors({})
+        }
       })
       .catch(e => {
         toast.error('An error occured!')
@@ -362,15 +507,16 @@ function MetafieldsForm({
     handleSubmit() // to increment the counter in formik, just in case
   }, [
     errors,
-    fetchResourceMetafields,
     handleSubmit,
     parentResource,
     parentResourceType,
     resetForm,
-    resource,
+    resource.id,
     resourceType,
     setErrors,
     setSubmitting,
+    setValues,
+    state,
     toast,
     values,
   ])
@@ -394,127 +540,171 @@ function MetafieldsForm({
   const { namespace, key, value, saveAs, selectedMf } = values
   const isEditting = Boolean(selectedMf)
 
+  const isValidJson = saveAs === 'json_string' && (!value || !errors.value)
+
   return (
-    <OverlaySpinner loading={isFetching} className="Metafields-Form">
-      <FormLayout>
-        <Select
-          name="selectedMf"
-          disabled={isFetching}
-          label="Select metafield"
-          options={[
-            { label: 'Create new metafield', value: '' },
-            ...metafields.map(m => ({
-              label: m.namespaceDotKey,
-              value: m.namespace + delimeter + m.key,
-            })),
-          ]}
-          onChange={handleNamspceDotKeyChange}
-          value={selectedMf ? namespace + delimeter + key : ''}
-        />
-        <FormLayout.Group>
-          <TypeAhead
-            name="namespace"
-            label="Namespace"
-            placeholder="instructions"
-            onBlur={handleBlur}
-            options={namespaceOptions}
-            onChange={handleNamespaceChange}
-            dropdownTitle="Existing namespace(s)"
-            value={namespace}
-            disabled={isEditting || isFetching}
-            error={
-              touched.namespace && errors.namespace
-                ? formatErr(errors.namespace)
-                : false
-            }
+    <>
+      <ConfirmModal
+        open={confirmDeleteModalOpen}
+        destructive
+        confirmButtonText={`Delete`}
+        onConfirm={deleteMetafield}
+        onCancel={closeConfirmDeleteModal}
+      >
+        <p>
+          Are you sure you want to delete{' '}
+          <strong>{namespace + '.' + key}</strong>?
+        </p>
+      </ConfirmModal>
+
+      <OverlaySpinner
+        loading={isFetching}
+        className={cx('Metafields-Form', {
+          blur: confirmDeleteModalOpen,
+          'json-editor-enabled': isJsonEditor,
+        })}
+      >
+        <FormLayout>
+          <Select
+            name="selectedMf"
+            disabled={isFetching}
+            label="Select metafield"
+            options={[
+              { label: 'Create new metafield', value: '' },
+              ...metafields.map(m => ({
+                label: m.namespaceDotKey,
+                value: m.namespace + delimeter + m.key,
+              })),
+            ]}
+            onChange={handleNamspceDotKeyChange}
+            value={selectedMf ? namespace + delimeter + key : ''}
           />
-          <TextField
-            name="key"
-            label="Key"
-            placeholder="wash"
-            onChange={handleKeyChange}
-            onBlur={handleBlur}
-            value={key}
-            error={
-              touched.key && errors.key ? (
-                errors.key === 'METAFIELD_ALREADY_EXISTS' ? (
-                  <span>
-                    <Button plain onClick={handleExistingMfError}>
-                      {namespace}.{key}
-                    </Button>{' '}
-                    already exists on this namespace.
-                  </span>
-                ) : (
-                  formatErr(errors.key)
-                )
-              ) : (
-                false
-              )
-            }
-            disabled={isEditting || isFetching}
-          />
-        </FormLayout.Group>
-        <TextField
-          name="value"
-          multiline={saveAs !== 'integer' && 5}
-          type={saveAs === 'integer' ? 'number' : 'text'}
-          disabled={isFetching}
-          label="Value"
-          placeholder={
-            saveAs === 'string'
-              ? 'Cold water'
-              : saveAs === 'integer'
-              ? '100'
-              : '{"key": "value"}'
-          }
-          value={saveAs === 'integer' && !Number(value) ? '' : value}
-          onChange={handleMetafieldValueChange}
-          onBlur={handleBlur}
-          error={
-            touched.value && errors.value ? formatErr(errors.value) : false
-          }
-        />
-        <ChoiceList
-          disabled={isFetching}
-          title={'Save as:'}
-          choices={[
-            { label: 'String', value: 'string' },
-            { label: 'Integer', value: 'integer' },
-            { label: 'JSON String', value: 'json_string' },
-          ]}
-          selected={[saveAs] || ['string']}
-          onChange={handleSaveAsChange}
-        />
-        <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-          <ButtonGroup>
-            {isEditting && (
-              <Button
-                loading={isDeleting}
-                destructive
-                disabled={isSubmitting || isFetching}
-                onClick={deleteMetafield}
-              >
-                Delete
-              </Button>
-            )}
-            <Button
-              loading={isSubmitting}
-              primary
-              disabled={
-                !isValid ||
-                !dirty ||
-                Object.keys(errors).length > 0 ||
-                isSubmitting ||
-                isFetching
+          <FormLayout.Group>
+            <TypeAhead
+              name="namespace"
+              label="Namespace"
+              placeholder="instructions"
+              onBlur={handleBlur}
+              options={namespaceOptions}
+              onChange={handleNamespaceChange}
+              dropdownTitle="Existing namespace(s)"
+              value={namespace}
+              disabled={isEditting || isFetching}
+              error={
+                touched.namespace && errors.namespace
+                  ? formatErr(errors.namespace)
+                  : false
               }
-              onClick={handleFormSubmit}
-            >
-              {isEditting ? 'Update' : 'Create'}
-            </Button>
-          </ButtonGroup>
-        </div>
-      </FormLayout>
-    </OverlaySpinner>
+            />
+            <TextField
+              name="key"
+              label="Key"
+              placeholder="wash"
+              onChange={handleKeyChange}
+              onBlur={handleBlur}
+              value={key}
+              error={
+                touched.key && errors.key ? (
+                  errors.key === 'METAFIELD_ALREADY_EXISTS' ? (
+                    <span>
+                      <Button plain onClick={handleExistingMfError}>
+                        {namespace}.{key}
+                      </Button>{' '}
+                      already exists on this namespace.
+                    </span>
+                  ) : (
+                    formatErr(errors.key)
+                  )
+                ) : (
+                  false
+                )
+              }
+              disabled={isEditting || isFetching}
+            />
+          </FormLayout.Group>
+          <TextField
+            name="value"
+            multiline={saveAs !== 'integer' && 5}
+            type={saveAs === 'integer' ? 'number' : 'text'}
+            disabled={isFetching}
+            label="Value"
+            placeholder={
+              saveAs === 'string'
+                ? 'Cold water'
+                : saveAs === 'integer'
+                ? '100'
+                : '{"key": "value"}'
+            }
+            value={saveAs === 'integer' && !Number(value) ? '' : value}
+            onChange={handleMetafieldValueChange}
+            onBlur={handleBlur}
+            error={
+              touched.value && errors.value ? formatErr(errors.value) : false
+            }
+            labelAction={
+              isValidJson
+                ? {
+                    content: 'Toggle JSON Editor',
+                    onAction: () => setIsJsonEditor(prev => !prev),
+                  }
+                : undefined
+            }
+          />
+          {isJsonEditor && (
+            <ReactJSONView
+              name={false}
+              src={!value ? {} : JSON.parse(value)}
+              theme="monokai"
+              onAdd={handleReactJSONViewChange}
+              onEdit={handleReactJSONViewChange}
+              onDelete={handleReactJSONViewChange}
+              displayDataTypes={false}
+              enableClipboard={false}
+            />
+          )}
+
+          <ChoiceList
+            disabled={isFetching}
+            title={'Save as:'}
+            choices={[
+              { label: 'String', value: 'string' },
+              { label: 'Integer', value: 'integer' },
+              { label: 'JSON String', value: 'json_string' },
+            ]}
+            selected={[saveAs] || ['string']}
+            onChange={handleSaveAsChange}
+          />
+          <div className="flex flex-end">
+            <ButtonGroup>
+              {isEditting && (
+                <Button
+                  loading={isDeleting}
+                  destructive
+                  disabled={isSubmitting || isFetching}
+                  onClick={openConfirmDeleteModal}
+                >
+                  Delete
+                </Button>
+              )}
+              <Button
+                loading={isSubmitting}
+                primary
+                disabled={
+                  !isValid ||
+                  !dirty ||
+                  Object.keys(errors).length > 0 ||
+                  isSubmitting ||
+                  isFetching
+                }
+                onClick={handleFormSubmit}
+              >
+                {isEditting ? 'Update' : 'Create'}
+              </Button>
+            </ButtonGroup>
+          </div>
+        </FormLayout>
+      </OverlaySpinner>
+    </>
   )
 }
 

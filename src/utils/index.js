@@ -22,26 +22,47 @@ export function makeMetafieldsMap(metafields) {
   }, {})
 }
 
+export const sortMetafields = mfs => {
+  return mfs.sort((a, b) => {
+    const nskA = a.namespaceDotKey.toUpperCase() // ignore case
+    const nskB = b.namespaceDotKey.toUpperCase() // ignore case
+    if (nskA < nskB) {
+      return -1
+    }
+    if (nskA > nskB) {
+      return 1
+    }
+    return 0
+  })
+}
+
 export function byNamespaceDotKey(metafields) {
-  return metafields
-    .map(({ namespace, key, value, ...rest }) => ({
+  if (Array.isArray(metafields)) {
+    const transformedMfs = metafields.map(
+      ({ namespace, key, value, ...rest }) => ({
+        namespaceDotKey: `${namespace}.${key}`,
+        namespace,
+        key,
+        value: String(value),
+        ...rest,
+      })
+    )
+
+    return sortMetafields(transformedMfs)
+  } else if (!Array.isArray(metafields) && typeof metafields === 'object') {
+    const { namespace, key, value, ...rest } = metafields
+    return {
       namespaceDotKey: `${namespace}.${key}`,
       namespace,
       key,
       value: String(value),
       ...rest,
-    }))
-    .sort((a, b) => {
-      const nskA = a.namespaceDotKey.toUpperCase() // ignore upper and lowercase
-      const nskB = b.namespaceDotKey.toUpperCase() // ignore upper and lowercase
-      if (nskA < nskB) {
-        return -1
-      }
-      if (nskA > nskB) {
-        return 1
-      }
-      return 0
-    })
+    }
+  }
+
+  throw new Error(
+    `Expected argument was an array or object in \`byNamespaceDotKey\`, but found ${typeof metafields}`
+  )
 }
 
 export const resourceTypesArr = [

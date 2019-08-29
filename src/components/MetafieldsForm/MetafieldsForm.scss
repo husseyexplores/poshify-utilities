@@ -14,4 +14,24 @@
   .Polaris-TextField--multiline > .Polaris-TextField__Input {
     max-height: 700px;
   }
+
+  &.json-editor-enabled .Polaris-TextField--multiline {
+    display: none;
+  }
+}
+
+.blur {
+  -webkit-filter: blur(3px);
+  -moz-filter: blur(3px);
+  -o-filter: blur(3px);
+  -ms-filter: blur(3px);
+  filter: blur(3px);
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-end {
+  justify-content: flex-end;
 }

@@ -26,67 +26,12 @@ import { getShopifyAdminURL } from './utils'
 
 /*
 TODO:
-  -- confirmation before delete
-  -- pagination / load more metafields (in case there are more than 250)
   -- JSON editor
+  -- Tests
 */
 
 export const AppContext = React.createContext()
-const shopResource = {
-  id: 23880287,
-  name: 'Dev Store',
-  email: 'hassan95it@gmail.com',
-  domain: 'shopify.husseyexplores.com',
-  province: 'Alabama',
-  country: 'US',
-  address1: '412 N Main St STE 100',
-  zip: '82834',
-  city: 'Buffalo',
-  source: null,
-  phone: '0000000000',
-  latitude: 44.3520411,
-  longitude: -106.6993049,
-  primary_locale: 'en',
-  address2: '',
-  created_at: '2017-09-23T08:27:31-07:00',
-  updated_at: '2019-07-03T06:03:22-07:00',
-  country_code: 'US',
-  country_name: 'United States',
-  currency: 'USD',
-  customer_email: 'hassan95it@gmail.com',
-  timezone: '(GMT-08:00) America/Los_Angeles',
-  iana_timezone: 'America/Los_Angeles',
-  shop_owner: 'Muhammad Hassan Usman',
-  money_format: '${{amount}}',
-  money_with_currency_format: '${{amount}} USD',
-  weight_unit: 'kg',
-  province_code: 'AL',
-  taxes_included: false,
-  tax_shipping: null,
-  county_taxes: true,
-  plan_display_name: 'affiliate',
-  plan_name: 'affiliate',
-  has_discounts: true,
-  has_gift_cards: false,
-  myshopify_domain: 'hssn09dev.myshopify.com',
-  google_apps_domain: null,
-  google_apps_login_enabled: null,
-  money_in_emails_format: '${{amount}}',
-  money_with_currency_in_emails_format: '${{amount}} USD',
-  eligible_for_payments: true,
-  requires_extra_payments_agreement: false,
-  password_enabled: false,
-  has_storefront: true,
-  eligible_for_card_reader_giveaway: false,
-  finances: true,
-  primary_location_id: 1922269213,
-  checkout_api_supported: true,
-  multi_location_enabled: false,
-  setup_required: false,
-  force_ssl: true,
-  pre_launch_enabled: false,
-  enabled_presentment_currencies: ['USD'],
-}
+const shopResource = { id: 0 } // Mock id, not really needed in case of `shop` resource
 
 function App() {
   const [resourceType, setResourceType] = useState('products')
