@@ -122,7 +122,7 @@ function Search({
             if (!state.isloading) {
               onLoadMoreResults()
             }
-          } else {
+          } else if (item && item.id) {
             const id = Number(item.id.match(/\d+/)[0])
             metafieldsModal.open({ ...item, id })
           }
