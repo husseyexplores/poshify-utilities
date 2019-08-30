@@ -1,5 +1,5 @@
-/* eslint-disable no-unused-vars */
-import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
+import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
+import PropTypes from 'prop-types'
 import {
   AppProvider,
   Page,
@@ -20,24 +20,28 @@ import MetafieldsForm, {
   MetafieldsFormWithModal,
 } from './components/MetafieldsForm'
 
-import { getShopifyAdminURL } from './utils'
+import { getShopifyAdminURL, resourceTypesArr } from './utils'
 
 // ------------------------------------------------------------------
 
 /*
 TODO:
-  -- JSON editor
+  -- csrf token
   -- Tests
 */
 
 export const AppContext = React.createContext()
 const shopResource = { id: 0 } // Mock id, not really needed in case of `shop` resource
+const otherUrlsRegex = /\/admin\/([a-zA-Z]+)\/(\d+)/
+const articleUrlRegex = /\/admin\/blogs\/\d+\/articles\/(\d+)/
 
-function App() {
+function App({ window, document, env }) {
+  const resultsPerPage = 20
+  const urlRef = useRef(null)
+  const [activeResource, setActiveResource] = useState({ type: null, id: null })
   const [resourceType, setResourceType] = useState('products')
   const [searchQuery, setSearchQuery] = useState('')
   const [currPageNum, setCurrPageNum] = useState(1)
-  const [resultsPerPage, setResultsPerPage] = useState(20)
   const [totalPageNums, setTotalPageNums] = useState(3)
   const [isLoadingCount, setIsLoadingCount] = useState(true)
   const [resourceList, setResourceList] = useState([])
@@ -56,6 +60,49 @@ function App() {
 
   const contextValue = useMemo(() => {
     return {
+      getCsrfToken: () => {
+        return new Promise((resolve, reject) => {
+          if (env === 'dev') {
+            resolve()
+            return
+          }
+
+          let csrfEl = document.querySelector('meta[name="csrf-token"')
+          let token = null
+          if (csrfEl) {
+            token = csrfEl.getAttribute('content')
+            resolve(token)
+          } else {
+            fetch('/admin/articles', {
+              method: 'GET',
+              headers: {
+                accept: 'text/html, application/xhtml+xml, application/xml',
+                'x-shopify-web': '1',
+              },
+            })
+              .then(res => res.text())
+              .then(data => {
+                let container = document.createElement('div')
+                container.innerHTML = data
+                csrfEl = container.querySelector('meta[name="csrf-token"]')
+                if (csrfEl) {
+                  token = csrfEl.getAttribute('content')
+                  resolve(token)
+
+                  // Append it to the dom to reference it later
+                  const meta = document.createElement('meta')
+                  meta.setAttribute('name', 'csrf-token')
+                  meta.setAttribute('content', token)
+                  document.querySelector('head').appendChild(meta)
+                } else {
+                  reject('NO_CSRF_TOKEN_FOUND')
+                }
+                container.remove()
+                container = null
+              })
+          }
+        })
+      },
       toast: {
         info: (msg, dur) => {
           setToastState(state => ({
@@ -85,7 +132,7 @@ function App() {
         },
       },
     }
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const hideToast = useCallback(() => {
     setToastState(state => ({ ...state, showToast: false }))
@@ -126,6 +173,41 @@ function App() {
       setIsLoadingCount(false)
     })()
   }, [resourceType, resultsPerPage])
+
+  useEffect(() => {
+    let interval = window.setInterval(() => {
+      const url = window.location.href
+      if (urlRef.current === url) return
+      urlRef.current = url
+
+      {
+        // eslint-disable-next-line no-unused-vars
+        const [_, articleId] = url.match(articleUrlRegex) || []
+        if (articleId) {
+          setActiveResource({ type: 'articles', id: articleId })
+          return
+        }
+      }
+
+      // eslint-disable-next-line no-unused-vars
+      const [_, resType, resId] = url.match(otherUrlsRegex) || []
+      if (
+        !resType ||
+        !resId ||
+        !resourceTypesArr.some(({ value }) => value === resType)
+      ) {
+        // Clear current resource
+        setActiveResource({ type: null, id: null })
+      } else {
+        // Set Current resource
+        setActiveResource({ type: resType, id: resId })
+      }
+    }, 1000)
+    return () => {
+      window.clearInterval(interval)
+      interval = null
+    }
+  }, [window])
 
   const decrementPageNum = useCallback(() => {
     if (currPageNum > 1) {
@@ -180,6 +262,10 @@ function App() {
                         <SelectResourceType
                           disabled={isLoadingResource}
                           onChange={handleResourceTypeChange}
+                          currentResource={activeResource}
+                          onCurrentResourceClick={
+                            contextValue.metafieldsModal.open
+                          }
                         />
                       </Stack.Item>
                       <Stack.Item fill>
@@ -242,5 +328,11 @@ function App() {
 }
 
 // ------------------------------------------------------------------
+
+App.propTypes = {
+  env: PropTypes.oneOf(['prod', 'dev']),
+  window: PropTypes.object.isRequired,
+  document: PropTypes.object.isRequired,
+}
 
 export default App

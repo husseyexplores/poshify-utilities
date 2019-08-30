@@ -1,6 +1,6 @@
-import React from 'react'
+import React, { useContext } from 'react'
 import ReactDOM from 'react-dom'
-import Frame from 'react-frame-component'
+import Frame, { FrameContext } from 'react-frame-component'
 import { AppProvider } from '@shopify/polaris'
 import '@shopify/polaris/styles.css'
 import './App.css'
@@ -9,6 +9,7 @@ import App from './App'
 // ------------------------------------------------------------------------------
 
 function AppInIframe() {
+  const { window, document } = useContext(FrameContext)
   return (
     <Frame
       head={[
@@ -21,7 +22,7 @@ function AppInIframe() {
       ]}
     >
       <AppProvider>
-        <App />
+        <App window={window} document={document} env="prod" />
       </AppProvider>
     </Frame>
   )
@@ -29,51 +30,51 @@ function AppInIframe() {
 
 // ------------------------------------------------------------------------------
 
+let isMounted = false
+let isNavAdded = false
+
+const selectors = {}
+
 function loadApp() {
-  // Create overlay
-  const overlay = document.createElement('div')
-  overlay.classList.add('shopify_metafields_app_overlay')
-  overlay.setAttribute('id', 'shopify_metafields_app_overlay')
-  overlay.style.display = 'none'
-  overlay.style.opacity = '0'
-  overlay.addEventListener('click', toggleAppVisiblity)
+  if (isMounted) return
 
-  // Add app container
-  const app = document.createElement('div')
-  app.setAttribute('id', 'shopify_metafields_app_root')
-  app.classList.add('shopify_metafields_app_root')
+  // Overlay
+  let overlay = selectors.overlay
+  if (!overlay) {
+    overlay = document.createElement('div')
+    overlay.classList.add('shopify_metafields_app_overlay')
+    overlay.setAttribute('id', 'shopify_metafields_app_overlay')
+    overlay.style.display = 'none'
+    overlay.style.opacity = '0'
+    overlay.addEventListener('click', toggleAppVisiblity)
+    selectors.overlay = overlay
+    // Append to DOM
+    document.body.appendChild(overlay)
+  }
 
-  // Append the elements to the DOM
-  document.body.appendChild(overlay)
-  document.body.appendChild(app)
+  // App container/root
+  let app = selectors.app
+  if (!app) {
+    app = document.createElement('div')
+    app.setAttribute('id', 'shopify_metafields_app_root')
+    app.classList.add('shopify_metafields_app_root')
+    selectors.app = app
+    // Append to DOM
+    document.body.appendChild(app)
+  }
 
   // Render the app
   ReactDOM.render(<AppInIframe />, app)
+  isMounted = true
 }
 
-let isLoaded = false
-/* global chrome */
-chrome.runtime.onMessage.addListener((request, sender, response) => {
-  // If message is injectApp
-  if (request.loadApp) {
-    // Inject our app to DOM and send response
-    if (!isLoaded) {
-      addToShopifyNav()
-      loadApp()
-    }
-
-    isLoaded = true
-    response({
-      extensionLoaded: true,
-    })
-    return true
-  }
-})
-
 // Toggle app visibility
+let isAppVisible = false
 function toggleAppVisiblity(e) {
-  e.preventDefault()
-  e.stopPropagation()
+  if (e && e.preventDefault && e.stopPropagation) {
+    e.preventDefault()
+    e.stopPropagation()
+  }
 
   const overlay = document.getElementById('shopify_metafields_app_overlay')
   const app = document.querySelector('#shopify_metafields_app_root > iframe')
@@ -96,6 +97,7 @@ function toggleAppVisiblity(e) {
       overlay.style.transform = 'translateX(0%)'
       app.style.transform = 'translateY(-54%) translateX(0%)'
     }, 0)
+    isAppVisible = true
   } else {
     toggleBtn.classList.remove('p_2E4v6')
 
@@ -108,14 +110,23 @@ function toggleAppVisiblity(e) {
       overlay.style.display = 'none'
       app.style.display = 'none'
     }, 300) // same delay as our css transition time
+    isAppVisible = false
   }
 }
 
 function addToShopifyNav() {
+  if (selectors.extensionButton) {
+    selectors.extensionButton.style.display = 'block'
+  }
+
+  if (isNavAdded) return
+
   const nav = document.querySelector('nav .p_gIRv5')
 
   if (!nav) {
-    return alert('Nav Not found')
+    return alert(
+      'Unable to find navigation to append the Metafields button. Consider opening an issue at github/shopify-metafields-editor'
+    )
   }
 
   const lastItem = nav.lastChild
@@ -131,4 +142,55 @@ function addToShopifyNav() {
   nav.appendChild(extensionButton)
 
   extensionButton.addEventListener('click', toggleAppVisiblity)
+  selectors.extensionButton = extensionButton
+  isNavAdded = true
 }
+
+function unmountApp() {
+  if (!isMounted) return
+
+  if (selectors.extensionButton) {
+    selectors.extensionButton.style.display = 'none'
+  }
+
+  // Hide main app
+  if (isAppVisible) {
+    toggleAppVisiblity()
+  }
+
+  if (selectors.app) {
+    ReactDOM.unmountComponentAtNode(selectors.app)
+    isMounted = false
+  }
+}
+
+/* global chrome */
+chrome.runtime.onMessage.addListener((request, sender, response) => {
+  if (request.hasOwnProperty('mountApp')) {
+    // Inject our app to DOM and send response
+    addToShopifyNav()
+    loadApp()
+
+    response({
+      isMounted: true,
+    })
+    return true
+  }
+
+  if (request.hasOwnProperty('unmountApp')) {
+    // Unmount and send response
+    unmountApp()
+
+    response({
+      isMounted: false,
+    })
+    return true
+  }
+
+  if (request.hasOwnProperty('getMountStatus')) {
+    response({
+      isMounted,
+    })
+    return true
+  }
+})

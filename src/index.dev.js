@@ -12,7 +12,7 @@ import App from './App'
 function AppInIframe() {
   return (
     <AppProvider>
-      <App />
+      <App window={window} document={document} env="dev" />
     </AppProvider>
   )
 }

@@ -25,6 +25,8 @@ function MetafieldsFormWithModal({
   resourceType,
   resource,
 }) {
+  const derivedResourceType =
+    resource && resource.resourceType ? resource.resourceType : resourceType
   return (
     <div className="MF-Modal-Wrapper">
       <Modal
@@ -34,13 +36,16 @@ function MetafieldsFormWithModal({
         title={getTitle(resource)}
       >
         <Modal.Section subdued>
-          {resource && resource.id && resourceType !== 'products' && (
-            <MetafieldsForm resource={resource} resourceType={resourceType} />
+          {resource && resource.id && derivedResourceType !== 'products' && (
+            <MetafieldsForm
+              resource={resource}
+              resourceType={derivedResourceType}
+            />
           )}
-          {resource && resource.id && resourceType === 'products' && (
+          {resource && resource.id && derivedResourceType === 'products' && (
             <FormWrapperWithVariants
               resource={resource}
-              resourceType={resourceType}
+              resourceType={derivedResourceType}
             />
           )}
         </Modal.Section>

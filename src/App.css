@@ -123,3 +123,9 @@
 .Polaris-DataTable__Heading {
   padding: 0.8rem 1.6rem;
 }
+
+.Polaris-ButtonGroup:focus,
+.Polaris-Stack__Item:focus,
+.Polaris-Stack__Item > div:focus {
+  outline: none;
+}

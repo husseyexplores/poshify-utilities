@@ -133,7 +133,7 @@ function MetafieldsForm({
   setErrors,
   resetForm,
 }) {
-  const { toast } = useContext(AppContext)
+  const { toast, getCsrfToken } = useContext(AppContext)
   const [state, setState] = useReducer(reducer, initialState)
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false)
   const [isJsonEditor, setIsJsonEditor] = useState(false)
@@ -224,11 +224,13 @@ function MetafieldsForm({
       fetchResourceMetafields()
     })()
     return () => {
+      /* eslint-disable react-hooks/exhaustive-deps */
       reqCancellerRef.current &&
         typeof reqCancellerRef.current === 'function' &&
         reqCancellerRef.current()
     }
-  }, [resource]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [resource])
+  /* eslint-enable react-hooks/exhaustive-deps */
 
   const handleNamspceDotKeyChange = useCallback(
     val => {
@@ -355,10 +357,17 @@ function MetafieldsForm({
     }).split('.json')
     const url = `${urlParts[0]}/${mfToDelete.id}.json`
 
-    axios
-      .delete(url, {
-        cancelToken: new CancelToken(c => (reqCancellerRef.current = c)),
-      })
+    getCsrfToken()
+      .then(token =>
+        axios({
+          url,
+          method: 'DELETE',
+          headers: {
+            'content-type': 'application/json',
+            'x-csrf-token': token,
+          },
+        })
+      )
       .then(() => {
         toast.info('Metafield deleted')
         if (unmounted.current) return
@@ -400,13 +409,20 @@ function MetafieldsForm({
         setErrors({})
       })
       .catch(e => {
-        if (axios.isCancel(e)) return
-        console.log(e)
-        if (unmounted.current) return
+        if (axios.isCancel(e) || unmounted.current) return
+        if (
+          e === 'NO_CSRF_TOKEN_FOUND' ||
+          e.message === 'NO_CSRF_TOKEN_FOUND'
+        ) {
+          alert('Unable to delete metafield. (CSRF token is missing)')
+          return
+        }
+
         setState({ isDeleting: false })
-        toast.error('Unexpected error occured!')
+        toast.error('Unexpected error occurred')
       })
   }, [
+    getCsrfToken,
     parentResource,
     parentResourceType,
     resetForm,
@@ -414,7 +430,8 @@ function MetafieldsForm({
     resourceType,
     setErrors,
     setValues,
-    state,
+    state.metafields,
+    state.metafieldsMap,
     toast,
     values,
   ])
@@ -431,22 +448,30 @@ function MetafieldsForm({
       parentResourceId: parentResource && parentResource.id,
     }).split('?')[0]
 
-    axios({
-      url,
-      method: 'POST',
-      headers: {
-        'content-type': 'application/json',
-      },
-      data: {
-        metafield: {
-          namespace,
-          key,
-          value: saveAs === 'integer' ? Number(value) : value,
-          value_type: saveAs,
-        },
-      },
-    })
+    getCsrfToken()
+      .then(token =>
+        axios({
+          url,
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-csrf-token': token,
+          },
+          data: {
+            metafield: {
+              namespace,
+              key,
+              value: saveAs === 'integer' ? Number(value) : value,
+              value_type: saveAs,
+            },
+          },
+        })
+      )
       .then(resp => {
+        if (!resp.data.metafield) {
+          throw new Error('NO_CSRF_TOKEN_FOUND')
+        }
+
         const isEditting = Boolean(selectedMf)
         toast.info(isEditting ? 'Metafield updated' : 'Metafield created')
         if (unmounted.current) return
@@ -492,10 +517,16 @@ function MetafieldsForm({
         }
       })
       .catch(e => {
-        toast.error('An error occured!')
-        if (axios.isCancel(e)) return
-        console.log(e)
-        if (unmounted.current) return
+        if (axios.isCancel(e) || unmounted.current) return
+
+        toast.error('Unexpected error occurred')
+        if (
+          e === 'NO_CSRF_TOKEN_FOUND' ||
+          e.message === 'NO_CSRF_TOKEN_FOUND'
+        ) {
+          alert('Unable to save changes. (CSRF token is missing)')
+          return
+        }
 
         const serverErrors = (e.response.data && e.response.data.errors) || {}
         setSubmitting(false)
@@ -507,6 +538,7 @@ function MetafieldsForm({
     handleSubmit() // to increment the counter in formik, just in case
   }, [
     errors,
+    getCsrfToken,
     handleSubmit,
     parentResource,
     parentResourceType,
@@ -516,7 +548,9 @@ function MetafieldsForm({
     setErrors,
     setSubmitting,
     setValues,
-    state,
+    state.lookupByNamespace,
+    state.metafields,
+    state.metafieldsMap,
     toast,
     values,
   ])
