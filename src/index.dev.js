@@ -1,7 +1,6 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { AppProvider } from '@shopify/polaris'
-import axios from 'axios'
 import '@shopify/polaris/styles.css'
 import './App.css'
 
@@ -9,10 +8,10 @@ import App from './App'
 
 // ------------------------------------------------------------------------------
 
-function AppInIframe() {
+function AppWithProvider() {
   return (
     <AppProvider>
-      <App window={window} document={document} env="dev" />
+      <App env="dev" />
     </AppProvider>
   )
 }
@@ -27,6 +26,4 @@ app.setAttribute('id', 'dev_app')
 document.body.appendChild(app)
 
 // Render the app
-ReactDOM.render(<AppInIframe />, app)
-
-window.axios = axios
+ReactDOM.render(<AppWithProvider />, app)

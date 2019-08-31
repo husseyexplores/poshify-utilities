@@ -1,6 +1,5 @@
-import React, { useContext } from 'react'
+import React from 'react'
 import ReactDOM from 'react-dom'
-import Frame, { FrameContext } from 'react-frame-component'
 import { AppProvider } from '@shopify/polaris'
 import '@shopify/polaris/styles.css'
 import './App.css'
@@ -8,23 +7,13 @@ import App from './App'
 
 // ------------------------------------------------------------------------------
 
-function AppInIframe() {
-  const { window, document } = useContext(FrameContext)
+function AppWithProvider() {
   return (
-    <Frame
-      head={[
-        <link
-          key="bundled-css-file"
-          type="text/css"
-          rel="stylesheet"
-          href={chrome.runtime.getURL('/static/css/bundle.css')}
-        />,
-      ]}
-    >
+    <div className="Metafields_App_Wrapper">
       <AppProvider>
-        <App window={window} document={document} env="prod" />
+        <App env="prod" />
       </AppProvider>
-    </Frame>
+    </div>
   )
 }
 
@@ -64,7 +53,7 @@ function loadApp() {
   }
 
   // Render the app
-  ReactDOM.render(<AppInIframe />, app)
+  ReactDOM.render(<AppWithProvider />, app)
   isMounted = true
 }
 
@@ -77,7 +66,9 @@ function toggleAppVisiblity(e) {
   }
 
   const overlay = document.getElementById('shopify_metafields_app_overlay')
-  const app = document.querySelector('#shopify_metafields_app_root > iframe')
+  const app = document.querySelector(
+    '#shopify_metafields_app_root > .Metafields_App_Wrapper'
+  )
   const toggleBtn = document.getElementById(
     'extension_metafields_editor_toggle'
   )
@@ -95,7 +86,7 @@ function toggleAppVisiblity(e) {
       overlay.style.opacity = '1'
       app.style.opacity = '1'
       overlay.style.transform = 'translateX(0%)'
-      app.style.transform = 'translateY(-54%) translateX(0%)'
+      app.style.transform = 'translateY(calc(-54% - .5px)) translateX(0%)'
     }, 0)
     isAppVisible = true
   } else {
@@ -104,7 +95,7 @@ function toggleAppVisiblity(e) {
     overlay.style.opacity = '0'
     app.style.opacity = '0'
     overlay.style.transform = 'translateX(100%)'
-    app.style.transform = 'translateY(-54%) translateX(100%)'
+    app.style.transform = 'translateY(calc(-54% - .5px)) translateX(100%)'
 
     setTimeout(() => {
       overlay.style.display = 'none'
@@ -165,32 +156,29 @@ function unmountApp() {
 }
 
 /* global chrome */
-chrome.runtime.onMessage.addListener((request, sender, response) => {
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.hasOwnProperty('mountApp')) {
     // Inject our app to DOM and send response
     addToShopifyNav()
     loadApp()
 
-    response({
+    sendResponse({
       isMounted: true,
     })
-    return true
   }
 
   if (request.hasOwnProperty('unmountApp')) {
     // Unmount and send response
     unmountApp()
 
-    response({
+    sendResponse({
       isMounted: false,
     })
-    return true
   }
 
   if (request.hasOwnProperty('getMountStatus')) {
-    response({
+    sendResponse({
       isMounted,
     })
-    return true
   }
 })

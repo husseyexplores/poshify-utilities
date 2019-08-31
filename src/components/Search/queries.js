@@ -2,10 +2,20 @@ import axios from 'axios'
 
 const getLastItem = arr => arr[arr.length - 1]
 
+const graphqlEndpointLegacy =
+  '/admin/online-store/admin/api/unversioned/graphql'
+
+let graphqlEndpoint
+if (process.env.NODE_ENV === 'production') {
+  graphqlEndpoint = '/admin/internal/web/graphql/core'
+} else {
+  graphqlEndpoint = '/admin/api/2019-07/graphql.json'
+}
+
 const queries = {
   articles: ({ term, first = 10, after = null, sortKey = 'TITLE' }) => {
     return axios({
-      url: '/admin/online-store/admin/api/unversioned/graphql',
+      url: graphqlEndpointLegacy,
       method: 'POST',
       headers: {
         accept: 'application/json',
@@ -57,7 +67,7 @@ const queries = {
   },
   blogs: ({ term, first = 10, after = null, sortKey = 'TITLE' }) => {
     return axios({
-      url: '/admin/online-store/admin/api/unversioned/graphql',
+      url: graphqlEndpointLegacy,
       method: 'POST',
       headers: {
         accept: 'application/json',
@@ -109,7 +119,7 @@ const queries = {
   },
   collections: ({ term, first = 10, after = null }) => {
     return axios({
-      url: '/admin/api/2019-07/graphql.json',
+      url: graphqlEndpoint,
       method: 'POST',
       headers: {
         accept: 'application/json',
@@ -161,7 +171,7 @@ const queries = {
   },
   customers: ({ term, first = 10, after = null }) => {
     return axios({
-      url: '/admin/api/2019-07/graphql.json',
+      url: graphqlEndpoint,
       method: 'POST',
       headers: {
         accept: 'application/json',
@@ -214,7 +224,7 @@ const queries = {
   },
   draft_orders: ({ term, first = 10, after = null }) => {
     return axios({
-      url: '/admin/api/2019-07/graphql.json',
+      url: graphqlEndpoint,
       method: 'POST',
       headers: {
         accept: 'application/json',
@@ -267,7 +277,7 @@ const queries = {
   },
   orders: ({ term, first = 10, after = null }) => {
     return axios({
-      url: '/admin/api/2019-07/graphql.json',
+      url: graphqlEndpoint,
       method: 'POST',
       headers: {
         accept: 'application/json',
@@ -325,7 +335,7 @@ const queries = {
   },
   pages: ({ term, first = 10, after = null, sortKey = 'TITLE' }) => {
     return axios({
-      url: '/admin/online-store/admin/api/unversioned/graphql',
+      url: graphqlEndpointLegacy,
       method: 'POST',
       headers: {
         accept: 'application/json',
@@ -377,7 +387,7 @@ const queries = {
   },
   products: ({ term, first = 10, after = null }) => {
     return axios({
-      url: '/admin/api/2019-07/graphql.json',
+      url: graphqlEndpoint,
       method: 'POST',
       headers: {
         accept: 'application/json',

@@ -24,18 +24,12 @@ import { getShopifyAdminURL, resourceTypesArr } from './utils'
 
 // ------------------------------------------------------------------
 
-/*
-TODO:
-  -- csrf token
-  -- Tests
-*/
-
 export const AppContext = React.createContext()
 const shopResource = { id: 0 } // Mock id, not really needed in case of `shop` resource
 const otherUrlsRegex = /\/admin\/([a-zA-Z]+)\/(\d+)/
 const articleUrlRegex = /\/admin\/blogs\/\d+\/articles\/(\d+)/
 
-function App({ window, document, env }) {
+function App({ env }) {
   const resultsPerPage = 20
   const urlRef = useRef(null)
   const [activeResource, setActiveResource] = useState({ type: null, id: null })
@@ -67,7 +61,9 @@ function App({ window, document, env }) {
             return
           }
 
-          let csrfEl = document.querySelector('meta[name="csrf-token"')
+          let csrfEl = window.top.document.querySelector(
+            'meta[name="csrf-token"'
+          )
           let token = null
           if (csrfEl) {
             token = csrfEl.getAttribute('content')
@@ -82,7 +78,7 @@ function App({ window, document, env }) {
             })
               .then(res => res.text())
               .then(data => {
-                let container = document.createElement('div')
+                let container = window.top.document.createElement('div')
                 container.innerHTML = data
                 csrfEl = container.querySelector('meta[name="csrf-token"]')
                 if (csrfEl) {
@@ -90,10 +86,10 @@ function App({ window, document, env }) {
                   resolve(token)
 
                   // Append it to the dom to reference it later
-                  const meta = document.createElement('meta')
+                  const meta = window.top.document.createElement('meta')
                   meta.setAttribute('name', 'csrf-token')
                   meta.setAttribute('content', token)
-                  document.querySelector('head').appendChild(meta)
+                  window.top.document.querySelector('head').appendChild(meta)
                 } else {
                   reject('NO_CSRF_TOKEN_FOUND')
                 }
@@ -175,8 +171,8 @@ function App({ window, document, env }) {
   }, [resourceType, resultsPerPage])
 
   useEffect(() => {
-    let interval = window.setInterval(() => {
-      const url = window.location.href
+    let interval = window.top.setInterval(() => {
+      const url = window.top.location.href
       if (urlRef.current === url) return
       urlRef.current = url
 
@@ -207,7 +203,7 @@ function App({ window, document, env }) {
       window.clearInterval(interval)
       interval = null
     }
-  }, [window])
+  }, [])
 
   const decrementPageNum = useCallback(() => {
     if (currPageNum > 1) {
@@ -331,8 +327,6 @@ function App({ window, document, env }) {
 
 App.propTypes = {
   env: PropTypes.oneOf(['prod', 'dev']),
-  window: PropTypes.object.isRequired,
-  document: PropTypes.object.isRequired,
 }
 
 export default App

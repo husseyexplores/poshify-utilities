@@ -13,7 +13,7 @@
   cursor: pointer;
 }
 
-.shopify_metafields_app_root > iframe {
+.shopify_metafields_app_root > .Metafields_App_Wrapper {
   width: calc(100% - 250px);
   height: 100%;
   border-radius: 3px;
@@ -29,11 +29,12 @@
   right: 0;
   max-height: 80vh;
   min-height: 500px;
-  transform: translateY(-54%) translateX(100%); /* default state is hidden/not in viewport */
+  transform: translateY(calc(-54% - .5px)) translateX(100%); /* default state is hidden/not in viewport */
+  overflow: auto;
 }
 
 @media (max-width: 768px) {
-  .shopify_metafields_app_root > iframe {
+  .shopify_metafields_app_root > .Metafields_App_Wrapper {
     width: 100%;
   }
   .shopify_metafields_app_overlay {
@@ -128,4 +129,8 @@
 .Polaris-Stack__Item:focus,
 .Polaris-Stack__Item > div:focus {
   outline: none;
+}
+
+.Polaris-PositionedOverlay {
+  z-index: 460;
 }

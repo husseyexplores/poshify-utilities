@@ -54,7 +54,7 @@ function Search({
       return
     }
 
-    setState(prevState => ({ ...prevState, loading: true }))
+    setState(prevState => ({ ...prevState, loading: true, error: null }))
 
     queries[resourceType]({ term: deboucedVal, first: 15 })
       .then(res => {
@@ -202,7 +202,11 @@ function Search({
                   {menuOpen && (
                     <p className="Polaris-OptionList__Title">
                       {(() => {
-                        const { edges, hasNextPage, loading } = state
+                        const { edges, hasNextPage, loading, error } = state
+                        if (error) {
+                          return 'Oops! An error occurred'
+                        }
+
                         if (!loading && edges && edges.length === 0) {
                           return 'No results found'
                         }
