@@ -276,7 +276,7 @@ function Search({
                                         source={
                                           image && image.transformedSrc
                                             ? image.transformedSrc
-                                            : 'https://burst.shopifycdn.com/photos/black-leather-choker-necklace_50x50.jpg'
+                                            : 'https://cdn.shopify.com/s/files/1/2388/0287/files/placeholder-img.png?4600'
                                         }
                                         size="small"
                                         alt={title}
