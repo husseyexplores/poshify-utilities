@@ -1,7 +1,9 @@
 {
   "name": "shopify-metafields-editor",
+  "description": "A feature that should be natively supported by Shopify.",
+  "author": "Husseyexplores",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "dependencies": {
     "@babel/core": "7.4.3",
     "@shopify/polaris": "^3.21.0",
@@ -150,5 +152,6 @@
   },
   "eslintConfig": {
     "extends": "react-app"
-  }
+  },
+  "license": "MIT"
 }
