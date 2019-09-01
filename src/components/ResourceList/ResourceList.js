@@ -9,19 +9,20 @@ import {
   SkeletonBodyText,
   Caption,
   DisplayText,
-  Icon,
+  ResourceList as PolarisResourceList,
   TextStyle,
 } from '@shopify/polaris'
 import { getSizedImageUrl } from '@shopify/theme-images'
-import { ImageMajorMonotone } from '@shopify/polaris-icons'
 
 import { AppContext } from '../../App'
 
 import { rangeNum, resourceTypesArr, resourceTypesMap } from '../../utils'
 
+import './ResourceList.scss'
+
 // ------------------------------------------------------------------
 
-function SearchResults({ items, resourceType, loading }) {
+function ResourceList({ items, resourceType, loading, error }) {
   const { metafieldsModal } = useContext(AppContext)
 
   const handleModalOpen = useCallback(
@@ -60,8 +61,8 @@ function SearchResults({ items, resourceType, loading }) {
           found.
         </DisplayText>
       )}
-
-      {(loading || !items) && getSkeletonTable()}
+      {error && <DisplayText size="small">{error}</DisplayText>}
+      {loading && getSkeletonTable()}
     </>
   )
 }
@@ -70,87 +71,105 @@ function SearchResults({ items, resourceType, loading }) {
 
 // Render helpers
 function renderProductsTable(items, handleModalOpen) {
-  const rows = items.map(item => {
+  function renderItem(item) {
     const { id, title, product_type, handle, image } = item
 
-    return [
-      <Button key={id + 'button'} plain onClick={handleModalOpen(item)}>
-        {image && image.src && (
-          <Thumbnail
-            size="small"
-            source={getSizedImageUrl(image.src, '50x50')}
-            alt={title}
-          />
-        )}
-        {!image && <Icon source={ImageMajorMonotone} color="inkLightest" />}
-      </Button>,
-      <div key={id + 'title'}>
-        <Button plain onClick={handleModalOpen(item)} textAlign="left">
-          <TextStyle variation="strong">{title}</TextStyle>
-          {product_type && (
-            <div style={{ textAlign: 'left' }}>
-              <Caption>
-                <span style={{ color: '#444' }}>Type: {product_type}</span>
-              </Caption>
-            </div>
-          )}
-        </Button>
-      </div>,
-      handle,
-    ]
-  })
+    const media = (
+      <Thumbnail
+        size="small"
+        source={
+          image && image.src
+            ? getSizedImageUrl(image.src, '50x50')
+            : 'https://cdn.shopify.com/s/files/1/2388/0287/files/placeholder-img.png?4600'
+        }
+        alt={title}
+      />
+    )
+
+    return (
+      <PolarisResourceList.Item
+        onClick={handleModalOpen(item)}
+        id={id}
+        media={media}
+        accessibilityLabel={`Edit metafields for ${title}`}
+      >
+        <div className="Product-Detail-Row">
+          <h3>
+            <TextStyle variation="strong">{title}</TextStyle>
+            {product_type && (
+              <div style={{ textAlign: 'left' }}>
+                <Caption>
+                  <span className="color-gray-600">Type: {product_type}</span>
+                </Caption>
+              </div>
+            )}
+          </h3>{' '}
+          <span>{handle}</span>
+        </div>
+      </PolarisResourceList.Item>
+    )
+  }
 
   return (
-    <DataTable
-      verticalAlign="middle"
-      columnContentTypes={['text', 'text', 'text']}
-      headings={['', 'Title', 'Handle']}
-      rows={rows}
-      defaultSortDirection="ascending"
-      initialSortColumnIndex={1}
+    <PolarisResourceList
+      resourceName={{ singular: 'product', plural: 'products' }}
+      items={items}
+      renderItem={renderItem}
     />
   )
 }
 
 function renderCustomersTable(items, handleModalOpen) {
-  const rows = items.map(item => {
-    const { id, first_name, last_name, email } = item
+  function renderItem(item) {
+    const {
+      id,
+      first_name,
+      last_name,
+      orders_count,
+      total_spent,
+      email,
+      currency,
+    } = item
     let fullName = `${first_name || ''} ${last_name || ''}`.trim()
 
-    if (!fullName) {
+    if (!fullName || fullName === ' ') {
       fullName = '<Unknown>'
     }
 
-    return [
-      <Button
-        key={id + 'button'}
-        plain
-        textAlign="left"
+    const media = <Avatar customer name={fullName} />
+
+    return (
+      <PolarisResourceList.Item
         onClick={handleModalOpen(item)}
+        id={id}
+        media={media}
+        accessibilityLabel={`Edit metafields for ${fullName}`}
       >
-        <Avatar customer name={fullName} />
-      </Button>,
-      <div key={id + 'name'}>
-        <Button plain onClick={handleModalOpen(item)} textAlign="left">
-          <TextStyle variation="strong">{fullName}</TextStyle>
-          <div style={{ textAlign: 'left' }}>
-            <Caption>
-              <span style={{ color: '#444' }}>{email}</span>
-            </Caption>
-          </div>
-        </Button>
-      </div>,
-    ]
-  })
+        <div className="Customer-Detail-Row">
+          <h3>
+            <TextStyle variation="strong">{fullName}</TextStyle>
+          </h3>{' '}
+          <span>{email}</span>{' '}
+          <span>
+            {orders_count} order{orders_count === 1 ? '' : 's'}
+          </span>{' '}
+          <span>
+            {new Intl.NumberFormat('en-US', {
+              style: 'currency',
+              currency: currency,
+            }).format(total_spent)}{' '}
+            spent
+          </span>
+        </div>
+      </PolarisResourceList.Item>
+    )
+  }
 
   return (
-    <DataTable
-      verticalAlign="middle"
-      columnContentTypes={['text', 'text']}
-      headings={['', 'Customers']}
-      rows={rows}
-      defaultSortDirection="ascending"
-      initialSortColumnIndex={1}
+    <PolarisResourceList
+      resourceName={{ singular: 'customer', plural: 'customers' }}
+      items={items}
+      renderItem={renderItem}
     />
   )
 }
@@ -188,7 +207,7 @@ function renderOrdersTable(items, handleModalOpen) {
           <TextStyle variation="strong">{fullName}</TextStyle>
           <div style={{ textAlign: 'left' }}>
             <Caption>
-              <span style={{ color: '#444' }}>
+              <span className="color-gray-600">
                 {email || '<Unknown email>'}
               </span>
             </Caption>
@@ -283,15 +302,16 @@ function getSkeletonTable(numRows) {
 
 // ------------------------------------------------------------------
 
-SearchResults.propTypes = {
+ResourceList.propTypes = {
   items: PropTypes.array,
   resourceType: PropTypes.oneOf(resourceTypesArr.map(({ value }) => value))
     .isRequired,
   loading: PropTypes.bool,
+  error: PropTypes.string,
 }
 
-SearchResults.defaultProps = {
+ResourceList.defaultProps = {
   items: null,
 }
 
-export default SearchResults
+export default ResourceList

@@ -1,0 +1,13 @@
+.Customer-Detail-Row {
+  display: grid;
+  grid-template-columns: minmax(150px, 1fr) minmax(150px, 1fr) minmax(80px, 0.6fr) minmax(100px, max-content);
+}
+
+.Product-Detail-Row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.color-gray-600 {
+  color: #444;
+}

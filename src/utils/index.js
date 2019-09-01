@@ -129,7 +129,8 @@ export function getShopifyAdminURL(
   { page = 1, limit = 20, ...rest } = {}
 ) {
   const fieldsMap = {
-    customers: 'id,first_name,last_name,email',
+    customers:
+      'id,first_name,last_name,email,total_spent,orders_count,currency',
     orders: 'id,customer,total_price,email,name,created_at',
     draft_orders: 'id,customer,total_price,email,name,created_at',
     products: 'id,title,handle,product_type,image',
