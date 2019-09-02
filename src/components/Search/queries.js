@@ -2,14 +2,13 @@ import axios from 'axios'
 
 const getLastItem = arr => arr[arr.length - 1]
 
-const graphqlEndpointLegacy =
-  '/admin/online-store/admin/api/unversioned/graphql'
+const graphqlEndpointLegacy = `https://${window.location.hostname}/admin/online-store/admin/api/unversioned/graphql`
 
 let graphqlEndpoint
 if (process.env.NODE_ENV === 'production') {
-  graphqlEndpoint = '/admin/internal/web/graphql/core'
+  graphqlEndpoint = `https://${window.location.hostname}/admin/internal/web/graphql/core`
 } else {
-  graphqlEndpoint = '/admin/api/2019-07/graphql.json'
+  graphqlEndpoint = `https://${window.location.hostname}/admin/api/2019-07/graphql.json`
 }
 
 const queries = {

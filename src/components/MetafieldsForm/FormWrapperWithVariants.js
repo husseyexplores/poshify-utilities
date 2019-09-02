@@ -21,9 +21,12 @@ function FormWrapperWithVariants({ resourceType, resource }) {
         reqCancellerRef.current = CancelToken.source()
         const {
           data: { product },
-        } = await axios.get(`/admin/products/${resource.id}.json`, {
-          cancelToken: reqCancellerRef.current.token,
-        })
+        } = await axios.get(
+          `https://${window.location.hostname}/admin/products/${resource.id}.json`,
+          {
+            cancelToken: reqCancellerRef.current.token,
+          }
+        )
         // Store selected data only
         setVariants(
           product.variants.map(({ id, title, image_id, sku }) => ({

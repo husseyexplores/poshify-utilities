@@ -151,7 +151,7 @@ export function getShopifyAdminURL(
     .map(key => `${key}=${qsObject[key]}`)
     .join('&')
 
-  return `/admin/${resourceType}.json` + (qs.length ? `?${qs}` : '')
+  return `https://${window.location.hostname}/admin/${resourceType}.json` + (qs.length ? `?${qs}` : '')
 }
 
 export function getResourceMetafieldsURL({
@@ -167,10 +167,10 @@ export function getResourceMetafieldsURL({
   }
 
   if (!parentResourceType) {
-    return `/admin/${resourceType}/${resourceId}/metafields.json?limit=${limit}&page=${page}`
+    return `https://${window.location.hostname}/admin/${resourceType}/${resourceId}/metafields.json?limit=${limit}&page=${page}`
   }
 
-  return `/admin/${parentResourceType}/${parentResourceId}/${resourceType}/${resourceId}/metafields.json?limit=${limit}&page=${page}`
+  return `https://${window.location.hostname}/admin/${parentResourceType}/${parentResourceId}/${resourceType}/${resourceId}/metafields.json?limit=${limit}&page=${page}`
 }
 
 export function makeObject(obj, fallbackKey) {
