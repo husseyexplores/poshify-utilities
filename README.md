@@ -2,10 +2,12 @@
 A feature that should be natively supported by Shopify.
 
 ## Installation
-Install the Chrome extension from [here](google.com "Install Extension")
+Available as a browser extension:
+ - [Install on Chrome](https://chrome.google.com/webstore/detail/shopify-metafields-editor/albldpmnhhhcjiladaacehfabibgbllk "Chrome")
+ - [Install on FireFox](https://addons.mozilla.org/en-US/firefox/addon/shopify-metafields-editor/ "FireFox")
 
-## Supported Features
-Following resources' CRUD metafield operations are supported:
+## Supported Resources
+Following resources' CRUD metafield operations are currently supported:
  - Article
  - Blog
  - Collection
@@ -24,11 +26,13 @@ Following resources' CRUD metafield operations are supported:
  - [React JSON View](https://github.com/mac-s-g/react-json-view "React JSON View") - JSON viewer for react
 
 ## Motivation
-There were a couple of reason that made me build this project:
+There were a couple of reasons that made me work on this project:
  - Lack of CRUD metafield operations in Shopify dashboard.
  - Most of the Apps that offered this functionality had a very bad user experience and were buggy.
  - ShopifyFD started to had issues due to changes in Shopify Admin.
- - I personally wanted to develop something that can be used in real world using React to test and polish my skills, without having me to spin up a server or make this a paid Shopify app.
+ - On top of all, I personally wanted to develop something that can be used in real world using React to test and polish my skills, without having me to spin up a server or make this a paid Shopify app
+
+(I just learnt that I can't make this a paid Shopify app anyway (or any paid Shopify app) because Shopify only uses PayPal for partner payouts and PayPal is not supported in my country 😔)
 
 ## Inspiration
 The project is highly inspired by [ShopifyFD](https://github.com/freakdesign/shopifyFD "Shopify FD").
