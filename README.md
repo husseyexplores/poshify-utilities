@@ -1,4 +1,4 @@
-# Shopify Metafields Editor (Chrome Extension)
+# Shopify Metafields Editor
 A feature that should be natively supported by Shopify.
 
 ## Installation
