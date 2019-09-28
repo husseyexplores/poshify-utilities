@@ -27,20 +27,6 @@ const selectors = {}
 function loadApp() {
   if (isMounted) return
 
-  // Overlay
-  let overlay = selectors.overlay
-  if (!overlay) {
-    overlay = document.createElement('div')
-    overlay.classList.add('shopify_metafields_app_overlay')
-    overlay.setAttribute('id', 'shopify_metafields_app_overlay')
-    overlay.style.display = 'none'
-    overlay.style.opacity = '0'
-    overlay.addEventListener('click', toggleAppVisiblity)
-    selectors.overlay = overlay
-    // Append to DOM
-    document.body.appendChild(overlay)
-  }
-
   // App container/root
   let app = selectors.app
   if (!app) {
@@ -48,6 +34,12 @@ function loadApp() {
     app.setAttribute('id', 'shopify_metafields_app_root')
     app.classList.add('shopify_metafields_app_root')
     selectors.app = app
+    app.addEventListener('click', e => {
+      const target = e.target
+      if (target && target.id === 'shopify_metafields_app_root') {
+        toggleAppVisiblity()
+      }
+    })
     // Append to DOM
     document.body.appendChild(app)
   }
@@ -65,44 +57,18 @@ function toggleAppVisiblity(e) {
     e.stopPropagation()
   }
 
-  const overlay = document.getElementById('shopify_metafields_app_overlay')
-  const app = document.querySelector(
-    '#shopify_metafields_app_root > .Metafields_App_Wrapper'
-  )
+  const app = selectors.app
   const toggleBtn = document.getElementById(
     'extension_metafields_editor_toggle'
   )
+  selectors.toggleBtn = toggleBtn
 
-  if (!app || !overlay || !toggleBtn) return
+  if (!app || !toggleBtn) return
 
-  // Transitions should be moved to a css class, toggled via JS
-  if (app.style.display === 'none' || app.style.display === '') {
-    toggleBtn.classList.add('p_2E4v6')
-
-    overlay.style.display = 'block'
-    app.style.display = 'block'
-
-    setTimeout(() => {
-      overlay.style.opacity = '1'
-      app.style.opacity = '1'
-      overlay.style.transform = 'translateX(0%)'
-      app.style.transform = 'translateY(calc(-54% - .5px)) translateX(0%)'
-    }, 0)
-    isAppVisible = true
-  } else {
-    toggleBtn.classList.remove('p_2E4v6')
-
-    overlay.style.opacity = '0'
-    app.style.opacity = '0'
-    overlay.style.transform = 'translateX(100%)'
-    app.style.transform = 'translateY(calc(-54% - .5px)) translateX(100%)'
-
-    setTimeout(() => {
-      overlay.style.display = 'none'
-      app.style.display = 'none'
-    }, 300) // same delay as our css transition time
-    isAppVisible = false
-  }
+  // Highlight sidebar navigation button
+  toggleBtn.classList.toggle('p_2E4v6')
+  app.classList.toggle('open')
+  isAppVisible = !isAppVisible
 }
 
 function addToShopifyNav() {
@@ -116,7 +82,7 @@ function addToShopifyNav() {
 
   if (!nav) {
     return alert(
-      'Unable to find navigation to append the Metafields button. Consider opening an issue at github/shopify-metafields-editor'
+      'Unable to find navigation to append the Metafields button. Consider opening an issue at github.com/husseyexplores/shopify-metafields-editor'
     )
   }
 

@@ -1,3 +1,4 @@
+/* BG Overlay */
 .shopify_metafields_app_overlay {
   position: fixed;
   top: 0;
@@ -9,28 +10,52 @@
   z-index: 449;
   width: calc(100% - 240px);
   background-color: rgba(31, 37, 51, 0.5);
-  transition: all .3s ease;
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0s;
   cursor: pointer;
 }
 
-.shopify_metafields_app_root > .Metafields_App_Wrapper {
-  width: calc(100% - 250px);
-  height: 100%;
-  border-radius: 3px;
-  box-shadow: 0 0 0 1px rgba(63,63,68,.05), 0 1px 3px 0 rgba(63,63,68,.15);
-  background: #fff;
-  border: 1px solid #dadada;
-  transition: all .3s ease;
-
-  opacity: 0;
+/* App top level container */
+.shopify_metafields_app_root {
   position: fixed;
-  z-index: 450;
-  top: calc(50% + 56px);
+  top: 56px;
+  width: calc(100% - 240px);
   right: 0;
+  height: 100%;
+  z-index: 450;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  transition: all 0.3s ease 0s;
+  transform: translateX(100%);
+
+  /* bg */
+  background-color: rgba(31, 37, 51, 0.5);
+  cursor: pointer;
+}
+.shopify_metafields_app_root.open {
+  transform: translateX(0);
+}
+
+/* App container */
+.shopify_metafields_app_root > .Metafields_App_Wrapper {
+  margin-top: -56px;
+  box-shadow: rgba(63, 63, 68, 0.05) 0px 0px 0px 1px, rgba(63, 63, 68, 0.15) 0px 1px 3px 0px;
+  z-index: 450;
   max-height: 80vh;
   min-height: 500px;
-  transform: translateY(calc(-54% - .5px)) translateX(100%); /* default state is hidden/not in viewport */
+  border-radius: 3px;
+  background: rgb(255, 255, 255);
+  border-width: 1px;
+  border-style: solid;
+  border-color: rgb(218, 218, 218);
+  border-image: initial;
   overflow: auto;
+  position: relative;
+  width: calc(100% - 50px);
+  top: 0;
+  display: block;
+  transition: all 0.3s ease 0s;
+  cursor: auto;
 }
 
 @media (max-width: 768px) {
@@ -41,6 +66,7 @@
     width: 100%;
   }
 }
+/* End of mounting/unmounting css */
 
 .centered_loading_wrapper {
   position: relative;
