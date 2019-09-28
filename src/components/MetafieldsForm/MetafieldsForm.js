@@ -617,7 +617,7 @@ function MetafieldsForm({
             <TypeAhead
               name="namespace"
               label="Namespace"
-              placeholder="instructions"
+              placeholder="Select or enter a namespace"
               onBlur={handleBlur}
               options={namespaceOptions}
               onChange={handleNamespaceChange}
@@ -633,7 +633,7 @@ function MetafieldsForm({
             <TextField
               name="key"
               label="Key"
-              placeholder="wash"
+              placeholder="Enter a unique key"
               onChange={handleKeyChange}
               onBlur={handleBlur}
               value={key}
@@ -662,13 +662,7 @@ function MetafieldsForm({
             type={saveAs === 'integer' ? 'number' : 'text'}
             disabled={isFetching}
             label="Value"
-            placeholder={
-              saveAs === 'string'
-                ? 'Cold water'
-                : saveAs === 'integer'
-                ? '100'
-                : '{"key": "value"}'
-            }
+            placeholder="Enter a value"
             value={saveAs === 'integer' && !Number(value) ? '' : value}
             onChange={handleMetafieldValueChange}
             onBlur={handleBlur}
@@ -678,7 +672,9 @@ function MetafieldsForm({
             labelAction={
               isValidJson
                 ? {
-                    content: 'Toggle JSON Editor',
+                    content: isJsonEditor
+                      ? 'Show Text Editor'
+                      : 'Show JSON Editor',
                     onAction: () => setIsJsonEditor(prev => !prev),
                   }
                 : undefined

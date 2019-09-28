@@ -82,6 +82,7 @@ function TypeAhead({
               className={classname('Polaris-TextField', {
                 'Polaris-TextField--hasValue': Boolean(inputValue),
                 'Polaris-TextField--error': Boolean(error),
+                'Polaris-TextField--disabled': Boolean(disabled),
               })}
             >
               <input
