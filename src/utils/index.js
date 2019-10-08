@@ -2,6 +2,10 @@ import { keyBy } from 'lodash'
 
 // ------------------------------------------------------------------
 
+export const BASE_URL =
+  process.env.NODE_ENV === 'production'
+    ? `${window.location.protocol}//${window.location.hostname}/admin`
+    : `${window.location.protocol}//${window.location.hostname}:3000/admin`
 export const delimeter = '<-DLMTR!->'
 
 export function lookupByNamespace(metafields) {
@@ -151,17 +155,7 @@ export function getShopifyAdminURL(
     .map(key => `${key}=${qsObject[key]}`)
     .join('&')
 
-  if (process.env.NODE_ENV === 'production') {
-    return (
-      `${window.location.protocol}//${window.location.hostname}/admin/${resourceType}.json` +
-      (qs.length ? `?${qs}` : '')
-    )
-  } else {
-    return (
-      `${window.location.protocol}//${window.location.hostname}:3000/admin/${resourceType}.json` +
-      (qs.length ? `?${qs}` : '')
-    )
-  }
+  return `${BASE_URL}/${resourceType}.json` + (qs.length ? `?${qs}` : '')
 }
 
 export function getResourceMetafieldsURL({
@@ -177,10 +171,10 @@ export function getResourceMetafieldsURL({
   }
 
   if (!parentResourceType) {
-    return `https://${window.location.hostname}/admin/${resourceType}/${resourceId}/metafields.json?limit=${limit}&page=${page}`
+    return `${BASE_URL}/${resourceType}/${resourceId}/metafields.json?limit=${limit}&page=${page}`
   }
 
-  return `https://${window.location.hostname}/admin/${parentResourceType}/${parentResourceId}/${resourceType}/${resourceId}/metafields.json?limit=${limit}&page=${page}`
+  return `${BASE_URL}/${parentResourceType}/${parentResourceId}/${resourceType}/${resourceId}/metafields.json?limit=${limit}&page=${page}`
 }
 
 export function makeObject(obj, fallbackKey) {

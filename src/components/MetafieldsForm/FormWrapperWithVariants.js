@@ -6,7 +6,7 @@ import MetafieldsForm from './MetafieldsForm'
 import Accordion from '../../common/components/Accordion'
 import { Spinner } from '../../common/components/Spinners'
 
-import { resourceTypesArr } from '../../utils'
+import { resourceTypesArr, BASE_URL } from '../../utils'
 import axios, { CancelToken } from 'axios'
 
 // ------------------------------------------------------------------
@@ -21,12 +21,9 @@ function FormWrapperWithVariants({ resourceType, resource }) {
         reqCancellerRef.current = CancelToken.source()
         const {
           data: { product },
-        } = await axios.get(
-          `https://${window.location.hostname}/admin/products/${resource.id}.json`,
-          {
-            cancelToken: reqCancellerRef.current.token,
-          }
-        )
+        } = await axios.get(`${BASE_URL}/products/${resource.id}.json`, {
+          cancelToken: reqCancellerRef.current.token,
+        })
         // Store selected data only
         setVariants(
           product.variants.map(({ id, title, image_id, sku }) => ({
