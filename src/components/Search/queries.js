@@ -8,7 +8,7 @@ let graphqlEndpoint
 if (process.env.NODE_ENV === 'production') {
   graphqlEndpoint = `https://${window.location.hostname}/admin/internal/web/graphql/core`
 } else {
-  graphqlEndpoint = `https://${window.location.hostname}/admin/api/2019-07/graphql.json`
+  graphqlEndpoint = `http://${window.location.hostname}:3000/admin/api/2019-07/graphql.json`
 }
 
 const queries = {

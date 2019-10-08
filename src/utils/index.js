@@ -151,10 +151,17 @@ export function getShopifyAdminURL(
     .map(key => `${key}=${qsObject[key]}`)
     .join('&')
 
-  return (
-    `https://${window.location.hostname}/admin/${resourceType}.json` +
-    (qs.length ? `?${qs}` : '')
-  )
+  if (process.env.NODE_ENV === 'production') {
+    return (
+      `${window.location.protocol}//${window.location.hostname}/admin/${resourceType}.json` +
+      (qs.length ? `?${qs}` : '')
+    )
+  } else {
+    return (
+      `${window.location.protocol}//${window.location.hostname}:3000/admin/${resourceType}.json` +
+      (qs.length ? `?${qs}` : '')
+    )
+  }
 }
 
 export function getResourceMetafieldsURL({
