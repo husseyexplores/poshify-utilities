@@ -49,14 +49,16 @@ function Search({
 
   // On query Change
   useEffect(() => {
-    if (!deboucedVal) {
+    if (!deboucedVal || resourceType === 'shop') {
       setState(initialState)
       return
     }
 
     setState(prevState => ({ ...prevState, loading: true, error: null }))
 
-    queries[resourceType]({ term: deboucedVal, first: 15 })
+    const fn = queries[resourceType]
+    if (typeof fn !== 'function') return
+    fn({ term: deboucedVal, first: 15 })
       .then(res => {
         const { edges, hasNextPage, lastCursor } = res
 
