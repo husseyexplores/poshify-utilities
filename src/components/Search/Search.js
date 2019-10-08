@@ -119,7 +119,7 @@ function Search({
         stateReducer={stateReducer}
         onSelect={item => {
           if (item === 'LOAD_MORE') {
-            if (!state.isloading) {
+            if (!state.loading) {
               onLoadMoreResults()
             }
           } else if (item && item.id) {
