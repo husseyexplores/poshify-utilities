@@ -337,6 +337,32 @@ function MetafieldsForm({
     ]
   )
 
+  const minifyJSON = useCallback(() => {
+    try {
+      const { value: json } = values
+      const minified = JSON.stringify(JSON.parse(json))
+      setFieldValue('value', minified)
+      !touched.value && setFieldTouched('value', true)
+    } catch (e) {
+      alert(
+        'Oops! An unexpected error occured while trying to minify the JSON.'
+      )
+    }
+  }, [setFieldTouched, setFieldValue, touched.value, values])
+
+  const prettifyJSON = useCallback(() => {
+    try {
+      const { value: json } = values
+      const minified = JSON.stringify(JSON.parse(json), null, 2)
+      setFieldValue('value', minified)
+      !touched.value && setFieldTouched('value', true)
+    } catch (e) {
+      alert(
+        'Oops! An unexpected error occured while trying to prettify the JSON.'
+      )
+    }
+  }, [setFieldTouched, setFieldValue, touched.value, values])
+
   const openConfirmDeleteModal = () => {
     setConfirmDeleteModalOpen(true)
   }
@@ -691,6 +717,22 @@ function MetafieldsForm({
               displayDataTypes={false}
               enableClipboard={false}
             />
+          )}
+
+          {/* Minify and Prettify JSON buttons */}
+          {saveAs === 'json_string' && (
+            <ButtonGroup>
+              <Button disabled={!isValidJson} onClick={minifyJSON} size="slim">
+                Minify JSON
+              </Button>
+              <Button
+                disabled={!isValidJson}
+                onClick={prettifyJSON}
+                size="slim"
+              >
+                {'Prettify JSON'}
+              </Button>
+            </ButtonGroup>
           )}
 
           <ChoiceList
