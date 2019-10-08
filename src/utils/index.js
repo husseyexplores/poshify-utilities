@@ -151,7 +151,10 @@ export function getShopifyAdminURL(
     .map(key => `${key}=${qsObject[key]}`)
     .join('&')
 
-  return `https://${window.location.hostname}/admin/${resourceType}.json` + (qs.length ? `?${qs}` : '')
+  return (
+    `https://${window.location.hostname}/admin/${resourceType}.json` +
+    (qs.length ? `?${qs}` : '')
+  )
 }
 
 export function getResourceMetafieldsURL({
