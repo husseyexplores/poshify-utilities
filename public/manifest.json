@@ -4,7 +4,7 @@
   "name": "Shopify Metafields Editor",
   "description": "Edit Shopify Metafields without any app for free!",
   "author": "Husseyexplores",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "browser_action": {
     "default_icon": "/img/128.png",
     "default_popup": "/popup.html"
