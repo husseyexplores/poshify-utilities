@@ -19,8 +19,8 @@ import {
 } from 'react-router-dom'
 
 import Home from './features/Home'
-import Metafields from './features/Metafields'
-import CSVDownloader from './features/csv'
+import MetafieldsEditor from './features/MetafieldsEditor'
+import CSVDownloader from './features/CsvDownloader'
 import Footer from './common/components/Footer'
 
 import RoutedLink from './common/components/RoutedLink'
@@ -128,7 +128,7 @@ function App({ env }) {
                 />
               )}
               <Layout.Section>
-                {/* Components/Routes goes here */}
+                {/* Back button */}
                 <Route
                   render={({ location: { pathname } }) => {
                     if (pathname !== '/') {
@@ -149,17 +149,20 @@ function App({ env }) {
                     return null
                   }}
                 ></Route>
+
+                {/* Each route */}
                 <Switch>
                   <Route exact path="/metafields">
-                    <Metafields />
+                    <MetafieldsEditor />
                   </Route>
-                  <Route exact path="/csv-downloader">
-                    <CSVDownloader />
-                  </Route>
+                  {/* <Route exact path="/csv-downloader"> */}
+                  <CSVDownloader />
+                  {/* </Route> */}
                   <Route>
                     <Home />
                   </Route>
                 </Switch>
+
                 <Footer />
               </Layout.Section>
             </Layout>

@@ -2,14 +2,14 @@ import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
 import { Layout, Card, Stack, Pagination, Caption } from '@shopify/polaris'
 import axios from 'axios'
 
-import SelectResourceType from '../SelectResourceType'
-import Search from '../Search'
-import ResourceList from '../ResourceList'
-import MetafieldsForm, { MetafieldsFormWithModal } from '..//MetafieldsForm'
-import useUnmountStatus from '../../../common/hooks/useUnmountStatus'
-import useInterval from '../../../common/hooks/useInterval'
+import SelectResourceType from './SelectResourceType'
+import Search from './Search'
+import ResourceList from './ResourceList'
+import MetafieldsForm, { MetafieldsFormWithModal } from './MetafieldsForm'
+import useUnmountStatus from '../../common/hooks/useUnmountStatus'
+import useInterval from '../../common/hooks/useInterval'
 
-import { getShopifyAdminURL, resourceTypesArr } from '../../../utils'
+import { getShopifyAdminURL, resourceTypesArr } from '../../utils'
 
 // ------------------------------------------------------------------
 
