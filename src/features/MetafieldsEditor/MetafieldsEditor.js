@@ -9,7 +9,7 @@ import MetafieldsForm, { MetafieldsFormWithModal } from './MetafieldsForm'
 import useUnmountStatus from '../../common/hooks/useUnmountStatus'
 import useInterval from '../../common/hooks/useInterval'
 
-import { getShopifyAdminURL, resourceTypesArr } from '../../utils'
+import { getShopifyAdminURL, resourceTypesArr, BASE_URL } from '../../utils'
 
 // ------------------------------------------------------------------
 
@@ -88,7 +88,7 @@ function MetafieldsEditor() {
     if (resourceType === 'shop') return
     ;(async () => {
       setIsLoadingCount(true)
-      const totalResourceCountURL = `/admin/${resourceType}/count.json?status=any`
+      const totalResourceCountURL = `${BASE_URL}/${resourceType}/count.json?status=any`
       const {
         data: { count },
       } = await axios.get(totalResourceCountURL)

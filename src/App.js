@@ -24,7 +24,7 @@ import CSVDownloader from './features/CsvDownloader'
 import Footer from './common/components/Footer'
 
 import RoutedLink from './common/components/RoutedLink'
-import { getPageTitle } from './utils'
+import { getPageTitle, BASE_URL } from './utils'
 
 // ------------------------------------------------------------------
 
@@ -58,7 +58,7 @@ function App({ env }) {
             token = csrfEl.getAttribute('content')
             resolve(token)
           } else {
-            fetch('/admin/articles', {
+            fetch(`${BASE_URL}/articles`, {
               method: 'GET',
               headers: {
                 accept: 'text/html, application/xhtml+xml, application/xml',
@@ -155,9 +155,9 @@ function App({ env }) {
                   <Route exact path="/metafields">
                     <MetafieldsEditor />
                   </Route>
-                  {/* <Route exact path="/csv-downloader"> */}
+                  <Route exact path="/csv-downloader">
                   <CSVDownloader />
-                  {/* </Route> */}
+                  </Route>
                   <Route>
                     <Home />
                   </Route>
@@ -177,10 +177,10 @@ App.propTypes = {
   env: PropTypes.oneOf(['prod', 'dev']),
 }
 
-function AppWithRouter() {
+function AppWithRouter(props) {
   return (
     <Router>
-      <App />
+      <App {...props} />
     </Router>
   )
 }
