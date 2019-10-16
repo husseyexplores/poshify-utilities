@@ -7,6 +7,7 @@ import Search from '../Search'
 import ResourceList from '../ResourceList'
 import MetafieldsForm, { MetafieldsFormWithModal } from '..//MetafieldsForm'
 import useUnmountStatus from '../../../common/hooks/useUnmountStatus'
+import useInterval from '../../../common/hooks/useInterval'
 
 import { getShopifyAdminURL, resourceTypesArr } from '../../../utils'
 
@@ -97,41 +98,36 @@ function MetafieldsEditor() {
     })()
   }, [resourceType, resultsPerPage, unmounted])
 
-  useEffect(() => {
-    let interval = window.top.setInterval(() => {
-      if (unmounted.current) return
-      const url = window.top.location.href
-      if (urlRef.current === url) return
-      urlRef.current = url
+  // Check the URL every second to update the 'Current resource'
+  useInterval(() => {
+    if (unmounted.current) return
+    const url = window.top.location.href
+    if (urlRef.current === url) return
+    urlRef.current = url
 
-      {
-        // eslint-disable-next-line no-unused-vars
-        const [_, articleId] = url.match(articleUrlRegex) || []
-        if (articleId) {
-          setActiveResource({ type: 'articles', id: articleId })
-          return
-        }
-      }
-
+    {
       // eslint-disable-next-line no-unused-vars
-      const [_, resType, resId] = url.match(otherUrlsRegex) || []
-      if (
-        !resType ||
-        !resId ||
-        !resourceTypesArr.some(({ value }) => value === resType)
-      ) {
-        // Clear current resource
-        setActiveResource({ type: null, id: null })
-      } else {
-        // Set Current resource
-        setActiveResource({ type: resType, id: resId })
+      const [_, articleId] = url.match(articleUrlRegex) || []
+      if (articleId) {
+        setActiveResource({ type: 'articles', id: articleId })
+        return
       }
-    }, 1000)
-    return () => {
-      window.clearInterval(interval)
-      interval = null
     }
-  }, [unmounted])
+
+    // eslint-disable-next-line no-unused-vars
+    const [_, resType, resId] = url.match(otherUrlsRegex) || []
+    if (
+      !resType ||
+      !resId ||
+      !resourceTypesArr.some(({ value }) => value === resType)
+    ) {
+      // Clear current resource
+      setActiveResource({ type: null, id: null })
+    } else {
+      // Set Current resource
+      setActiveResource({ type: resType, id: resId })
+    }
+  }, 1000)
 
   const decrementPageNum = useCallback(() => {
     if (currPageNum > 1) {
