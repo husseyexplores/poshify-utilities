@@ -2,7 +2,7 @@
   "name": "shopify-metafields-editor",
   "description": "A feature that should be natively supported by Shopify.",
   "author": "Husseyexplores",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "private": false,
   "dependencies": {
     "@babel/core": "7.4.3",
