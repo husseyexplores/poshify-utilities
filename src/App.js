@@ -20,7 +20,7 @@ import MetafieldsForm, {
   MetafieldsFormWithModal,
 } from './components/MetafieldsForm'
 
-import { getShopifyAdminURL, resourceTypesArr } from './utils'
+import { getShopifyAdminURL, resourceTypesArr, BASE_URL } from './utils'
 
 // ------------------------------------------------------------------
 
@@ -72,7 +72,7 @@ function App({ env }) {
             token = csrfEl.getAttribute('content')
             resolve(token)
           } else {
-            fetch('/admin/articles', {
+            fetch(`${BASE_URL}/articles`, {
               method: 'GET',
               headers: {
                 accept: 'text/html, application/xhtml+xml, application/xml',
@@ -169,7 +169,7 @@ function App({ env }) {
     if (resourceType === 'shop') return
     ;(async () => {
       setIsLoadingCount(true)
-      const totalResourceCountURL = `/admin/${resourceType}/count.json?status=any`
+      const totalResourceCountURL = `${BASE_URL}/${resourceType}/count.json?status=any`
       const {
         data: { count },
       } = await axios.get(totalResourceCountURL)
