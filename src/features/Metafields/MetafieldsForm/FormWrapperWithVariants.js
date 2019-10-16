@@ -1,13 +1,13 @@
 import React, { useEffect, useState, useRef } from 'react'
 import PropTypes from 'prop-types'
 import { Heading, Stack } from '@shopify/polaris'
+import axios, { CancelToken } from 'axios'
 
 import MetafieldsForm from './MetafieldsForm'
-import Accordion from '../../common/components/Accordion'
-import { Spinner } from '../../common/components/Spinners'
+import Accordion from '../../../common/components/Accordion'
+import { Spinner } from '../../../common/components/Spinners'
 
-import { resourceTypesArr, BASE_URL } from '../../utils'
-import axios, { CancelToken } from 'axios'
+import { resourceTypesArr, BASE_URL } from '../../../utils'
 
 // ------------------------------------------------------------------
 

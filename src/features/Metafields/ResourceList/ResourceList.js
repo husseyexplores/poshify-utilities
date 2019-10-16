@@ -14,16 +14,16 @@ import {
 } from '@shopify/polaris'
 import { getSizedImageUrl } from '@shopify/theme-images'
 
-import { AppContext } from '../../App'
+import { MetafieldsContext } from '../MetafieldsEditor'
 
-import { rangeNum, resourceTypesArr, resourceTypesMap } from '../../utils'
+import { rangeNum, resourceTypesArr, resourceTypesMap } from '../../../utils'
 
 import './ResourceList.scss'
 
 // ------------------------------------------------------------------
 
 function ResourceList({ items, resourceType, loading, error }) {
-  const { metafieldsModal } = useContext(AppContext)
+  const { metafieldsModal } = useContext(MetafieldsContext)
 
   const handleModalOpen = useCallback(
     data => () => {

@@ -20,10 +20,10 @@ import { withFormik } from 'formik'
 import cx from 'classnames'
 import axios, { CancelToken } from 'axios'
 
-import { AppContext } from '../../App'
-import TypeAhead from '../../common/components/TypeAhead'
-import { OverlaySpinner } from '../../common/components/Spinners'
-import ConfirmModal from '../../common/components/ConfirmModal'
+import { AppContext } from '../../../App'
+import TypeAhead from '../../../common/components/TypeAhead'
+import { OverlaySpinner } from '../../../common/components/Spinners'
+import ConfirmModal from '../../../common/components/ConfirmModal'
 
 import {
   makeMetafieldsMap,
@@ -35,7 +35,7 @@ import {
   makeObject,
   capitalize,
   sortMetafields,
-} from '../../utils'
+} from '../../../utils'
 
 import './MetafieldsForm.scss'
 

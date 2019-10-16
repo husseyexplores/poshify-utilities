@@ -160,3 +160,21 @@
 .Polaris-PositionedOverlay {
   z-index: 460;
 }
+
+.sm-icon > .Polaris-Icon {
+  width: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.sm-md-icon > .Polaris-Icon {
+  width: 14px;
+  display: flex;
+  align-items: center;
+}
+
+.sm-lg-icon > .Polaris-Icon {
+  width: 16px;
+  display: flex;
+  align-items: center;
+}

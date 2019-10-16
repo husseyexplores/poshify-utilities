@@ -5,7 +5,7 @@ import { Modal } from '@shopify/polaris'
 import MetafieldsForm from './MetafieldsForm'
 import FormWrapperWithVariants from './FormWrapperWithVariants'
 
-import { resourceTypesArr } from '../../utils'
+import { resourceTypesArr } from '../../../utils'
 
 // ------------------------------------------------------------------
 

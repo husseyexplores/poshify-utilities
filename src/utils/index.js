@@ -239,3 +239,14 @@ export function getGqlSearchQuery(
     `,
   })
 }
+
+// App page title helper
+export function getPageTitle(history) {
+  const {
+    location: { pathname },
+  } = history
+  if (pathname === '/metafields') return 'Metafields Editor'
+  if (pathname === '/csv-downloader') return 'CSV Downloader'
+
+  return null
+}
