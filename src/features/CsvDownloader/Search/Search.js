@@ -4,7 +4,6 @@ import classname from 'classnames'
 import { Thumbnail, Avatar } from '@shopify/polaris'
 import Downshift from 'downshift'
 
-import { MetafieldsContext } from '../MetafieldsEditor'
 import queries from './queries'
 import useDebounce from '../../../common/hooks/useDebounce'
 import { resourceTypesArr } from '../../../utils'
@@ -45,7 +44,7 @@ function Search({
 }) {
   const deboucedVal = useDebounce(value, 500)
   const [state, setState] = useState(initialState)
-  const { metafieldsModal } = useContext(MetafieldsContext)
+  // const { metafieldsModal } = useContext(MetafieldsContext)
 
   // On query Change
   useEffect(() => {
@@ -126,7 +125,7 @@ function Search({
             }
           } else if (item && item.id) {
             const id = Number(item.id.match(/\d+/)[0])
-            metafieldsModal.open({ ...item, id })
+            // metafieldsModal.open({ ...item, id })
           }
         }}
         itemToString={item => (item && item.id ? item.id : item || '')}
@@ -385,6 +384,8 @@ Search.propTypes = {
   resourceType: PropTypes.oneOf(resourceTypesArr.map(({ value }) => value)),
   placeholder: PropTypes.string,
   disabled: PropTypes.bool,
+  selectedItems: PropTypes.array.isRequired,
+  setSelectedItems: PropTypes.func.isRequired,
 }
 
 Search.defaultProps = {
