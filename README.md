@@ -1,7 +1,7 @@
 # Poshify Utilities
 Some posh utilities for Shopify developers and merchants 🎉
 
-A browser extension to extend some Shopify functionalities, notably, editting metafields.
+A browser extension to extend some Shopify functionalities, notably, editing metafields.
 
 ## Installation
 Available as a browser extension:
