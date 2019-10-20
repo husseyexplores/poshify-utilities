@@ -1,15 +1,6 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import PropTypes from 'prop-types'
-import {
-  AppProvider,
-  Page,
-  Layout,
-  Card,
-  Stack,
-  Toast,
-  Frame,
-  Icon,
-} from '@shopify/polaris'
+import { AppProvider, Page, Layout, Toast, Frame, Icon } from '@shopify/polaris'
 import { MobileChevronMajorMonotone } from '@shopify/polaris-icons'
 import {
   MemoryRouter as Router,
@@ -41,6 +32,9 @@ function App({ env }) {
     duration: 3000,
   })
 
+  // Top level loading state - passed into context
+  const [isLoading, setIsLoading] = useState(false)
+
   const contextValue = useMemo(() => {
     return {
       getCsrfToken: () => {
@@ -60,12 +54,23 @@ function App({ env }) {
           } else {
             fetch(`${BASE_URL}/articles`, {
               method: 'GET',
+              credentials: 'include',
               headers: {
                 accept: 'text/html, application/xhtml+xml, application/xml',
                 'x-shopify-web': '1',
               },
             })
-              .then(res => res.text())
+              .then(res => {
+                if (res.ok) {
+                  return res.text()
+                } else {
+                  const err = new Error(
+                    'Error fetching CSRF token. If you are repeatedly getting this error, please file an issue in the Github repo'
+                  )
+                  err.status = 'ERROR_FETCHING_CSRF_TOKEN'
+                  throw err
+                }
+              })
               .then(data => {
                 let container = window.top.document.createElement('div')
                 container.innerHTML = data
@@ -85,6 +90,7 @@ function App({ env }) {
                 container.remove()
                 container = null
               })
+              .catch(reject)
           }
         })
       },
@@ -106,17 +112,57 @@ function App({ env }) {
           }))
         },
       },
+      isLoading: isLoading,
+      setIsLoading,
     }
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [env, isLoading]) // eslint-disable-line react-hooks/exhaustive-depss
 
   const hideToast = useCallback(() => {
     setToastState(state => ({ ...state, showToast: false }))
   }, [])
 
+  const backButtonMarkup = (
+    <Route
+      render={({ location: { pathname } }) => {
+        if (pathname !== '/') {
+          return (
+            <p
+              className="ui-button ui-button--transparent ui-breadcrumb"
+              disabled={isLoading}
+            >
+              <RoutedLink
+                disabled={isLoading}
+                icon={
+                  <span className="sm-icon">
+                    <Icon source={MobileChevronMajorMonotone} />
+                  </span>
+                }
+                as="link"
+                to="/"
+              >
+                <svg id="chevron-left-thinner">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                    <path d="M12 16c-.256 0-.512-.098-.707-.293l-5-5c-.39-.39-.39-1.023 0-1.414l5-5c.39-.39 1.023-.39 1.414 0s.39 1.023 0 1.414L8.414 10l4.293 4.293c.39.39.39 1.023 0 1.414-.195.195-.45.293-.707.293z"></path>
+                  </svg>
+                </svg>
+                <span className="ui-breadcrumb__item">Back to main</span>
+              </RoutedLink>
+            </p>
+          )
+        }
+        return null
+      }}
+    ></Route>
+  )
+
   return (
     <AppProvider>
       <AppContext.Provider value={contextValue}>
-        <Page title={`Shopify Utilities${pageTitle ? ` | ${pageTitle}` : ''}`}>
+        <Page
+          title={`Poshify Utilities${pageTitle ? ` | ${pageTitle}` : ''}`}
+          subtitle="Some posh utilities for Shopify developers and merchants 🎉"
+        >
+          {backButtonMarkup}
           <Frame>
             <Layout>
               {toastState.showToast && (
@@ -128,35 +174,13 @@ function App({ env }) {
                 />
               )}
               <Layout.Section>
-                {/* Back button */}
-                <Route
-                  render={({ location: { pathname } }) => {
-                    if (pathname !== '/') {
-                      return (
-                        <RoutedLink
-                          icon={
-                            <span className="sm-icon">
-                              <Icon source={MobileChevronMajorMonotone} />
-                            </span>
-                          }
-                          as="button"
-                          to="/"
-                        >
-                          Back
-                        </RoutedLink>
-                      )
-                    }
-                    return null
-                  }}
-                ></Route>
-
                 {/* Each route */}
                 <Switch>
                   <Route exact path="/metafields">
                     <MetafieldsEditor />
                   </Route>
                   <Route exact path="/csv-downloader">
-                  <CSVDownloader />
+                    <CSVDownloader />
                   </Route>
                   <Route>
                     <Home />

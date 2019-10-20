@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import { Layout, Card, Stack, Pagination, Caption } from '@shopify/polaris'
-import axios from 'axios'
+import { Card, Stack, Pagination, Caption } from '@shopify/polaris'
 
 import SelectResourceType from './SelectResourceType'
 import Search from './Search'
@@ -17,9 +16,10 @@ export const MetafieldsContext = React.createContext()
 const shopResource = { id: 0 } // Mock id, not really needed in case of `shop` resource
 const otherUrlsRegex = /\/admin\/([a-zA-Z]+)\/(\d+)/
 const articleUrlRegex = /\/admin\/blogs\/\d+\/articles\/(\d+)/
+const resultsPerPage = 30
+let errorCount = 0
 
 function MetafieldsEditor() {
-  const resultsPerPage = 20
   const urlRef = useRef(null)
   const unmounted = useUnmountStatus()
   const [activeResource, setActiveResource] = useState({ type: null, id: null })
@@ -68,20 +68,47 @@ function MetafieldsEditor() {
         limit: resultsPerPage,
       })
 
-      axios
-        .get(resourceListURL)
-        .then(({ data }) => {
+      fetch(resourceListURL, {
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+        },
+        credentials: 'include',
+      })
+        .then(res => {
+          if (res.ok) {
+            return res.json()
+          } else {
+            const err = new Error(
+              '[Poshify] Error completing the network request.'
+            )
+            err.status = res.status
+            throw err
+          }
+        })
+        .then(data => {
           if (unmounted.current) return
           const items = data[resourceType] || []
           setResourceListState({ items, error: null, loading: false })
         })
-        .catch(() => {
+        .catch(e => {
           if (unmounted.current) return
-          const errMsg = `Cannot load ${resourceType}`
+          errorCount++
+          let errMsg
+
+          if (e.statusCode === 404) {
+            errMsg = `Oops! could not load ${resourceType} 😕. Try refreshing the page to see if helps.`
+          } else {
+            errMsg =
+              errorCount > 4
+                ? `Unexpected error occured 😭. Please consider opening an issue in the github repo.\nError message: ${e.message}`
+                : `Error loading products 😞. Try again in a moment.`
+          }
+
           setResourceListState({ list: null, error: errMsg, loading: false })
         })
     })()
-  }, [currPageNum, resourceType, resultsPerPage, unmounted])
+  }, [currPageNum, resourceType, unmounted])
 
   // Data that only needs to be fetched once upon changing the resource type. e.g: totalCount
   useEffect(() => {
@@ -89,14 +116,18 @@ function MetafieldsEditor() {
     ;(async () => {
       setIsLoadingCount(true)
       const totalResourceCountURL = `${BASE_URL}/${resourceType}/count.json?status=any`
-      const {
-        data: { count },
-      } = await axios.get(totalResourceCountURL)
+      const { count } = await (await fetch(totalResourceCountURL, {
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+        },
+        credentials: 'include',
+      })).json()
       if (unmounted.current) return
       setTotalPageNums(Math.ceil(count / resultsPerPage))
       setIsLoadingCount(false)
     })()
-  }, [resourceType, resultsPerPage, unmounted])
+  }, [resourceType, unmounted])
 
   // Check the URL every second to update the 'Current resource'
   useInterval(() => {
@@ -156,74 +187,70 @@ function MetafieldsEditor() {
 
   return (
     <MetafieldsContext.Provider value={contextValue}>
-      <Layout.Section>
-        <MetafieldsFormWithModal
-          active={modalState.isOpen}
-          handleModalClose={contextValue.metafieldsModal.close}
-          resourceType={resourceType}
-          resource={modalState.resource}
-        />
-        <Card>
-          <Card.Section>
-            <Stack wrap={false} alignment="leading" spacing="tight">
-              <Stack.Item>
-                <SelectResourceType
-                  disabled={resourceListState.loading}
-                  onChange={handleResourceTypeChange}
-                  currentResource={activeResource}
-                  onCurrentResourceClick={contextValue.metafieldsModal.open}
-                />
-              </Stack.Item>
-              <Stack.Item fill>
-                <Search
-                  resourceType={resourceType}
-                  onClearButtonClick={onClearButtonClick}
-                  onChange={setSearchQuery}
-                  value={searchQuery}
-                  disabled={
-                    resourceListState.loading || resourceType === 'shop'
-                  }
-                />
-              </Stack.Item>
-            </Stack>
-          </Card.Section>
-          <Card.Section>
-            <Stack.Item fill>
-              {resourceType !== 'shop' && (
-                <>
-                  <ResourceList
-                    resourceType={resourceType}
-                    items={resourceListState.items}
-                    loading={resourceListState.loading}
-                    error={resourceListState.error}
-                  />
-                  <div className="text-center Search-MF-Pagination-Wrapper">
-                    <Pagination
-                      hasPrevious={!isLoadingCount && currPageNum > 1}
-                      onPrevious={decrementPageNum}
-                      hasNext={!isLoadingCount && currPageNum < totalPageNums}
-                      onNext={IncrementPageNum}
-                    />
-                    {!isLoadingCount && (
-                      <div className="Search-MF-Pagination-Caption-Wrapper">
-                        <Caption>
-                          Page {currPageNum} of {totalPageNums}
-                        </Caption>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
-              {resourceType === 'shop' && (
-                <MetafieldsForm
-                  resource={shopResource}
-                  resourceType={resourceType}
-                />
-              )}
+      <MetafieldsFormWithModal
+        active={modalState.isOpen}
+        handleModalClose={contextValue.metafieldsModal.close}
+        resourceType={resourceType}
+        resource={modalState.resource}
+      />
+      <Card>
+        <Card.Section>
+          <Stack wrap={false} alignment="leading" spacing="tight">
+            <Stack.Item>
+              <SelectResourceType
+                disabled={resourceListState.loading}
+                onChange={handleResourceTypeChange}
+                currentResource={activeResource}
+                onCurrentResourceClick={contextValue.metafieldsModal.open}
+              />
             </Stack.Item>
-          </Card.Section>
-        </Card>
-      </Layout.Section>
+            <Stack.Item fill>
+              <Search
+                resourceType={resourceType}
+                onClearButtonClick={onClearButtonClick}
+                onChange={setSearchQuery}
+                value={searchQuery}
+                disabled={resourceListState.loading || resourceType === 'shop'}
+              />
+            </Stack.Item>
+          </Stack>
+        </Card.Section>
+        <Card.Section>
+          <Stack.Item fill>
+            {resourceType !== 'shop' && (
+              <>
+                <ResourceList
+                  resourceType={resourceType}
+                  items={resourceListState.items}
+                  loading={resourceListState.loading}
+                  error={resourceListState.error}
+                />
+                <div className="text-center Search-MF-Pagination-Wrapper">
+                  <Pagination
+                    hasPrevious={!isLoadingCount && currPageNum > 1}
+                    onPrevious={decrementPageNum}
+                    hasNext={!isLoadingCount && currPageNum < totalPageNums}
+                    onNext={IncrementPageNum}
+                  />
+                  {!isLoadingCount && (
+                    <div className="Search-MF-Pagination-Caption-Wrapper">
+                      <Caption>
+                        Page {currPageNum} of {totalPageNums}
+                      </Caption>
+                    </div>
+                  )}
+                </div>
+              </>
+            )}
+            {resourceType === 'shop' && (
+              <MetafieldsForm
+                resource={shopResource}
+                resourceType={resourceType}
+              />
+            )}
+          </Stack.Item>
+        </Card.Section>
+      </Card>
     </MetafieldsContext.Provider>
   )
 }

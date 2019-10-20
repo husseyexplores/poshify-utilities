@@ -11,13 +11,20 @@
     *,
     *::before,
     *::after {
-      box-sizing: border-box
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
     }
 
     body {
       margin: 0;
       padding: 0;
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, 'Helvetica Neue', sans-serif;
+      min-width: 250px;
+    }
+
+    p {
+      margin-bottom: 10px;
     }
 
     .container {
@@ -27,7 +34,7 @@
       padding: 20px 30px;
     }
 
-    .load-app {
+    .button {
       touch-action: manipulation;
       border-color: #3f4eae;
       color: #fff;
@@ -57,27 +64,43 @@
       transition-timing-function: cubic-bezier(.64,0,.35,1);
     }
 
-    .load-app > span {
+    .button > span {
       font-size: 15px;
       font-weight: 400;
       display: block;
       white-space: nowrap;
     }
 
-    .load-app:hover {
+    .button:hover {
       background: linear-gradient(180deg,#5c6ac4,#4959bd);
       text-decoration: none;
       border-color: #c4cdd5;
       color: #fff;
     }
 
-    .load-app[disabled],
-    .load-app[disabled]:hover {
+    .button:hover {
+      background: linear-gradient(180deg,#5c6ac4,#4959bd);
+    }
+
+    .button[disabled],
+    .button[disabled]:hover {
       border-color: #c4cdd5;
       cursor: initial;
       background: rgb(240, 240, 240);
       cursor: initial;
       color: rgb(156, 156, 156);
+    }
+    hr {
+      width: 100%;
+      border: none;
+      border-top: 2px solid #9c9c9c;
+      margin: 18px 0px;
+    }
+
+    .not_shopify {
+      padding: 10px;
+      font-size: 20px;
+      color: #444;
     }
   </style>
 </head>
@@ -85,8 +108,18 @@
 <body>
   <noscript>You need to enable JavaScript to run this extension.</noscript>
 
-  <div class="container">
-    <button type="button" class="load-app" id="mount_app" disabled>
+  <div class="not_shopify" id="not_shopify">
+    <p>Loading...</p>
+  </div>
+
+  <div class="container" style="display: none;">
+    <button type="button" class="button" id="toggle_visibility" disabled>
+      <span>Checking App Status...</span>
+    </button>
+    <hr>
+
+    <p class="help-text">If the app crashes, try unmounting and then remounting it.</p>
+    <button type="button" class="button" id="toggle_mount" disabled>
       <span>Checking App Status...</span>
     </button>
   </div>

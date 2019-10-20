@@ -119,6 +119,14 @@ export const resourceTypesArr = [
 export const resourceTypesMap = keyBy(resourceTypesArr, 'value')
 
 export function rangeNum(min, max) {
+  if (
+    (min && min === Infinity) ||
+    min === -Infinity ||
+    ((max && max === Infinity) || max === -Infinity)
+  ) {
+    throw new Error('min/max cannot be Infinity')
+  }
+
   const arr = []
   const first = max ? min : 0
   const last = max || min
@@ -249,4 +257,107 @@ export function getPageTitle(history) {
   if (pathname === '/csv-downloader') return 'CSV Downloader'
 
   return null
+}
+
+// map object/arrays
+export function map(obj, callback) {
+  if (isObject(obj)) {
+    const newObj = {}
+    for (const key in obj) {
+      const value = obj[key]
+      newObj[key] = callback(value, key, obj)
+    }
+    return newObj
+  } else if (Array.isArray(obj)) {
+    return obj.map(callback)
+  }
+
+  console.error(
+    `[forEach] - Expected an array or object as an argument, but got ${typeof objOrArry}`
+  )
+}
+
+// iterate over object/arrays
+export function forEach(obj, callback) {
+  if (isObject(obj)) {
+    for (const key in obj) {
+      const value = obj[key]
+      callback(value, key, obj)
+    }
+    return
+  } else if (Array.isArray(obj)) {
+    return obj.forEach(callback)
+  }
+
+  console.error(
+    `[forEach] - Expected an array or object as an argument, but got ${typeof objOrArry}`
+  )
+}
+
+// Works like Array.filter
+export function filter(obj, predicate) {
+  if (isObject(obj)) {
+    const filteredObj = {}
+    for (const key in obj) {
+      const value = obj[key]
+      const shouldKeep = predicate(value, key, obj)
+      if (shouldKeep) {
+        filteredObj[key] = value
+      }
+    }
+    return filteredObj
+  } else if (Array.isArray(obj)) {
+    return obj.filter(predicate)
+  }
+
+  console.error(
+    `[filter] - Expected an array or object as an argument, but got ${typeof objOrArry}`
+  )
+}
+
+export function isObject(value) {
+  const constructor = value && value.constructor && value.constructor.name
+  return (
+    constructor === 'Object' &&
+    typeof value === 'object' &&
+    !Array.isArray(value) &&
+    value !== null
+  )
+}
+
+export function findValue(objOrArry, predicate) {
+  if (Array.isArray(objOrArry)) {
+    const arr = objOrArry
+    const len = arr.length
+    for (let i = 0; i < len; i++) {
+      const value = arr[i]
+      if (predicate(value, i, arr)) {
+        return value
+      }
+    }
+    return null
+  } else if (isObject(objOrArry)) {
+    for (const key in objOrArry) {
+      const value = objOrArry[key]
+      if (predicate(value, key, objOrArry)) {
+        return value
+      }
+    }
+    return null
+  }
+
+  console.error(
+    `[findValue] - Expected an array or object as an argument, but got ${typeof objOrArry}`
+  )
+}
+
+export function hasJsonStructure(str) {
+  if (typeof str !== 'string') return false
+  try {
+    const result = JSON.parse(str)
+    const type = Object.prototype.toString.call(result)
+    return type === '[object Object]' || type === '[object Array]'
+  } catch (err) {
+    return false
+  }
 }

@@ -1,4 +1,3 @@
-import axios from 'axios'
 import { BASE_URL } from '../../../utils'
 
 const getLastItem = arr => arr[arr.length - 1]
@@ -12,50 +11,63 @@ if (process.env.NODE_ENV === 'production') {
   graphqlEndpoint = `${BASE_URL}/api/2019-07/graphql.json`
 }
 
+function fetchGqlQuery(url, body) {
+  return fetch(url, {
+    method: 'POST',
+    headers: {
+      accept: 'application/json',
+      'content-type': 'application/json',
+    },
+    credentials: 'include',
+    body: JSON.stringify(body),
+  }).then(res => {
+    if (res.ok) {
+      return res.json()
+    } else {
+      const err = new Error('[Poshify] - Error completing the network request.')
+      err.status = res.status
+      throw err
+    }
+  })
+}
+
 const queries = {
   articles: ({ term, first = 10, after = null, sortKey = 'TITLE' }) => {
-    return axios({
-      url: graphqlEndpointLegacy,
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
+    const query = {
+      variables: {
+        first,
+        reverse: false,
+        sortKey,
+        query: term,
+        after,
       },
-      data: JSON.stringify({
-        variables: {
-          first,
-          reverse: false,
-          sortKey,
-          query: term,
-          after,
-        },
-        query: `
-        query ArticleListLegacy($first: Int, $after: String, $query: String, $sortKey: OnlineStoreArticleSortKeys, $reverse: Boolean) {
-          onlineStore {
-            articles(first: $first, after: $after, query: $query, sortKey: $sortKey, reverse: $reverse) {
-              pageInfo {
-                hasPreviousPage
-                hasNextPage
-              }
-              edges {
-                cursor
-                node {
-                  id
-                  title
-                  updatedAt
-                }
+      query: `
+      query ArticleListLegacy($first: Int, $after: String, $query: String, $sortKey: OnlineStoreArticleSortKeys, $reverse: Boolean) {
+        onlineStore {
+          articles(first: $first, after: $after, query: $query, sortKey: $sortKey, reverse: $reverse) {
+            pageInfo {
+              hasPreviousPage
+              hasNextPage
+            }
+            edges {
+              cursor
+              node {
+                id
+                title
+                updatedAt
               }
             }
           }
         }
-        `,
-      }),
-    }).then(res => {
+      }
+      `,
+    }
+    return fetchGqlQuery(graphqlEndpointLegacy, query).then(res => {
       if (res.data.errors) {
         throw res.data.errors
       }
 
-      const { edges, pageInfo } = res.data.data.onlineStore.articles
+      const { edges, pageInfo } = res.data.onlineStore.articles
       const lastEdge = getLastItem(edges)
       const lastCursor = lastEdge ? lastEdge.cursor : null
       return {
@@ -66,48 +78,41 @@ const queries = {
     })
   },
   blogs: ({ term, first = 10, after = null, sortKey = 'TITLE' }) => {
-    return axios({
-      url: graphqlEndpointLegacy,
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
+    const query = {
+      variables: {
+        first,
+        reverse: false,
+        sortKey,
+        query: term,
+        after,
       },
-      data: JSON.stringify({
-        variables: {
-          first,
-          reverse: false,
-          sortKey,
-          query: term,
-          after,
-        },
-        query: `
-        query BlogListLegacy($first: Int, $after: String, $query: String, $sortKey: OnlineStoreBlogSortKeys, $reverse: Boolean) {
-          onlineStore {
-            blogs(first: $first, after: $after, query: $query, sortKey: $sortKey, reverse: $reverse) {
-              pageInfo {
-                hasPreviousPage
-                hasNextPage
-              }
-              edges {
-                cursor
-                node {
-                  id
-                  title
-                  updatedAt
-                }
+      query: `
+      query BlogListLegacy($first: Int, $after: String, $query: String, $sortKey: OnlineStoreBlogSortKeys, $reverse: Boolean) {
+        onlineStore {
+          blogs(first: $first, after: $after, query: $query, sortKey: $sortKey, reverse: $reverse) {
+            pageInfo {
+              hasPreviousPage
+              hasNextPage
+            }
+            edges {
+              cursor
+              node {
+                id
+                title
+                updatedAt
               }
             }
           }
         }
-        `,
-      }),
-    }).then(res => {
+      }
+      `,
+    }
+    return fetchGqlQuery(graphqlEndpointLegacy, query).then(res => {
       if (res.data.errors) {
         throw res.data.errors
       }
 
-      const { edges, pageInfo } = res.data.data.onlineStore.blogs
+      const { edges, pageInfo } = res.data.onlineStore.blogs
       const lastEdge = getLastItem(edges)
       const lastCursor = lastEdge ? lastEdge.cursor : null
       return {
@@ -118,20 +123,13 @@ const queries = {
     })
   },
   collections: ({ term, first = 10, after = null }) => {
-    return axios({
-      url: graphqlEndpoint,
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
+    const query = {
+      variables: {
+        first,
+        query: term,
+        after,
       },
-      data: JSON.stringify({
-        variables: {
-          first,
-          query: term,
-          after,
-        },
-        query: `
+      query: `
           query Collections($query: String!, $first: Int!, $after: String) {
             collections(first: $first, after: $after, query: $query) {
               edges {
@@ -153,13 +151,15 @@ const queries = {
             }
           }
         `,
-      }),
-    }).then(res => {
+    }
+    return fetchGqlQuery(graphqlEndpoint, query).then(res => {
       if (res.data.errors) {
         throw res.data.errors
       }
 
-      const { edges, pageInfo } = res.data.data.collections
+      // stuff here
+
+      const { edges, pageInfo } = res.data.collections
       const lastEdge = getLastItem(edges)
       const lastCursor = lastEdge ? lastEdge.cursor : null
       return {
@@ -170,49 +170,42 @@ const queries = {
     })
   },
   customers: ({ term, first = 10, after = null }) => {
-    return axios({
-      url: graphqlEndpoint,
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
+    const query = {
+      variables: {
+        first,
+        query: term,
+        after,
       },
-      data: JSON.stringify({
-        variables: {
-          first,
-          query: term,
-          after,
-        },
-        query: `
-          query Customers($query: String!, $first: Int!, $after: String) {
-            customers(first: $first, after: $after, query: $query) {
-              edges {
-                cursor
-                node {
-                  id
-                  title: displayName
-                  email
-                  ordersCount
-                  image {
-                    transformedSrc(maxWidth: 50, maxHeight: 50, crop: CENTER)
-                    originalSrc
-                  }
+      query: `
+        query Customers($query: String!, $first: Int!, $after: String) {
+          customers(first: $first, after: $after, query: $query) {
+            edges {
+              cursor
+              node {
+                id
+                title: displayName
+                email
+                ordersCount
+                image {
+                  transformedSrc(maxWidth: 50, maxHeight: 50, crop: CENTER)
+                  originalSrc
                 }
               }
-              pageInfo {
-                hasNextPage
-                hasPreviousPage
-              }
+            }
+            pageInfo {
+              hasNextPage
+              hasPreviousPage
             }
           }
-        `,
-      }),
-    }).then(res => {
+        }
+      `,
+    }
+    return fetchGqlQuery(graphqlEndpoint, query).then(res => {
       if (res.data.errors) {
         throw res.data.errors
       }
 
-      const { edges, pageInfo } = res.data.data.customers
+      const { edges, pageInfo } = res.data.customers
       const lastEdge = getLastItem(edges)
       const lastCursor = lastEdge ? lastEdge.cursor : null
       return {
@@ -223,49 +216,42 @@ const queries = {
     })
   },
   draft_orders: ({ term, first = 10, after = null }) => {
-    return axios({
-      url: graphqlEndpoint,
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
+    const query = {
+      variables: {
+        first,
+        query: term,
+        after,
       },
-      data: JSON.stringify({
-        variables: {
-          first,
-          query: term,
-          after,
-        },
-        query: `
-          query DraftOrders($query: String!, $first: Int!, $after: String) {
-            draftOrders(first: $first, after: $after, query: $query) {
-              edges {
-                cursor
-                node {
-                  email
-                  id
-                  name
-                  title: name
-                  customer {
-                    displayName
-                  }
-                  totalPrice
+      query: `
+        query DraftOrders($query: String!, $first: Int!, $after: String) {
+          draftOrders(first: $first, after: $after, query: $query) {
+            edges {
+              cursor
+              node {
+                email
+                id
+                name
+                title: name
+                customer {
+                  displayName
                 }
-              }
-              pageInfo {
-                hasNextPage
-                hasPreviousPage
+                totalPrice
               }
             }
+            pageInfo {
+              hasNextPage
+              hasPreviousPage
+            }
           }
-        `,
-      }),
-    }).then(res => {
+        }
+      `,
+    }
+    return fetchGqlQuery(graphqlEndpoint, query).then(res => {
       if (res.data.errors) {
         throw res.data.errors
       }
 
-      const { edges, pageInfo } = res.data.data.draftOrders
+      const { edges, pageInfo } = res.data.draftOrders
       const lastEdge = getLastItem(edges)
       const lastCursor = lastEdge ? lastEdge.cursor : null
       return {
@@ -276,54 +262,47 @@ const queries = {
     })
   },
   orders: ({ term, first = 10, after = null }) => {
-    return axios({
-      url: graphqlEndpoint,
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
+    const query = {
+      variables: {
+        first,
+        query: term,
+        after,
       },
-      data: JSON.stringify({
-        variables: {
-          first,
-          query: term,
-          after,
-        },
-        query: `
-          query Orders($query: String!, $first: Int!, $after: String) {
-            orders(first: $first, after: $after, query: $query) {
-              edges {
-                cursor
-                node {
-                  email
-                  id
-                  name
-                  title: name
-                  customer {
-                    displayName
-                  }
-                  totalPriceSet {
-                    shopMoney {
-                      amount
-                      currencyCode
-                    }
+      query: `
+        query Orders($query: String!, $first: Int!, $after: String) {
+          orders(first: $first, after: $after, query: $query) {
+            edges {
+              cursor
+              node {
+                email
+                id
+                name
+                title: name
+                customer {
+                  displayName
+                }
+                totalPriceSet {
+                  shopMoney {
+                    amount
+                    currencyCode
                   }
                 }
               }
-              pageInfo {
-                hasNextPage
-                hasPreviousPage
-              }
+            }
+            pageInfo {
+              hasNextPage
+              hasPreviousPage
             }
           }
-        `,
-      }),
-    }).then(res => {
+        }
+      `,
+    }
+    return fetchGqlQuery(graphqlEndpoint, query).then(res => {
       if (res.data.errors) {
         throw res.data.errors
       }
 
-      const { edges, pageInfo } = res.data.data.orders
+      const { edges, pageInfo } = res.data.orders
       const lastEdge = getLastItem(edges)
       const lastCursor = lastEdge ? lastEdge.cursor : null
       return {
@@ -334,48 +313,41 @@ const queries = {
     })
   },
   pages: ({ term, first = 10, after = null, sortKey = 'TITLE' }) => {
-    return axios({
-      url: graphqlEndpointLegacy,
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
+    const query = {
+      variables: {
+        first,
+        reverse: false,
+        sortKey,
+        query: term,
+        after,
       },
-      data: JSON.stringify({
-        variables: {
-          first,
-          reverse: false,
-          sortKey,
-          query: term,
-          after,
-        },
-        query: `
-        query PageListLegacy($first: Int, $after: String, $query: String, $sortKey: OnlineStorePageSortKeys, $reverse: Boolean) {
-          onlineStore {
-            pages(first: $first, after: $after, query: $query, sortKey: $sortKey, reverse: $reverse) {
-              pageInfo {
-                hasPreviousPage
-                hasNextPage
-              }
-              edges {
-                cursor
-                node {
-                  id
-                  title
-                  updatedAt
-                }
+      query: `
+      query PageListLegacy($first: Int, $after: String, $query: String, $sortKey: OnlineStorePageSortKeys, $reverse: Boolean) {
+        onlineStore {
+          pages(first: $first, after: $after, query: $query, sortKey: $sortKey, reverse: $reverse) {
+            pageInfo {
+              hasPreviousPage
+              hasNextPage
+            }
+            edges {
+              cursor
+              node {
+                id
+                title
+                updatedAt
               }
             }
           }
         }
-        `,
-      }),
-    }).then(res => {
+      }
+      `,
+    }
+    return fetchGqlQuery(graphqlEndpointLegacy, query).then(res => {
       if (res.data.errors) {
         throw res.data.errors
       }
 
-      const { edges, pageInfo } = res.data.data.onlineStore.pages
+      const { edges, pageInfo } = res.data.onlineStore.pages
       const lastEdge = getLastItem(edges)
       const lastCursor = lastEdge ? lastEdge.cursor : null
       return {
@@ -386,49 +358,42 @@ const queries = {
     })
   },
   products: ({ term, first = 10, after = null }) => {
-    return axios({
-      url: graphqlEndpoint,
-      method: 'POST',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
+    const query = {
+      variables: {
+        first,
+        query: term,
+        after,
       },
-      data: JSON.stringify({
-        variables: {
-          first,
-          query: term,
-          after,
-        },
-        query: `
-          query Products($query: String!, $first: Int!, $after: String) {
-            products(first: $first, after: $after, query: $query) {
-              edges {
-                cursor
-                node {
-                  id
-                  handle
-                  title
-                  onlineStoreUrl
-                  image: featuredImage {
-                    originalSrc
-                    transformedSrc(maxWidth: 50, maxHeight: 50, crop: CENTER)
-                  }
+      query: `
+        query Products($query: String!, $first: Int!, $after: String) {
+          products(first: $first, after: $after, query: $query) {
+            edges {
+              cursor
+              node {
+                id
+                handle
+                title
+                onlineStoreUrl
+                image: featuredImage {
+                  originalSrc
+                  transformedSrc(maxWidth: 50, maxHeight: 50, crop: CENTER)
                 }
               }
-              pageInfo {
-                hasNextPage
-                hasPreviousPage
-              }
+            }
+            pageInfo {
+              hasNextPage
+              hasPreviousPage
             }
           }
-        `,
-      }),
-    }).then(res => {
+        }
+      `,
+    }
+    return fetchGqlQuery(graphqlEndpoint, query).then(res => {
       if (res.data.errors) {
         throw res.data.errors
       }
 
-      const { edges, pageInfo } = res.data.data.products
+      const { edges, pageInfo } = res.data.products
       const lastEdge = getLastItem(edges)
       const lastCursor = lastEdge ? lastEdge.cursor : null
       return {

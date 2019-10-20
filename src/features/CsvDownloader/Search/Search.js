@@ -1,12 +1,13 @@
-import React, { useState, useEffect, useContext } from 'react'
+import React, { useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import classname from 'classnames'
-import { Thumbnail, Avatar } from '@shopify/polaris'
-import Downshift from 'downshift'
+import { Thumbnail, Stack } from '@shopify/polaris'
+import { Checkbox } from 'antd'
+import MultiDownshift from '../../../common/components/MultiDownshift'
 
 import queries from './queries'
 import useDebounce from '../../../common/hooks/useDebounce'
-import { resourceTypesArr } from '../../../utils'
+import { findValue } from '../../../utils'
 
 import './Search.scss'
 
@@ -20,7 +21,7 @@ const initialState = {
   lastCursor: null,
 }
 
-function stateReducer(state, changes) {
+function downshiftStateReducer(state, changes) {
   // this prevents the menu from being closed when the user
   // click on 'Load more'
   if (changes.selectedItem === 'LOAD_MORE') {
@@ -40,24 +41,25 @@ function Search({
   placeholder,
   disabled,
   onClearButtonClick,
-  resourceType,
+  selectedItems,
+  onSelectionChange,
+  onSelect,
+  onUnselect,
 }) {
   const deboucedVal = useDebounce(value, 500)
   const [state, setState] = useState(initialState)
-  // const { metafieldsModal } = useContext(MetafieldsContext)
 
   // On query Change
   useEffect(() => {
-    if (!deboucedVal || resourceType === 'shop') {
+    if (!deboucedVal) {
       setState(initialState)
       return
     }
 
     setState(prevState => ({ ...prevState, loading: true, error: null }))
 
-    const fn = queries[resourceType]
-    if (typeof fn !== 'function') return
-    fn({ term: deboucedVal, first: 15 })
+    queries
+      .products({ term: deboucedVal, first: 15 })
       .then(res => {
         const { edges, hasNextPage, lastCursor } = res
 
@@ -78,7 +80,7 @@ function Search({
           lastCursor: null,
         })
       })
-  }, [deboucedVal, resourceType])
+  }, [deboucedVal])
 
   // On load more
   const onLoadMoreResults = () => {
@@ -86,11 +88,12 @@ function Search({
 
     setState(prevState => ({ ...prevState, loading: true }))
 
-    queries[resourceType]({
-      term: deboucedVal,
-      first: 15,
-      after: state.lastCursor,
-    })
+    queries
+      .products({
+        term: deboucedVal,
+        first: 15,
+        after: state.lastCursor,
+      })
       .then(res => {
         const { edges, hasNextPage, lastCursor } = res
 
@@ -113,22 +116,37 @@ function Search({
       })
   }
 
+  const handleChange = selected => {
+    if (onSelectionChange) {
+      onSelectionChange(selected)
+    }
+  }
+
   return (
     <div>
-      <Downshift
+      <MultiDownshift
         inputValue={value}
-        stateReducer={stateReducer}
+        stateReducer={downshiftStateReducer}
+        selectedItems={selectedItems}
         onSelect={item => {
           if (item === 'LOAD_MORE') {
             if (!state.loading) {
               onLoadMoreResults()
+              return false
             }
           } else if (item && item.id) {
-            const id = Number(item.id.match(/\d+/)[0])
-            // metafieldsModal.open({ ...item, id })
+            onSelect && onSelect(item)
           }
         }}
-        itemToString={item => (item && item.id ? item.id : item || '')}
+        onUnselect={onUnselect}
+        itemToString={item =>
+          item && item.title
+            ? item.title || item.first_name || item.id
+            : typeof item === 'string'
+            ? item
+            : ''
+        }
+        onChange={handleChange}
       >
         {({
           getInputProps,
@@ -136,14 +154,15 @@ function Search({
           getItemProps,
           highlightedIndex,
           isOpen,
-          clearSelection,
           openMenu,
           inputValue,
+          selectedItems: downshiftSelectedItems,
         }) => {
           const menuOpen = isOpen && inputValue && !disabled
+          // const menuOpen = true
 
           return (
-            <div className="Polaris-DownshiftSearch-Wrapper">
+            <div className="Polaris-MultiDownshiftSearch-Wrapper">
               <div
                 className={classname('Polaris-TextField', {
                   'Polaris-TextField--hasValue': Boolean(value),
@@ -166,10 +185,7 @@ function Search({
                 {Boolean(inputValue) && (
                   <button
                     className="Polaris-TextField__ClearButton"
-                    onClick={() => {
-                      onClearButtonClick()
-                      clearSelection()
-                    }}
+                    onClick={onClearButtonClick}
                   >
                     <span className="Polaris-VisuallyHidden">Clear</span>
                     <span className="Polaris-Icon Polaris-Icon--colorInkLightest Polaris-Icon--isColored">
@@ -205,7 +221,9 @@ function Search({
                       {(() => {
                         const { edges, hasNextPage, loading, error } = state
                         if (error) {
-                          return 'Oops! An error occurred'
+                          return typeof error === 'string'
+                            ? error
+                            : 'Oops! An error occurred'
                         }
 
                         if (!loading && edges && edges.length === 0) {
@@ -232,83 +250,75 @@ function Search({
                               (
                                 {
                                   node: {
-                                    title,
                                     id,
+                                    handle,
                                     image,
-                                    email,
-                                    customer,
-                                    totalPriceSet,
-                                    ordersCount,
+                                    product_type,
+                                    title,
                                   },
                                 },
                                 index
-                              ) => (
-                                <li
-                                  key={id}
-                                  {...getItemProps({
-                                    className: 'Polaris-OptionList-Option',
-                                    tabIndex: '-1',
-                                    index,
-                                    item: {
-                                      id,
-                                      title: title
-                                        ? title
-                                        : customer
-                                        ? customer.displayName
-                                        : '<Unknown>',
-                                    },
-                                  })}
-                                >
-                                  <button
-                                    tabIndex="0"
-                                    type="button"
-                                    className={classname(
-                                      'Polaris-OptionList-Option__SingleSelectOption',
-                                      {
-                                        'Polaris-OptionList-Option--focused':
-                                          highlightedIndex === index,
-                                        'font-bold': highlightedIndex === index,
-                                      }
-                                    )}
+                              ) => {
+                                const isSelected = Boolean(
+                                  findValue(
+                                    downshiftSelectedItems,
+                                    value =>
+                                      value.id.toString() === id.toString()
+                                  )
+                                )
+
+                                return (
+                                  <li
+                                    key={id}
+                                    {...getItemProps({
+                                      className: classname(
+                                        'Polaris-OptionList-Option'
+                                      ),
+                                      tabIndex: '-1',
+                                      index,
+                                      item: {
+                                        id,
+                                        handle,
+                                        image,
+                                        product_type,
+                                        title,
+                                      },
+                                    })}
                                   >
-                                    {(resourceType === 'products' ||
-                                      resourceType === 'collections') && (
-                                      <Thumbnail
-                                        source={
-                                          image && image.transformedSrc
-                                            ? image.transformedSrc
-                                            : 'https://cdn.shopify.com/s/files/1/2388/0287/files/placeholder-img.png?4600'
+                                    <button
+                                      tabIndex="0"
+                                      type="button"
+                                      className={classname(
+                                        'Polaris-OptionList-Option__SingleSelectOption',
+                                        {
+                                          'Polaris-OptionList-Option--focused':
+                                            highlightedIndex === index,
+                                          'font-bold':
+                                            highlightedIndex === index,
                                         }
-                                        size="small"
-                                        alt={title}
-                                      />
-                                    )}
-                                    {resourceType === 'customers' && (
-                                      <div className="Search-Customer-Avatar-Wrapper">
-                                        <Avatar customer name={title} />
-                                      </div>
-                                    )}
-                                    {[
-                                      title,
-                                      customer && customer.displayName,
-                                      email,
-                                      ordersCount &&
-                                        `Total Orders: ${ordersCount}`,
-                                      totalPriceSet &&
-                                        new Intl.NumberFormat('en-US', {
-                                          style: 'currency',
-                                          currency:
-                                            totalPriceSet.shopMoney
-                                              .currencyCode,
-                                        }).format(
-                                          totalPriceSet.shopMoney.amount
-                                        ),
-                                    ]
-                                      .filter(Boolean)
-                                      .join(' | ')}
-                                  </button>
-                                </li>
-                              )
+                                      )}
+                                    >
+                                      <Stack alignment="center">
+                                        <Stack.Item>
+                                          <Checkbox checked={isSelected} />
+                                        </Stack.Item>
+                                        <Stack.Item>
+                                          <Thumbnail
+                                            source={
+                                              image && image.src
+                                                ? image.src
+                                                : 'https://cdn.shopify.com/s/files/1/2388/0287/files/placeholder-img.png?4600'
+                                            }
+                                            size="small"
+                                            alt={title}
+                                          />
+                                        </Stack.Item>
+                                      </Stack>
+                                      {title}
+                                    </button>
+                                  </li>
+                                )
+                              }
                             )
                             .concat(
                               state.hasNextPage ? (
@@ -370,7 +380,7 @@ function Search({
             </div>
           )
         }}
-      </Downshift>
+      </MultiDownshift>
     </div>
   )
 }
@@ -378,14 +388,15 @@ function Search({
 // ------------------------------------------------------------------
 
 Search.propTypes = {
+  onSelect: PropTypes.func,
+  onUnselect: PropTypes.func,
   onChange: PropTypes.func,
   onClearButtonClick: PropTypes.func,
   value: PropTypes.string,
-  resourceType: PropTypes.oneOf(resourceTypesArr.map(({ value }) => value)),
   placeholder: PropTypes.string,
   disabled: PropTypes.bool,
-  selectedItems: PropTypes.array.isRequired,
-  setSelectedItems: PropTypes.func.isRequired,
+  selectedItems: PropTypes.oneOfType([PropTypes.object, PropTypes.array]),
+  onSelectionChange: PropTypes.func,
 }
 
 Search.defaultProps = {
@@ -394,7 +405,6 @@ Search.defaultProps = {
   value: '',
   placeholder: 'Search',
   disabled: false,
-  resourceType: 'products',
 }
 
 export default Search

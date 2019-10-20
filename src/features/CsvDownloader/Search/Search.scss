@@ -1,8 +1,14 @@
-.Polaris-DownshiftSearch-Wrapper {
+.Polaris-MultiDownshiftSearch-Wrapper {
 
   .Polaris-OptionList__Options {
-    max-height: 250px;
+    max-height: 450px;
     overflow-y: auto;
+  }
+
+  .Polaris-OptionList-Option.highlighted {
+    background: var(--p-button-color,linear-gradient(180deg,#6371c7,#5563c1));
+    color: var(--p-text-on-branded,#fff);
+    font-weight: 700;
   }
 
   .Polaris-Thumbnail {

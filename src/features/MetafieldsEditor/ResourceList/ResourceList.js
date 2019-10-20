@@ -1,12 +1,10 @@
 import React, { useContext, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import {
-  SkeletonThumbnail,
   Avatar,
   DataTable,
   Button,
   Thumbnail,
-  SkeletonBodyText,
   Caption,
   DisplayText,
   ResourceList as PolarisResourceList,
@@ -14,9 +12,10 @@ import {
 } from '@shopify/polaris'
 import { getSizedImageUrl } from '@shopify/theme-images'
 
+import ResourceListSkeleton from '../../../common/Skeletons/ResourceListSkeleton'
 import { MetafieldsContext } from '../MetafieldsEditor'
 
-import { rangeNum, resourceTypesArr, resourceTypesMap } from '../../../utils'
+import { resourceTypesArr, resourceTypesMap } from '../../../utils'
 
 import './ResourceList.scss'
 
@@ -62,7 +61,7 @@ function ResourceList({ items, resourceType, loading, error }) {
         </DisplayText>
       )}
       {error && <DisplayText size="small">{error}</DisplayText>}
-      {loading && getSkeletonTable()}
+      {loading && <ResourceListSkeleton />}
     </>
   )
 }
@@ -264,40 +263,6 @@ function renderGenericTable(items, handleModalOpen) {
       initialSortColumnIndex={1}
     />
   )
-}
-
-// ------------------------------------------------------------------
-
-function getSkeletonTable(numRows) {
-  return rangeNum(numRows ? numRows : 7).map(num => (
-    <div
-      key={num + 'results-row-sekel'}
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        padding: '1.6rem',
-        borderBottom: '0.1rem solid #f4f6f8',
-      }}
-    >
-      <div style={{ width: '10%' }}>
-        <SkeletonThumbnail size="small" />
-      </div>
-      <div style={{ width: '45%' }}>
-        <div style={{ maxWidth: '200px', marginBottom: '10px' }}>
-          <SkeletonBodyText size="small" lines={1} />
-        </div>
-        <div style={{ maxWidth: '150px' }}>
-          <SkeletonBodyText size="small" lines={1} />
-        </div>
-      </div>
-
-      <div style={{ width: '45%' }}>
-        <div style={{ maxWidth: '200px' }}>
-          <SkeletonBodyText size="small" lines={1} />
-        </div>
-      </div>
-    </div>
-  ))
 }
 
 // ------------------------------------------------------------------

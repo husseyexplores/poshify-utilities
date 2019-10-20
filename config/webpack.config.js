@@ -302,6 +302,29 @@ module.exports = function(webpackEnv) {
     module: {
       strictExportPresence: true,
       rules: [
+        {
+          test: /\.less$/,
+          use: [
+            {
+              loader: 'style-loader',
+            },
+            {
+              loader: 'css-loader', // translates CSS into CommonJS
+            },
+            {
+              loader: 'less-loader', // compiles Less to CSS
+              options: {
+                modifyVars: {
+                  'primary-color': '#5C6AC4',
+                  'link-color': '#5C6AC4',
+                  'border-radius-base': '2px',
+                },
+                javascriptEnabled: true,
+              },
+            },
+          ],
+          // ...other rules
+        },
         // Disable require.ensure as it's not a standard language feature.
         { parser: { requireEnsure: false } },
 
@@ -357,6 +380,14 @@ module.exports = function(webpackEnv) {
                           ReactComponent: '@svgr/webpack?-svgo,+ref![path]',
                         },
                       },
+                    },
+                  ],
+                  [
+                    'import',
+                    {
+                      libraryName: 'antd',
+                      libraryDirectory: 'es',
+                      style: true,
                     },
                   ],
                 ],
@@ -469,7 +500,12 @@ module.exports = function(webpackEnv) {
               // its runtime that would otherwise be processed through "file" loader.
               // Also exclude `html` and `json` extensions so they get processed
               // by webpacks internal loaders.
-              exclude: [/\.(js|mjs|jsx|ts|tsx)$/, /\.html$/, /\.json$/],
+              exclude: [
+                /\.less$/,
+                /\.(js|mjs|jsx|ts|tsx)$/,
+                /\.html$/,
+                /\.json$/,
+              ],
               options: {
                 name: 'static/media/[name].[hash:8].[ext]',
               },
