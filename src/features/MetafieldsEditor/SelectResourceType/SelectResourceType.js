@@ -1,7 +1,8 @@
 import React, { useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { Button, Popover, ActionList, ButtonGroup } from '@shopify/polaris'
-import { resourceTypesArr, resourceTypesMap } from '../../utils'
+
+import { resourceTypesArr, resourceTypesMap } from '../../../utils'
 
 // ------------------------------------------------------------------
 

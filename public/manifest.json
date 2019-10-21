@@ -1,10 +1,10 @@
 {
   "manifest_version": 2,
-  "short_name": "Shopify Metafields Editor",
-  "name": "Shopify Metafields Editor",
-  "description": "Edit Shopify Metafields without any app for free!",
+  "short_name": "Poshify Utilities",
+  "name": "Poshify Utilities",
+  "description": "Some posh utilities for Shopify developers and merchants 🎉. Notably, metafields editor",
   "author": "Husseyexplores",
-  "version": "0.1.8",
+  "version": "1.1.1",
   "browser_action": {
     "default_icon": "/img/128.png",
     "default_popup": "/popup.html"
@@ -16,9 +16,11 @@
   },
   "content_scripts": [
     {
-      "matches": ["https://*.myshopify.com/admin", "https://*.myshopify.com/admin/", "https://*.myshopify.com/admin/*", "https://*.myshopify.com/admin/*/*"],
+      "matches": ["https://*.myshopify.com/admin*"],
+      "exclude_matches": ["https://*.myshopify.com/admin/themes/*/editor*", "https://*.myshopify.com/admin/*.xml*"],
       "css": ["/static/css/bundle.css"],
-      "js": ["/static/js/bundle.js"]
+      "js": ["/static/js/bundle.js"],
+      "run_at": "document_end"
     }
   ],
   "web_accessible_resources":[

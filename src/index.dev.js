@@ -2,8 +2,9 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { AppProvider } from '@shopify/polaris'
 import '@shopify/polaris/styles.css'
-import './App.css'
+import 'antd/dist/antd.less'
 
+import './App.css'
 import App from './App'
 
 // ------------------------------------------------------------------------------

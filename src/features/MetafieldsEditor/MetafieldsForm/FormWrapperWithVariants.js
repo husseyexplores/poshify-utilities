@@ -1,29 +1,36 @@
-import React, { useEffect, useState, useRef } from 'react'
+import React, { useEffect, useState } from 'react'
 import PropTypes from 'prop-types'
 import { Heading, Stack } from '@shopify/polaris'
 
 import MetafieldsForm from './MetafieldsForm'
-import Accordion from '../../common/components/Accordion'
-import { Spinner } from '../../common/components/Spinners'
+import Accordion from '../../../common/components/Accordion'
+import { Spinner } from '../../../common/components/Spinners'
+import useUnmountStatus from '../../../common/hooks/useUnmountStatus'
 
-import { resourceTypesArr, BASE_URL } from '../../utils'
-import axios, { CancelToken } from 'axios'
+import { resourceTypesArr, BASE_URL } from '../../../utils'
 
 // ------------------------------------------------------------------
 
 function FormWrapperWithVariants({ resourceType, resource }) {
   const [variants, setVariants] = useState(null)
-  const reqCancellerRef = useRef(null)
+  const unmounted = useUnmountStatus()
 
   useEffect(() => {
     ;(async () => {
       try {
-        reqCancellerRef.current = CancelToken.source()
-        const {
-          data: { product },
-        } = await axios.get(`${BASE_URL}/products/${resource.id}.json`, {
-          cancelToken: reqCancellerRef.current.token,
-        })
+        const { product } = await (await fetch(
+          `${BASE_URL}/products/${resource.id}.json`,
+          {
+            headers: {
+              accept: 'application/json',
+              'content-type': 'application/json',
+            },
+            credentials: 'include',
+          }
+        )).json()
+
+        if (unmounted.current) return
+
         // Store selected data only
         setVariants(
           product.variants.map(({ id, title, image_id, sku }) => ({
@@ -34,16 +41,10 @@ function FormWrapperWithVariants({ resourceType, resource }) {
           }))
         )
       } catch (e) {
-        console.log('Error fetching variants')
+        console.log('[Poshify] - Error fetching variants metafields')
       }
     })()
-
-    return () => {
-      reqCancellerRef.current &&
-        typeof reqCancellerRef.current.cancel === 'function' &&
-        reqCancellerRef.current.cancel('Form closed!')
-    }
-  }, [resourceType, resource.id])
+  }, [resourceType, resource.id, unmounted])
 
   return (
     <>

@@ -18,12 +18,11 @@ import {
 import ReactJSONView from 'react-json-view'
 import { withFormik } from 'formik'
 import cx from 'classnames'
-import axios, { CancelToken } from 'axios'
 
-import { AppContext } from '../../App'
-import TypeAhead from '../../common/components/TypeAhead'
-import { OverlaySpinner } from '../../common/components/Spinners'
-import ConfirmModal from '../../common/components/ConfirmModal'
+import { AppContext } from '../../../App'
+import TypeAhead from '../../../common/components/TypeAhead'
+import { OverlaySpinner } from '../../../common/components/Spinners'
+import ConfirmModal from '../../../common/components/ConfirmModal'
 
 import {
   makeMetafieldsMap,
@@ -35,7 +34,8 @@ import {
   makeObject,
   capitalize,
   sortMetafields,
-} from '../../utils'
+  hasJsonStructure,
+} from '../../../utils'
 
 import './MetafieldsForm.scss'
 
@@ -61,23 +61,23 @@ function formatErr(errs) {
   return errs
 }
 
-async function getResourceMetafields(url, ref) {
+async function getResourceMetafields(url) {
   let limit = url.match(/limit=(\d+)/)
   limit = limit ? Number(limit[1]) : 250
 
   const helperFetch = async (_url, arr) => {
     try {
-      const resp = await axios.get(_url, {
-        cancelToken: new CancelToken(c => {
-          if (ref && ref.current) {
-            ref.current = c
-          }
-        }),
-      })
-      arr = arr.concat(resp.data.metafields) // eslint-disable-line no-param-reassign
+      const { metafields } = await (await fetch(_url, {
+        credentials: 'include',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+        },
+      })).json()
+      arr = arr.concat(metafields) // eslint-disable-line no-param-reassign
 
       // base case if metafields are less than the max limit
-      if (resp.data.metafields.length < limit) {
+      if (metafields.length < limit) {
         return arr
       }
 
@@ -138,7 +138,6 @@ function MetafieldsForm({
   const [confirmDeleteModalOpen, setConfirmDeleteModalOpen] = useState(false)
   const [isJsonEditor, setIsJsonEditor] = useState(false)
   const unmounted = useRef(false)
-  const reqCancellerRef = useRef(null)
 
   useEffect(() => {
     unmounted.current = false
@@ -161,7 +160,7 @@ function MetafieldsForm({
     })
 
     try {
-      const metafields = await getResourceMetafields(url, reqCancellerRef)
+      const metafields = await getResourceMetafields(url)
       const formattedMetafields = byNamespaceDotKey(metafields) // we also convert integer values into strings here, for the sake for formik/dirty handling. If we don't do this here, we would need to do this in multiple places, scattered everywhere.
 
       const { namespace, key } = values
@@ -202,9 +201,7 @@ function MetafieldsForm({
       resetForm(updatedValues)
       setErrors({})
     } catch (e) {
-      if (!axios.isCancel(e)) {
-        console.log(e)
-      }
+      console.log(`[Poshify] - Error fetching data.`)
     }
   }, [
     parentResource,
@@ -223,14 +220,7 @@ function MetafieldsForm({
     ;(async () => {
       fetchResourceMetafields()
     })()
-    return () => {
-      /* eslint-disable react-hooks/exhaustive-deps */
-      reqCancellerRef.current &&
-        typeof reqCancellerRef.current === 'function' &&
-        reqCancellerRef.current()
-    }
-  }, [resource])
-  /* eslint-enable react-hooks/exhaustive-deps */
+  }, [resource]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleNamspceDotKeyChange = useCallback(
     val => {
@@ -385,15 +375,25 @@ function MetafieldsForm({
 
     getCsrfToken()
       .then(token =>
-        axios({
-          url,
+        fetch(url, {
           method: 'DELETE',
           headers: {
+            accept: 'application/json',
             'content-type': 'application/json',
             'x-csrf-token': token,
           },
+          credentials: 'include',
         })
       )
+      .then(res => {
+        if (res.ok) {
+          return res.json()
+        } else {
+          const err = new Error('Error completing the network request.')
+          err.status = res.status
+          throw err
+        }
+      })
       .then(() => {
         toast.info('Metafield deleted')
         if (unmounted.current) return
@@ -435,7 +435,7 @@ function MetafieldsForm({
         setErrors({})
       })
       .catch(e => {
-        if (axios.isCancel(e) || unmounted.current) return
+        if (unmounted.current) return
         if (
           e === 'NO_CSRF_TOKEN_FOUND' ||
           e.message === 'NO_CSRF_TOKEN_FOUND'
@@ -476,25 +476,36 @@ function MetafieldsForm({
 
     getCsrfToken()
       .then(token =>
-        axios({
+        fetch(url, {
           url,
           method: 'POST',
           headers: {
+            accept: 'application/json',
             'content-type': 'application/json',
             'x-csrf-token': token,
           },
-          data: {
+          credentials: 'include',
+          body: JSON.stringify({
             metafield: {
               namespace,
               key,
               value: saveAs === 'integer' ? Number(value) : value,
               value_type: saveAs,
             },
-          },
+          }),
         })
       )
+      .then(res => {
+        if (res.ok) {
+          return res.json()
+        } else {
+          const err = new Error('Error completing the network request.')
+          err.status = res.status
+          throw err
+        }
+      })
       .then(resp => {
-        if (!resp.data.metafield) {
+        if (!resp.metafield) {
           throw new Error('NO_CSRF_TOKEN_FOUND')
         }
 
@@ -506,7 +517,7 @@ function MetafieldsForm({
         // Created new? update the state
         if (!isEditting) {
           // formatted metafield
-          const mf = byNamespaceDotKey(resp.data.metafield)
+          const mf = byNamespaceDotKey(resp.metafield)
           const metafields = sortMetafields(state.metafields.concat(mf))
 
           const metafieldsMap = state.metafieldsMap
@@ -543,7 +554,7 @@ function MetafieldsForm({
         }
       })
       .catch(e => {
-        if (axios.isCancel(e) || unmounted.current) return
+        if (unmounted.current) return
 
         toast.error('Unexpected error occurred')
         if (
@@ -600,7 +611,9 @@ function MetafieldsForm({
   const { namespace, key, value, saveAs, selectedMf } = values
   const isEditting = Boolean(selectedMf)
 
-  const isValidJson = saveAs === 'json_string' && (!value || !errors.value)
+  const isValidJson = saveAs === 'json_string' && !errors.value
+  const isValidJsonOrIsEmpty =
+    saveAs === 'json_string' && (!value || !errors.value)
 
   return (
     <>
@@ -696,7 +709,7 @@ function MetafieldsForm({
               touched.value && errors.value ? formatErr(errors.value) : false
             }
             labelAction={
-              isValidJson
+              isValidJsonOrIsEmpty
                 ? {
                     content: isJsonEditor
                       ? 'Show Text Editor'
@@ -867,12 +880,11 @@ export default withFormik({
     }
 
     if (saveAs === 'json_string' && value.length > 0) {
-      try {
-        JSON.parse(value)
-      } catch (e) {
-        errors.value = 'Invalid JSON'
-      }
+      const isInvalidJson = !hasJsonStructure(value)
+
+      isInvalidJson && (errors.value = 'Invalid JSON')
     }
+
     return errors
   },
   handleSubmit: () => {},

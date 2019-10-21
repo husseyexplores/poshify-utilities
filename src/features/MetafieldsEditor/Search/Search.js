@@ -4,10 +4,10 @@ import classname from 'classnames'
 import { Thumbnail, Avatar } from '@shopify/polaris'
 import Downshift from 'downshift'
 
-import { AppContext } from '../../App'
+import { MetafieldsContext } from '../MetafieldsEditor'
 import queries from './queries'
-import useDebounce from '../../common/hooks/useDebounce'
-import { resourceTypesArr } from '../../utils'
+import useDebounce from '../../../common/hooks/useDebounce'
+import { resourceTypesArr } from '../../../utils'
 
 import './Search.scss'
 
@@ -30,9 +30,9 @@ function stateReducer(state, changes) {
       isOpen: state.isOpen,
       highlightedIndex: state.highlightedIndex,
     }
-  } else {
-    return changes
   }
+
+  return changes
 }
 
 function Search({
@@ -45,7 +45,7 @@ function Search({
 }) {
   const deboucedVal = useDebounce(value, 500)
   const [state, setState] = useState(initialState)
-  const { metafieldsModal } = useContext(AppContext)
+  const { metafieldsModal } = useContext(MetafieldsContext)
 
   // On query Change
   useEffect(() => {
