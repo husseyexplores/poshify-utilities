@@ -4,7 +4,7 @@ import { AppProvider } from '@shopify/polaris'
 import '@shopify/polaris/styles.css'
 import 'antd/dist/antd.less'
 
-import './App.css'
+import './App.scss'
 import App from './App'
 
 // ------------------------------------------------------------------------------

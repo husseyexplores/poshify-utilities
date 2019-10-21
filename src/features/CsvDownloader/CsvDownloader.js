@@ -27,9 +27,15 @@ import {
   downloadCSV,
 } from './utils'
 
+import './Styles.scss'
+
+// ----------------------------------------------------------------------------
+
 const resultsPerPage = 30
 
+// error count tracker to help display better error messages in case of too many errors
 let errorCount = 0
+
 const mergeState = (updaterFn, changes) =>
   updaterFn(prev => {
     if (Array.isArray(prev)) {
@@ -42,7 +48,7 @@ const mergeState = (updaterFn, changes) =>
   })
 
 function CSVDownloader() {
-  const { setIsLoading: setAppLoading, toast } = useContext(AppContext)
+  const { setIsLoading: setAppLoading } = useContext(AppContext)
   const unmounted = useUnmountStatus()
 
   // Selected items
@@ -70,6 +76,16 @@ function CSVDownloader() {
   const onSelectAllItems = (selecting, selectRows, changedRows) => {
     const fn = selecting ? selectItem : unselectItem
     fn(changedRows)
+  }
+
+  const onRowClick = prod => {
+    // do we already have the item in our state?
+    const isSelected = selectedProductsMap[prod.id]
+    if (isSelected) {
+      unselectItem(prod)
+    } else {
+      selectItem(prod)
+    }
   }
 
   const selectItem = objOrArr => {
@@ -359,19 +375,44 @@ function CSVDownloader() {
       disabled={!hasSelected || initiatedDownload}
       loading={listedProducts.load || Boolean(listedProducts.error)}
     >
-      {!initiatedDownload && 'Proceed to download'}
-      {initiatedDownload && 'Downloading CSV...'}
+      <div className="Polaris-Custom-Button Polaris-Custom-Button--with-icon-right">
+        <span className="text">
+          {!initiatedDownload && 'Proceed to download'}
+          {initiatedDownload && 'Downloading CSV...'}
+        </span>
+        <svg
+          viewBox="0 0 20 20"
+          width="13"
+          height="13"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M17.707 9.293l-5-5a.999.999 0 1 0-1.414 1.414L14.586 9H3a1 1 0 1 0 0 2h11.586l-3.293 3.293a.999.999 0 1 0 1.414 1.414l5-5a.999.999 0 0 0 0-1.414"
+            fill="#637381"
+            fillRule="evenodd"
+          />
+        </svg>
+      </div>
     </Button>
   )
 
   const clearSelectionButtonMarkup = (
-    <Button
-      size="slim"
-      onClick={resetSelection}
-      disabled={!hasSelected}
-      loading={listedProducts.load || Boolean(listedProducts.error)}
-    >
-      Clear selection
+    <Button size="slim" onClick={resetSelection} disabled={!hasSelected}>
+      <div className="Polaris-Custom-Button Polaris-Custom-Button--with-icon">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="13"
+          height="13"
+          viewBox="0 0 20 20"
+          className="circular"
+        >
+          <path
+            fill="#637381"
+            d="M10 0C4.486 0 0 4.486 0 10s4.486 10 10 10 10-4.486 10-10S15.514 0 10 0m0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8 8 3.589 8 8-3.589 8-8 8m3.707-11.707a.999.999 0 0 0-1.414 0L10 8.586 7.707 6.293a.999.999 0 1 0-1.414 1.414L8.586 10l-2.293 2.293a.999.999 0 1 0 1.414 1.414L10 11.414l2.293 2.293a.997.997 0 0 0 1.414 0 .999.999 0 0 0 0-1.414L11.414 10l2.293-2.293a.999.999 0 0 0 0-1.414"
+          />
+        </svg>
+        <span className="text">Clear selection</span>
+      </div>
     </Button>
   )
   const toggleSelectedProductsMarkup = (
@@ -391,12 +432,19 @@ function CSVDownloader() {
   const controlButtonsMarkup = (
     <div style={{ marginBottom: 16 }}>
       <Stack>
-        <Stack.Item fill>
+        <Stack.Item fill={!viewSelectedProducts}>
           <ButtonGroup segmented>
             {clearSelectionButtonMarkup}
             {toggleSelectedProductsMarkup}
           </ButtonGroup>
         </Stack.Item>
+        {viewSelectedProducts && (
+          <Stack.Item fill>
+            <div className="flex align-center h-100">
+              {selectedLen} selected product{plural ? 's' : ''}
+            </div>
+          </Stack.Item>
+        )}
         <Stack.Item>{showFieldsSelectorButtonMarkup}</Stack.Item>
       </Stack>
     </div>
@@ -474,6 +522,7 @@ function CSVDownloader() {
                     ? noSelectedProductsTitleMarkup
                     : 'Oops.. No products found in the store 😕'
                 }
+                onRowClick={onRowClick}
               />
             </Stack.Item>
           </Card.Section>

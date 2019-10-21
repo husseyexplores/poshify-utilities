@@ -1,4 +1,4 @@
-**NOTE**: The extension is fairly new and in active development. If you notice any bugs/app crashes etc., please file an issue here. If it is a critical bug, I will try to publish the fix ASAP!
+**NOTE**: The extension is fairly new and in active development. If you notice any bugs/app crashes etc., please file an issue here. If it is a critical bug, I will try to publish the fix ASAP! And make sure you always have the latest version installed.
 
 # Poshify Utilities
 Some posh utilities for Shopify developers and merchants 🎉
