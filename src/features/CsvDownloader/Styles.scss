@@ -1,0 +1,15 @@
+.csv-downloader {
+
+  tbody .ant-table-row {
+    cursor: pointer;
+  }
+
+  .ant-table-row td {
+    .Polaris-Stack {
+      flex-wrap: nowrap;
+    }
+    .Polaris-Stack__Item {
+      flex: 0 1 auto;
+    }
+  }
+}

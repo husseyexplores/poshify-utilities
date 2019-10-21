@@ -37,6 +37,7 @@ function ProductList({
   onPageChange,
   itemsPerPage,
   noItemsTitle,
+  onRowClick,
 }) {
   const transformedItems = useMemo(() => {
     if (!Array.isArray(items)) return []
@@ -99,6 +100,9 @@ function ProductList({
             onSelectAll,
             selectedRowKeys: selectedItemIds,
           }}
+          onRow={item => ({
+            onClick: () => onRowClick(item),
+          })}
           columns={columns}
           dataSource={transformedItems}
         />
@@ -139,6 +143,7 @@ function ProductList({
     onSelect: func.isRequired,
     onSelectAll: func.isRequired,
     onPageChange: func.isRequired,
+    onRowClick: func,
     totalItemsCount: number.isRequired,
     currentPage: number,
     itemsPerPage: number,
@@ -149,6 +154,7 @@ function ProductList({
 ProductList.defaultProps = {
   itemsPerPage: 10,
   noItemsTitle: 'No items found.',
+  onRowClick: () => {},
 }
 
 export default React.memo(ProductList)

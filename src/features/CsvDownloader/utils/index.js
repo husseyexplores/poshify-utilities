@@ -59,9 +59,8 @@ export function fetchProductsDataForCsv(productIds) {
 
       const url = baseEndpointURL + qs
       console.log(
-        'Fetching products for CSV.',
-        `Current page: ${currPage}`,
-        url
+        '[Poshify] - Fetching products for CSV.',
+        `Current page: ${currPage}`
       )
 
       fetch(url, { headers: { 'content-type': 'application/json' } })

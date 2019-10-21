@@ -64,6 +64,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // On toggle mount button click
   function onMountBtnClick() {
+    toggleVisibilityBtn.setAttribute('disabled', true)
     mountAppBtn.setAttribute('disabled', true)
 
     const payload = { [isMounted ? 'unmountApp' : 'mountApp']: true }

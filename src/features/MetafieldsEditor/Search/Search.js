@@ -58,7 +58,7 @@ function Search({
 
     const fn = queries[resourceType]
     if (typeof fn !== 'function') return
-    fn({ term: deboucedVal, first: 15 })
+    fn({ term: deboucedVal, first: 30 })
       .then(res => {
         const { edges, hasNextPage, lastCursor } = res
 
@@ -89,7 +89,7 @@ function Search({
 
     queries[resourceType]({
       term: deboucedVal,
-      first: 15,
+      first: 30,
       after: state.lastCursor,
     })
       .then(res => {

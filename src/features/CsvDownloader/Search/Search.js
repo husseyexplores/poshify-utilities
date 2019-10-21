@@ -59,7 +59,7 @@ function Search({
     setState(prevState => ({ ...prevState, loading: true, error: null }))
 
     queries
-      .products({ term: deboucedVal, first: 15 })
+      .products({ term: deboucedVal, first: 30 })
       .then(res => {
         const { edges, hasNextPage, lastCursor } = res
 
@@ -91,7 +91,7 @@ function Search({
     queries
       .products({
         term: deboucedVal,
-        first: 15,
+        first: 30,
         after: state.lastCursor,
       })
       .then(res => {
