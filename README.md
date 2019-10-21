@@ -6,7 +6,7 @@ A browser extension to extend some Shopify functionalities, notably, editing met
 ## Installation
 Available as a browser extension:
  - [Install on Chrome](https://chrome.google.com/webstore/detail/shopify-metafields-editor/albldpmnhhhcjiladaacehfabibgbllk "Chrome")
- - [Install on FireFox](https://addons.mozilla.org/en-US/firefox/addon/shopify-metafields-editor/ "FireFox")
+ - [Install on FireFox](https://addons.mozilla.org/en-US/firefox/addon/poshify-utilities/ "FireFox")
 
 ## Features
 - Metafields Editor
