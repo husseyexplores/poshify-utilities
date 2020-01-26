@@ -107,7 +107,7 @@ function ProductList({
           dataSource={transformedItems}
         />
       )}
-      {!loading && items && items.length === 0 && (
+      {!loading && !error && items && items.length === 0 && (
         <div style={{ marginTop: '50px' }}>
           <DisplayText size="small">{noItemsTitle}</DisplayText>
         </div>

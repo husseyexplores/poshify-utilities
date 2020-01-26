@@ -19,6 +19,7 @@ import {
   getShopifyAdminURL,
   BASE_URL,
   isObject,
+  hfetch,
 } from '../../utils'
 import {
   makeCsvComptJson,
@@ -208,38 +209,42 @@ function CSVDownloader() {
         limit: resultsPerPage,
       })
 
-      try {
-        const { products } = await (await fetch(resourceListURL, {
-          headers: { 'content-type': 'application/json' },
-          credentials: 'include',
-        })).json()
+      hfetch(resourceListURL, {
+        headers: { 'content-type': 'application/json' },
+        credentials: 'include',
+      })
+        .then(res => {
+          console.log({ res })
+          const products = res.products
+          if (unmounted.current) return
 
-        if (unmounted.current) return
-
-        const items = products || []
-        const itemsMap = items.reduce((map, item) => {
-          map[item.id] = item
-          return map
-        }, {})
-        setListedProducts({ items, itemsMap, error: null, loading: false })
-      } catch (error) {
-        if (unmounted.current) return
-        errorCount++ // Increment error count for conditional erorrs
-        let errMsg
-
-        if (error.status === 404) {
-          errMsg = `Oops! could not load products 😕. Try refreshing the page to see if helps.`
-        } else {
-          errMsg =
-            errorCount > 4
-              ? `Unexpected error occured 😭. Please consider opening an issue in the github repo.\nError message: ${error.message}`
-              : `Error loading products 😞. Try again in a moment.`
-        }
-        mergeState(setListedProducts, {
-          error: errMsg,
-          loading: false,
+          const items = products || []
+          const itemsMap = items.reduce((map, item) => {
+            map[item.id] = item
+            return map
+          }, {})
+          setListedProducts({ items, itemsMap, error: null, loading: false })
         })
-      }
+        .catch(error => {
+          if (unmounted.current) return
+
+          errorCount++ // Increment error count for conditional erorrs
+          let errMsg
+
+          if (error.status === 404) {
+            errMsg = `Oops! could not load products 😕. Try refreshing the page to see if helps. (statusCode: 404)`
+          } else {
+            errMsg =
+              errorCount > 4
+                ? `Unexpected error occured 😭. Please consider opening an issue in the github repo.\nError message: ${error.message}`
+                : `Error loading products 😞. Try again in a moment.`
+          }
+
+          mergeState(setListedProducts, {
+            error: errMsg,
+            loading: false,
+          })
+        })
     })()
   }, [currPageNum, unmounted])
 
@@ -249,17 +254,17 @@ function CSVDownloader() {
       try {
         setIsLoadingCount(true)
         const totalResourceCountURL = `${BASE_URL}/products/count.json`
-        const { count } = await (await fetch(totalResourceCountURL, {
+        const { count } = await hfetch(totalResourceCountURL, {
           headers: { 'content-type': 'application/json' },
           credentials: 'include',
-        })).json()
+        })
 
         if (unmounted.current) return
 
         setTotalItemsCount(count)
         setIsLoadingCount(false)
       } catch (e) {
-        console.log('[Poshify] - Error fetching total products count')
+        console.warn('[Poshify] - Error fetching total products count')
       }
     })()
   }, [unmounted])
@@ -305,7 +310,7 @@ function CSVDownloader() {
       // Reset app-level loading state
       setAppLoading(false)
     } catch (e) {
-      alert(e.message)
+      alert(`Error generating CSV. ${e.message}`)
       setInitiatedDownload(false) // Disables the main screen
       setFetchingCsvProducts(false) // For loading indicator
       setViewSelectedProducts(false)

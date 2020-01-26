@@ -93,6 +93,9 @@ function MetafieldsEditor() {
         })
         .catch(e => {
           if (unmounted.current) return
+
+          console.error('[Poshify] - Error fetching products list')
+
           errorCount++
           let errMsg
 
@@ -114,18 +117,24 @@ function MetafieldsEditor() {
   useEffect(() => {
     if (resourceType === 'shop') return
     ;(async () => {
-      setIsLoadingCount(true)
-      const totalResourceCountURL = `${BASE_URL}/${resourceType}/count.json?status=any`
-      const { count } = await (await fetch(totalResourceCountURL, {
-        headers: {
-          accept: 'application/json',
-          'content-type': 'application/json',
-        },
-        credentials: 'include',
-      })).json()
-      if (unmounted.current) return
-      setTotalPageNums(Math.ceil(count / resultsPerPage))
-      setIsLoadingCount(false)
+      try {
+        setIsLoadingCount(true)
+        const totalResourceCountURL = `${BASE_URL}/${resourceType}/count.json?status=any`
+        const { count } = await (
+          await fetch(totalResourceCountURL, {
+            headers: {
+              accept: 'application/json',
+              'content-type': 'application/json',
+            },
+            credentials: 'include',
+          })
+        ).json()
+        if (unmounted.current) return
+        setTotalPageNums(Math.ceil(count / resultsPerPage))
+        setIsLoadingCount(false)
+      } catch (error) {
+        console.error('[Poshify] - Error fetching total products count')
+      }
     })()
   }, [resourceType, unmounted])
 

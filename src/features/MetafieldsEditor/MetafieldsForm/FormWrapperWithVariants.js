@@ -18,16 +18,15 @@ function FormWrapperWithVariants({ resourceType, resource }) {
   useEffect(() => {
     ;(async () => {
       try {
-        const { product } = await (await fetch(
-          `${BASE_URL}/products/${resource.id}.json`,
-          {
+        const { product } = await (
+          await fetch(`${BASE_URL}/products/${resource.id}.json`, {
             headers: {
               accept: 'application/json',
               'content-type': 'application/json',
             },
             credentials: 'include',
-          }
-        )).json()
+          })
+        ).json()
 
         if (unmounted.current) return
 
@@ -41,7 +40,7 @@ function FormWrapperWithVariants({ resourceType, resource }) {
           }))
         )
       } catch (e) {
-        console.log('[Poshify] - Error fetching variants metafields')
+        console.warn('[Poshify] - Error fetching variants metafields')
       }
     })()
   }, [resourceType, resource.id, unmounted])

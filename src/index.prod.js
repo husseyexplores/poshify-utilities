@@ -1,6 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { AppProvider } from '@shopify/polaris'
+
 import '@shopify/polaris/styles.css'
 import 'antd/dist/antd.less'
 

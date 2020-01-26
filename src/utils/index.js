@@ -122,7 +122,8 @@ export function rangeNum(min, max) {
   if (
     (min && min === Infinity) ||
     min === -Infinity ||
-    ((max && max === Infinity) || max === -Infinity)
+    (max && max === Infinity) ||
+    max === -Infinity
   ) {
     throw new Error('min/max cannot be Infinity')
   }
@@ -273,7 +274,7 @@ export function map(obj, callback) {
   }
 
   console.error(
-    `[forEach] - Expected an array or object as an argument, but got ${typeof objOrArry}`
+    `[map] - Expected an array or object as an argument, but got ${typeof objOrArry}`
   )
 }
 
@@ -360,4 +361,129 @@ export function hasJsonStructure(str) {
   } catch (err) {
     return false
   }
+}
+
+function has(valueToCheck, target) {
+  return target.indexOf(valueToCheck) !== -1
+}
+
+export function hfetch(url, options = { method: 'GET', redirect: 'error' }) {
+  return fetch(url, options).then(res => {
+    const successful = res.status >= 200 && res.status < 300
+    const contentType = (res.headers.get('content-type') || '').toLowerCase()
+
+    const error = new Error()
+    error.status = res.status
+    if (options.redirect !== 'error' && res.redirected) {
+      error.message = `Unexpected redirect with status code: ${res.status}`
+    } else {
+      error.message = `Server responeded with status code: ${res.status}`
+    }
+
+    if (has('json', contentType) || has('graphql', contentType)) {
+      if (successful) {
+        return res.json()
+      } else {
+        error.response = res.json()
+        throw error
+      }
+    } else if (
+      has('text/', contentType) ||
+      has('application/xml', contentType)
+    ) {
+      if (successful) {
+        return res.text()
+      } else {
+        error.response = res.text()
+        throw error
+      }
+    } else {
+      if (successful) {
+        return res.blob()
+      } else {
+        error.response = res.blob()
+        throw error
+      }
+    }
+  })
+}
+
+/**
+ *
+ * @param {HTMLElement} container
+ * @returns CSRF Token or Null
+ */
+export function findCsrfToken(container, forGql) {
+  let token = null
+  let csrfEl = null
+
+  if (forGql) {
+    csrfEl = container.querySelector('script[data-serialized-id=csrf-token]')
+    if (csrfEl) {
+      token = csrfEl.textContent || ''
+      // remove first and last quotes
+      token = token.replace(/^"|"$/g, '')
+    }
+
+    return token
+  }
+
+  // REST request
+  csrfEl = container.querySelector('meta[name="csrf-token"]')
+  if (csrfEl) {
+    token = csrfEl.getAttribute('content')
+  }
+  return token
+}
+
+export function getCsrfToken(forGql = false) {
+  return new Promise((resolve, reject) => {
+    if (process.env.NODE_ENV !== 'production') {
+      resolve()
+      return
+    }
+
+    let token = findCsrfToken(window.top.document, forGql)
+
+    if (token) {
+      resolve(token)
+      return
+    }
+
+    // not gql request, and also not found token yet
+    if (!forGql) {
+      hfetch(`${BASE_URL}/articles`, {
+        method: 'GET',
+        credentials: 'include',
+        headers: {
+          accept: 'text/html, application/xhtml+xml, application/xml',
+          'x-shopify-web': '1',
+        },
+        redirect: 'follow',
+      })
+        .then(data => {
+          let container = window.top.document.createElement('div')
+          container.innerHTML = data
+          token = findCsrfToken(container)
+
+          if (token) {
+            resolve(token)
+
+            // Append it to the dom to reference it later
+            const meta = window.top.document.createElement('meta')
+            meta.setAttribute('name', 'csrf-token')
+            meta.setAttribute('content', token)
+            window.top.document.querySelector('head').appendChild(meta)
+          } else {
+            reject(new Error('NO_CSRF_TOKEN_FOUND'))
+          }
+          container.remove()
+          container = null
+        })
+        .catch(reject)
+      return
+    }
+
+    reject(new Error('NO_CSRF_TOKEN_FOUND'))
+  })
 }

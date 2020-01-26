@@ -4,7 +4,7 @@
   "name": "Poshify Utilities",
   "description": "Some posh utilities for Shopify developers and merchants 🎉. Notably, metafields editor",
   "author": "Husseyexplores",
-  "version": "2.0.20",
+  "version": "2.1.1",
   "browser_action": {
     "default_icon": "/img/128.png",
     "default_popup": "/popup.html"
@@ -14,6 +14,7 @@
     "48": "/img/48.png",
     "128": "/img/128.png"
   },
+  "permissions": ["https://*.myshopify.com/admin*"],
   "content_scripts": [
     {
       "matches": ["https://*.myshopify.com/admin*"],

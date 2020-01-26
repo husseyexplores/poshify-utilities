@@ -15,13 +15,16 @@ import CSVDownloader from './features/CsvDownloader'
 import Footer from './common/components/Footer'
 
 import RoutedLink from './common/components/RoutedLink'
-import { getPageTitle, BASE_URL } from './utils'
+import { getPageTitle, getCsrfToken } from './utils'
 
 // ------------------------------------------------------------------
 
 export const AppContext = React.createContext()
 
-function App({ env }) {
+// Fetch the token and to presave it in the DOM if it does not exist already
+getCsrfToken(false)
+
+function App() {
   const history = useHistory()
   const pageTitle = getPageTitle(history)
 
@@ -37,63 +40,7 @@ function App({ env }) {
 
   const contextValue = useMemo(() => {
     return {
-      getCsrfToken: () => {
-        return new Promise((resolve, reject) => {
-          if (env === 'dev') {
-            resolve()
-            return
-          }
-
-          let csrfEl = window.top.document.querySelector(
-            'meta[name="csrf-token"'
-          )
-          let token = null
-          if (csrfEl) {
-            token = csrfEl.getAttribute('content')
-            resolve(token)
-          } else {
-            fetch(`${BASE_URL}/articles`, {
-              method: 'GET',
-              credentials: 'include',
-              headers: {
-                accept: 'text/html, application/xhtml+xml, application/xml',
-                'x-shopify-web': '1',
-              },
-            })
-              .then(res => {
-                if (res.ok) {
-                  return res.text()
-                } else {
-                  const err = new Error(
-                    'Error fetching CSRF token. If you are repeatedly getting this error, please file an issue in the Github repo'
-                  )
-                  err.status = 'ERROR_FETCHING_CSRF_TOKEN'
-                  throw err
-                }
-              })
-              .then(data => {
-                let container = window.top.document.createElement('div')
-                container.innerHTML = data
-                csrfEl = container.querySelector('meta[name="csrf-token"]')
-                if (csrfEl) {
-                  token = csrfEl.getAttribute('content')
-                  resolve(token)
-
-                  // Append it to the dom to reference it later
-                  const meta = window.top.document.createElement('meta')
-                  meta.setAttribute('name', 'csrf-token')
-                  meta.setAttribute('content', token)
-                  window.top.document.querySelector('head').appendChild(meta)
-                } else {
-                  reject('NO_CSRF_TOKEN_FOUND')
-                }
-                container.remove()
-                container = null
-              })
-              .catch(reject)
-          }
-        })
-      },
+      getCsrfToken,
       toast: {
         info: (msg, dur) => {
           setToastState(state => ({
@@ -115,7 +62,7 @@ function App({ env }) {
       isLoading: isLoading,
       setIsLoading,
     }
-  }, [env, isLoading]) // eslint-disable-line react-hooks/exhaustive-depss
+  }, [isLoading]) // eslint-disable-line react-hooks/exhaustive-depss
 
   const hideToast = useCallback(() => {
     setToastState(state => ({ ...state, showToast: false }))

@@ -67,13 +67,15 @@ async function getResourceMetafields(url) {
 
   const helperFetch = async (_url, arr) => {
     try {
-      const { metafields } = await (await fetch(_url, {
-        credentials: 'include',
-        headers: {
-          accept: 'application/json',
-          'content-type': 'application/json',
-        },
-      })).json()
+      const { metafields } = await (
+        await fetch(_url, {
+          credentials: 'include',
+          headers: {
+            accept: 'application/json',
+            'content-type': 'application/json',
+          },
+        })
+      ).json()
       arr = arr.concat(metafields) // eslint-disable-line no-param-reassign
 
       // base case if metafields are less than the max limit
@@ -201,7 +203,7 @@ function MetafieldsForm({
       resetForm(updatedValues)
       setErrors({})
     } catch (e) {
-      console.log(`[Poshify] - Error fetching data.`)
+      console.error(`[Poshify] - Error fetching data.`)
     }
   }, [
     parentResource,
@@ -436,12 +438,13 @@ function MetafieldsForm({
       })
       .catch(e => {
         if (unmounted.current) return
-        if (
-          e === 'NO_CSRF_TOKEN_FOUND' ||
-          e.message === 'NO_CSRF_TOKEN_FOUND'
-        ) {
-          alert('Unable to delete metafield. (CSRF token is missing)')
-          return
+        const noCsrfTokenFound =
+          e === 'NO_CSRF_TOKEN_FOUND' || e.message === 'NO_CSRF_TOKEN_FOUND'
+
+        if (noCsrfTokenFound) {
+          alert(
+            'Unable to save changes. (CSRF token is missing. Consider opening an issue in the github repo if you see this error again and agian.)'
+          )
         }
 
         setState({ isDeleting: false })
@@ -556,17 +559,20 @@ function MetafieldsForm({
       .catch(e => {
         if (unmounted.current) return
 
+        setSubmitting(false)
+
+        const noCsrfTokenFound =
+          e === 'NO_CSRF_TOKEN_FOUND' || e.message === 'NO_CSRF_TOKEN_FOUND'
+
         toast.error('Unexpected error occurred')
-        if (
-          e === 'NO_CSRF_TOKEN_FOUND' ||
-          e.message === 'NO_CSRF_TOKEN_FOUND'
-        ) {
-          alert('Unable to save changes. (CSRF token is missing)')
+        if (noCsrfTokenFound) {
+          alert(
+            'Unable to save changes. (CSRF token is missing. Consider opening an issue in the github repo if you see this error again and agian.)'
+          )
           return
         }
 
         const serverErrors = (e.response.data && e.response.data.errors) || {}
-        setSubmitting(false)
         setErrors({
           ...errors,
           ...makeObject(serverErrors, 'otherErrors'),

@@ -1,4 +1,4 @@
-import { BASE_URL } from '../../../utils'
+import { BASE_URL, getCsrfToken } from '../../../utils'
 
 const getLastItem = arr => arr[arr.length - 1]
 
@@ -12,23 +12,30 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 function fetchGqlQuery(url, body) {
-  return fetch(url, {
-    method: 'POST',
-    headers: {
-      accept: 'application/json',
-      'content-type': 'application/json',
-    },
-    credentials: 'include',
-    body: JSON.stringify(body),
-  }).then(res => {
-    if (res.ok) {
-      return res.json()
-    } else {
-      const err = new Error('[Poshify] - Error completing the network request.')
-      err.status = res.status
-      throw err
-    }
-  })
+  return getCsrfToken(true)
+    .then(token =>
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+          'x-csrf-token': token,
+        },
+        credentials: 'include',
+        body: JSON.stringify(body),
+      })
+    )
+    .then(res => {
+      if (res.ok) {
+        return res.json()
+      } else {
+        const err = new Error(
+          '[Poshify] - Error completing the network request.'
+        )
+        err.status = res.status
+        throw err
+      }
+    })
 }
 
 const queries = {

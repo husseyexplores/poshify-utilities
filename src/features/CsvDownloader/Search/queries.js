@@ -1,4 +1,4 @@
-import { BASE_URL } from '../../../utils'
+import { BASE_URL, getCsrfToken } from '../../../utils'
 
 const getLastItem = arr => arr[arr.length - 1]
 
@@ -13,20 +13,23 @@ if (process.env.NODE_ENV === 'production') {
 
 const queries = {
   products: ({ term, first = 10, after = null }) => {
-    return fetch(graphqlEndpoint, {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        accept: 'application/json',
-        'content-type': 'application/json',
-      },
-      body: JSON.stringify({
-        variables: {
-          first,
-          query: term,
-          after,
-        },
-        query: `
+    return getCsrfToken(true)
+      .then(token =>
+        fetch(graphqlEndpoint, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            accept: 'application/json',
+            'content-type': 'application/json',
+            'x-csrf-token': token,
+          },
+          body: JSON.stringify({
+            variables: {
+              first,
+              query: term,
+              after,
+            },
+            query: `
           query Products($query: String!, $first: Int!, $after: String) {
             products(first: $first, after: $after, query: $query) {
               edges {
@@ -50,8 +53,9 @@ const queries = {
             }
           }
         `,
-      }),
-    })
+          }),
+        })
+      )
       .then(res => {
         if (res.ok) {
           return res.json()
