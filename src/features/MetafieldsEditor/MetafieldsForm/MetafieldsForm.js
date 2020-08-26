@@ -18,6 +18,7 @@ import {
 import ReactJSONView from 'react-json-view'
 import { withFormik } from 'formik'
 import cx from 'classnames'
+import parseLinkHeader from 'parse-link-header'
 
 import { AppContext } from '../../../App'
 import TypeAhead from '../../../common/components/TypeAhead'
@@ -35,6 +36,8 @@ import {
   capitalize,
   sortMetafields,
   hasJsonStructure,
+  BASE_URL,
+  API_VERSION,
 } from '../../../utils'
 
 import './MetafieldsForm.scss'
@@ -66,28 +69,35 @@ async function getResourceMetafields(url) {
   limit = limit ? Number(limit[1]) : 250
 
   const helperFetch = async (_url, arr) => {
+    let nextPageUrl = null
     try {
-      const { metafields } = await (
-        await fetch(_url, {
-          credentials: 'include',
-          headers: {
-            accept: 'application/json',
-            'content-type': 'application/json',
-          },
-        })
-      ).json()
+      const { metafields } = await fetch(_url, {
+        credentials: 'include',
+        headers: {
+          accept: 'application/json',
+          'content-type': 'application/json',
+        },
+      }).then(async res => {
+        nextPageUrl = parseLinkHeader(res.headers.get('link'))
+        nextPageUrl = nextPageUrl && nextPageUrl.next && nextPageUrl.next.url
+
+        if (nextPageUrl && process.env.NODE_ENV !== 'production') {
+          const split = `/admin/api/${API_VERSION}`
+          nextPageUrl = `${BASE_URL}${nextPageUrl.split(split)[1]}`
+        }
+
+        const data = await res.json()
+        return data
+      })
+
       arr = arr.concat(metafields) // eslint-disable-line no-param-reassign
 
       // base case if metafields are less than the max limit
-      if (metafields.length < limit) {
+      if (metafields.length < limit || !nextPageUrl) {
         return arr
       }
 
-      let currPageNum = _url.match(/page=(\d+)/)
-      currPageNum = currPageNum ? Number(currPageNum[1]) : 1
-      const nextPageNum = currPageNum + 1
-      const newUrl = _url.replace(/page=\d+/gi, `page=${nextPageNum}`)
-      return await helperFetch(newUrl, arr)
+      return await helperFetch(nextPageUrl, arr)
     } catch (err) {
       throw err
     }

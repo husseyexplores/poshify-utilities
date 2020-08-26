@@ -6,6 +6,7 @@ import React, {
   useContext,
 } from 'react'
 import { Card, Stack, Button, ButtonGroup, Link } from '@shopify/polaris'
+import parseLinkHeader from 'parse-link-header'
 
 import Search from './Search'
 import ProductList from './ProductList'
@@ -18,6 +19,7 @@ import {
   filter,
   getShopifyAdminURL,
   BASE_URL,
+  API_VERSION,
   isObject,
   hfetch,
 } from '../../utils'
@@ -32,7 +34,7 @@ import './Styles.scss'
 
 // ----------------------------------------------------------------------------
 
-const resultsPerPage = 30
+const resultsPerPage = 15
 
 // error count tracker to help display better error messages in case of too many errors
 let errorCount = 0
@@ -184,18 +186,27 @@ function CSVDownloader() {
   })
 
   // Pagination
+  const [paginate, setPaginate] = useState({ next: false, previous: false })
   const [currPageNum, setCurrPageNum] = useState(1)
+  const [resourceListUrl, setResourceListUrl] = useState(null)
   const [isLoadingCount, setIsLoadingCount] = useState(true)
   const [totalItemsCount, setTotalItemsCount] = useState(0)
   const onPageChange = useCallback(
-    newPage => {
+    newPageNum => {
       if (viewSelectedProducts) {
-        setSelectedProductsPage(newPage)
+        setSelectedProductsPage(newPageNum)
       } else {
-        setCurrPageNum(newPage)
+        const key = newPageNum < currPageNum ? 'previous' : 'next'
+        let nextUrl = (paginate[key] && paginate[key].url) || null
+        if (process.env.NODE_ENV !== 'production' && nextUrl) {
+          const split = `/admin/api/${API_VERSION}`
+          nextUrl = `${BASE_URL}${nextUrl.split(split)[1]}`
+        }
+        setResourceListUrl(nextUrl)
+        setCurrPageNum(newPageNum)
       }
     },
-    [viewSelectedProducts]
+    [currPageNum, paginate, viewSelectedProducts]
   )
 
   // Pagination effects - Refetch `listedProducts` everytime page changes
@@ -204,17 +215,23 @@ function CSVDownloader() {
       mergeState(setListedProducts, {
         loading: true,
       })
-      const resourceListURL = getShopifyAdminURL('products', {
-        page: currPageNum,
-        limit: resultsPerPage,
-      })
+      const url =
+        resourceListUrl ||
+        getShopifyAdminURL('products', {
+          limit: resultsPerPage,
+        })
 
-      hfetch(resourceListURL, {
+      fetch(url, {
         headers: { 'content-type': 'application/json' },
         credentials: 'include',
       })
         .then(res => {
-          console.log({ res })
+          const parsedLink = parseLinkHeader(res.headers.get('link'))
+          setPaginate(parsedLink || { next: false, previous: false })
+
+          return res.json()
+        })
+        .then(res => {
           const products = res.products
           if (unmounted.current) return
 
@@ -246,7 +263,7 @@ function CSVDownloader() {
           })
         })
     })()
-  }, [currPageNum, unmounted])
+  }, [currPageNum, resourceListUrl, unmounted])
 
   // onMount effects - get total page nums
   useEffect(() => {
@@ -315,6 +332,7 @@ function CSVDownloader() {
       setFetchingCsvProducts(false) // For loading indicator
       setViewSelectedProducts(false)
       setCsv(null)
+      setAppLoading(false)
       csvRef.current = {}
     }
   }
@@ -475,7 +493,10 @@ function CSVDownloader() {
       {initiatedDownload && initiatedDownloadMarkup}
 
       {/* main section */}
-      <div disabled={initiatedDownload}>
+      <div
+        disabled={initiatedDownload}
+        className={viewSelectedProducts ? undefined : 'hide-ant-pagination'}
+      >
         <Card>
           <Card.Section>
             <Stack wrap={false} alignment="leading" spacing="tight">

@@ -2,10 +2,11 @@ import { keyBy } from 'lodash'
 
 // ------------------------------------------------------------------
 
+export const API_VERSION = `2020-10`
 export const BASE_URL =
   process.env.NODE_ENV === 'production'
-    ? `${window.location.protocol}//${window.location.hostname}/admin`
-    : `${window.location.protocol}//${window.location.hostname}:3000/admin`
+    ? `${window.location.protocol}//${window.location.hostname}/admin/api/${API_VERSION}`
+    : `${window.location.protocol}//${window.location.hostname}:3000/admin/api/${API_VERSION}`
 export const delimeter = '<-DLMTR!->'
 
 export function lookupByNamespace(metafields) {
@@ -137,10 +138,7 @@ export function rangeNum(min, max) {
   return arr
 }
 
-export function getShopifyAdminURL(
-  resourceType,
-  { page = 1, limit = 20, ...rest } = {}
-) {
+export function getShopifyAdminURL(resourceType, { limit = 20, ...rest } = {}) {
   const fieldsMap = {
     customers:
       'id,first_name,last_name,email,total_spent,orders_count,currency',
@@ -152,7 +150,6 @@ export function getShopifyAdminURL(
   const genericFields = 'id,title,handle'
 
   const qsObject = {
-    page,
     limit,
     status: resourceType === 'orders' && 'any',
     fields: fieldsMap[resourceType] || genericFields,
@@ -173,17 +170,23 @@ export function getResourceMetafieldsURL({
   parentResourceType,
   parentResourceId,
   limit = 250,
-  page = 1,
+  pageInfo = null,
 }) {
   if (resourceType === 'shop') {
-    return `${BASE_URL}/metafields.json?limit=${limit}&page=${page}`
+    return `${BASE_URL}/metafields.json?limit=${limit}${
+      pageInfo ? `&page_info=${pageInfo}` : ''
+    }`
   }
 
   if (!parentResourceType) {
-    return `${BASE_URL}/${resourceType}/${resourceId}/metafields.json?limit=${limit}&page=${page}`
+    return `${BASE_URL}/${resourceType}/${resourceId}/metafields.json?limit=${limit}${
+      pageInfo ? `&page_info=${pageInfo}` : ''
+    }`
   }
 
-  return `${BASE_URL}/${parentResourceType}/${parentResourceId}/${resourceType}/${resourceId}/metafields.json?limit=${limit}&page=${page}`
+  return `${BASE_URL}/${parentResourceType}/${parentResourceId}/${resourceType}/${resourceId}/metafields.json?limit=${limit}${
+    pageInfo ? `&page_info=${pageInfo}` : ''
+  }`
 }
 
 export function makeObject(obj, fallbackKey) {

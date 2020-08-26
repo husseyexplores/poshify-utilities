@@ -86,7 +86,7 @@ function ProductList({
         <Table
           pagination={{
             defaultPageSize: itemsPerPage,
-            showQuickJumper: true,
+            showQuickJumper: false,
             total: totalItemsCount || 0,
             disabled: loading || error,
             current: currentPage,

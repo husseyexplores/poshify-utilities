@@ -311,3 +311,11 @@ input[class^="Polaris"], select[class^="Polaris"], textarea[class^="Polaris"] {
     }
   }
 }
+
+.hide-ant-pagination {
+  .ant-pagination-item,
+  .ant-pagination-jump-next,
+  .ant-pagination-jump-prev {
+    display: none !important;
+  }
+}

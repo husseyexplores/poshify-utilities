@@ -1,3 +1,4 @@
+import parseLinkHeader from 'parse-link-header'
 import { forEach, BASE_URL } from '../../../utils'
 
 export function makeCsvComptJson(productJson, reqFields) {
@@ -43,6 +44,7 @@ export function makeCsvComptJson(productJson, reqFields) {
 export function fetchProductsDataForCsv(productIds) {
   return new Promise((resolve, reject) => {
     const MAX_LIMIT = 250
+    let nextPageQs = null
     let currPage = 1
     const fetchedProducts = []
     const baseEndpointURL = `${BASE_URL}/products.json`
@@ -53,9 +55,11 @@ export function fetchProductsDataForCsv(productIds) {
         return resolve(fetchedProducts)
       }
 
-      const qs = `?limit=${MAX_LIMIT}&page=${currPage}fields=id,title,body_html,vendor,product_type,handle,created_at,updated_at,published_at,template_suffix,tags,published_scope,id,product_id,title,price,sku,position,inventory_policy,compare_at_price,fulfillment_service,inventory_management,option1,option2,option3,created_at,updated_at,taxable,barcode,grams,image_id,weight,weight_unit,inventory_item_id,inventory_quantity,old_inventory_quantity,requires_shipping&ids=${productIds.join(
-        ','
-      )}`
+      const qs =
+        nextPageQs ||
+        `?limit=${MAX_LIMIT}&fields=id,title,body_html,vendor,product_type,handle,created_at,updated_at,published_at,template_suffix,tags,published_scope,variants&ids=${productIds.join(
+          ','
+        )}`
 
       const url = baseEndpointURL + qs
       console.log(
@@ -64,16 +68,23 @@ export function fetchProductsDataForCsv(productIds) {
       )
 
       fetch(url, { headers: { 'content-type': 'application/json' } })
-        .then(res => res.json())
+        .then(res => {
+          const parsedLink = parseLinkHeader(res.headers.get('link'))
+          nextPageQs =
+            parsedLink && parsedLink.next
+              ? '?' + parsedLink.next.url.split('?')[1]
+              : null
+
+          return res.json()
+        })
         .then(res => {
           const { products = [] } = res
-
           products.forEach(product => {
             fetchedProducts.push(product)
           })
 
           // base case
-          if (products.length < MAX_LIMIT) {
+          if (products.length < MAX_LIMIT || !nextPageQs) {
             return resolve(fetchedProducts)
           }
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from 'react'
-import { Card, Stack, Pagination, Caption } from '@shopify/polaris'
+import { Card, Stack, Pagination } from '@shopify/polaris'
+import parseLinkHeader from 'parse-link-header'
 
 import SelectResourceType from './SelectResourceType'
 import Search from './Search'
@@ -8,7 +9,12 @@ import MetafieldsForm, { MetafieldsFormWithModal } from './MetafieldsForm'
 import useUnmountStatus from '../../common/hooks/useUnmountStatus'
 import useInterval from '../../common/hooks/useInterval'
 
-import { getShopifyAdminURL, resourceTypesArr, BASE_URL } from '../../utils'
+import {
+  getShopifyAdminURL,
+  resourceTypesArr,
+  API_VERSION,
+  BASE_URL,
+} from '../../utils'
 
 // ------------------------------------------------------------------
 
@@ -16,7 +22,7 @@ export const MetafieldsContext = React.createContext()
 const shopResource = { id: 0 } // Mock id, not really needed in case of `shop` resource
 const otherUrlsRegex = /\/admin\/([a-zA-Z]+)\/(\d+)/
 const articleUrlRegex = /\/admin\/blogs\/\d+\/articles\/(\d+)/
-const resultsPerPage = 30
+const resultsPerPage = 15
 let errorCount = 0
 
 function MetafieldsEditor() {
@@ -25,14 +31,18 @@ function MetafieldsEditor() {
   const [activeResource, setActiveResource] = useState({ type: null, id: null })
   const [resourceType, setResourceType] = useState('products')
   const [searchQuery, setSearchQuery] = useState('')
-  const [currPageNum, setCurrPageNum] = useState(1)
-  const [totalPageNums, setTotalPageNums] = useState(3)
-  const [isLoadingCount, setIsLoadingCount] = useState(true)
+  const [paginate, setPaginate] = useState({ next: false, previous: false })
   const [resourceListState, setResourceListState] = useState({
     items: null,
     error: null,
     loading: true,
+    url: resourceType === 'shop' ? null : '',
   })
+  const [resourceListUrl, setResourceListUrl] = useState(
+    resourceType === 'shop'
+      ? null
+      : getShopifyAdminURL(resourceType, { limit: resultsPerPage })
+  )
 
   const [modalState, setModalState] = useState({
     isOpen: false,
@@ -63,79 +73,64 @@ function MetafieldsEditor() {
     if (resourceType === 'shop') return
     ;(async () => {
       setResourceListState({ list: null, error: null, loading: true })
-      const resourceListURL = getShopifyAdminURL(resourceType, {
-        page: currPageNum,
-        limit: resultsPerPage,
-      })
-
-      fetch(resourceListURL, {
-        headers: {
-          accept: 'application/json',
-          'content-type': 'application/json',
-        },
-        credentials: 'include',
-      })
-        .then(res => {
-          if (res.ok) {
-            return res.json()
-          } else {
-            const err = new Error(
-              '[Poshify] Error completing the network request.'
-            )
-            err.status = res.status
-            throw err
-          }
-        })
-        .then(data => {
-          if (unmounted.current) return
-          const items = data[resourceType] || []
-          setResourceListState({ items, error: null, loading: false })
-        })
-        .catch(e => {
-          if (unmounted.current) return
-
-          console.error('[Poshify] - Error fetching products list')
-
-          errorCount++
-          let errMsg
-
-          if (e.statusCode === 404) {
-            errMsg = `Oops! could not load ${resourceType} 😕. Try refreshing the page to see if helps.`
-          } else {
-            errMsg =
-              errorCount > 4
-                ? `Unexpected error occured 😭. Please consider opening an issue in the github repo.\nError message: ${e.message}`
-                : `Error loading products 😞. Try again in a moment.`
-          }
-
-          setResourceListState({ list: null, error: errMsg, loading: false })
-        })
-    })()
-  }, [currPageNum, resourceType, unmounted])
-
-  // Data that only needs to be fetched once upon changing the resource type. e.g: totalCount
-  useEffect(() => {
-    if (resourceType === 'shop') return
-    ;(async () => {
-      try {
-        setIsLoadingCount(true)
-        const totalResourceCountURL = `${BASE_URL}/${resourceType}/count.json?status=any`
-        const { count } = await (
-          await fetch(totalResourceCountURL, {
+      if (process.env.NODE_ENV === 'development')
+        fetch(
+          resourceListUrl ||
+            getShopifyAdminURL(resourceType, { limit: resultsPerPage }),
+          {
             headers: {
               accept: 'application/json',
               'content-type': 'application/json',
             },
             credentials: 'include',
+          }
+        )
+          .then(res => {
+            const parsedLink = parseLinkHeader(res.headers.get('link'))
+            setPaginate(parsedLink || { next: false, previous: false })
+
+            if (res.ok) {
+              return res.json()
+            } else {
+              const err = new Error(
+                '[Poshify] Error completing the network request.'
+              )
+              err.status = res.status
+              throw err
+            }
           })
-        ).json()
-        if (unmounted.current) return
-        setTotalPageNums(Math.ceil(count / resultsPerPage))
-        setIsLoadingCount(false)
-      } catch (error) {
-        console.error('[Poshify] - Error fetching total products count')
-      }
+          .then(data => {
+            if (unmounted.current) return
+            const items = data[resourceType] || []
+            setResourceListState({ items, error: null, loading: false })
+          })
+          .catch(e => {
+            if (unmounted.current) return
+
+            console.error('[Poshify] - Error fetching products list')
+
+            errorCount++
+            let errMsg
+
+            if (e.statusCode === 404) {
+              errMsg = `Oops! could not load ${resourceType} 😕. Try refreshing the page to see if helps.`
+            } else {
+              errMsg =
+                errorCount > 4
+                  ? `Unexpected error occured 😭. Please consider opening an issue in the github repo.\nError message: ${e.message}`
+                  : `Error loading products 😞. Try again in a moment.`
+            }
+
+            setResourceListState({ list: null, error: errMsg, loading: false })
+          })
     })()
+  }, [resourceListUrl, resourceType, unmounted])
+
+  // Data that only needs to be fetched once upon changing the resource type. e.g: totalCount
+  useEffect(() => {
+    if (unmounted.current) return
+    setPaginate({ next: false, previous: false })
+    setResourceListUrl(null)
   }, [resourceType, unmounted])
 
   // Check the URL every second to update the 'Current resource'
@@ -169,19 +164,16 @@ function MetafieldsEditor() {
     }
   }, 1000)
 
-  const decrementPageNum = useCallback(() => {
-    if (currPageNum > 1) {
-      setCurrPageNum(prev => prev - 1)
-      setResourceListState(prevState => ({ ...prevState, items: null }))
+  const handlePaginationClick = key => {
+    if (!paginate[key]) return
+    let nextUrl = paginate[key].url
+    if (process.env.NODE_ENV !== 'production') {
+      const split = `/admin/api/${API_VERSION}`
+      nextUrl = `${BASE_URL}${nextUrl.split(split)[1]}`
     }
-  }, [currPageNum])
-
-  const IncrementPageNum = useCallback(() => {
-    if (currPageNum < totalPageNums) {
-      setCurrPageNum(prev => prev + 1)
-      setResourceListState(prevState => ({ ...prevState, items: null }))
-    }
-  }, [currPageNum, totalPageNums])
+    setResourceListUrl(nextUrl)
+    setResourceListState(prevState => ({ ...prevState, items: null }))
+  }
 
   const handleResourceTypeChange = useCallback(
     type => {
@@ -189,7 +181,7 @@ function MetafieldsEditor() {
       setResourceType(type)
       setSearchQuery('')
       setResourceListState(prevState => ({ ...prevState, items: null }))
-      setCurrPageNum(1)
+      setPaginate({ next: false, previous: false })
     },
     [resourceType]
   )
@@ -236,18 +228,15 @@ function MetafieldsEditor() {
                 />
                 <div className="text-center Search-MF-Pagination-Wrapper">
                   <Pagination
-                    hasPrevious={!isLoadingCount && currPageNum > 1}
-                    onPrevious={decrementPageNum}
-                    hasNext={!isLoadingCount && currPageNum < totalPageNums}
-                    onNext={IncrementPageNum}
+                    hasPrevious={
+                      !resourceListState.loading && Boolean(paginate.previous)
+                    }
+                    hasNext={
+                      !resourceListState.loading && Boolean(paginate.next)
+                    }
+                    onPrevious={() => handlePaginationClick('previous')}
+                    onNext={() => handlePaginationClick('next')}
                   />
-                  {!isLoadingCount && (
-                    <div className="Search-MF-Pagination-Caption-Wrapper">
-                      <Caption>
-                        Page {currPageNum} of {totalPageNums}
-                      </Caption>
-                    </div>
-                  )}
                 </div>
               </>
             )}
