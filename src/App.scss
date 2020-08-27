@@ -36,6 +36,18 @@
   transform: translateX(0);
 }
 
+/* Shopify nav link (left sidebar) */
+.poshify-active {
+  font-weight: 600;
+  color: var(--p-action-primary,#202e78) !important;
+  background-color: var(--p-surface-hovered,rgba(92,106,196,.12)) !important;
+  position: relative;
+
+  svg .svg-group-wrapper {
+    fill: none !important;
+  }
+}
+
 /* App container */
 .shopify_metafields_app_root > .Metafields_App_Wrapper {
   margin-top: -56px;

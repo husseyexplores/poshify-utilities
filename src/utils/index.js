@@ -3,10 +3,13 @@ import { keyBy } from 'lodash'
 // ------------------------------------------------------------------
 
 export const API_VERSION = `2020-10`
+export const API_PREFIX = `api/${API_VERSION}`
 export const BASE_URL =
   process.env.NODE_ENV === 'production'
-    ? `${window.location.protocol}//${window.location.hostname}/admin/api/${API_VERSION}`
-    : `${window.location.protocol}//${window.location.hostname}:3000/admin/api/${API_VERSION}`
+    ? `${window.location.protocol}//${window.location.hostname}/admin`
+    : `${window.location.protocol}//${window.location.hostname}:3000/admin`
+export const BASE_API_URL = `${BASE_URL}/${API_PREFIX}`
+
 export const delimeter = '<-DLMTR!->'
 
 export function lookupByNamespace(metafields) {
@@ -161,7 +164,7 @@ export function getShopifyAdminURL(resourceType, { limit = 20, ...rest } = {}) {
     .map(key => `${key}=${qsObject[key]}`)
     .join('&')
 
-  return `${BASE_URL}/${resourceType}.json` + (qs.length ? `?${qs}` : '')
+  return `${BASE_API_URL}/${resourceType}.json` + (qs.length ? `?${qs}` : '')
 }
 
 export function getResourceMetafieldsURL({
@@ -173,18 +176,18 @@ export function getResourceMetafieldsURL({
   pageInfo = null,
 }) {
   if (resourceType === 'shop') {
-    return `${BASE_URL}/metafields.json?limit=${limit}${
+    return `${BASE_API_URL}/metafields.json?limit=${limit}${
       pageInfo ? `&page_info=${pageInfo}` : ''
     }`
   }
 
   if (!parentResourceType) {
-    return `${BASE_URL}/${resourceType}/${resourceId}/metafields.json?limit=${limit}${
+    return `${BASE_API_URL}/${resourceType}/${resourceId}/metafields.json?limit=${limit}${
       pageInfo ? `&page_info=${pageInfo}` : ''
     }`
   }
 
-  return `${BASE_URL}/${parentResourceType}/${parentResourceId}/${resourceType}/${resourceId}/metafields.json?limit=${limit}${
+  return `${BASE_API_URL}/${parentResourceType}/${parentResourceId}/${resourceType}/${resourceId}/metafields.json?limit=${limit}${
     pageInfo ? `&page_info=${pageInfo}` : ''
   }`
 }
@@ -253,10 +256,7 @@ export function getGqlSearchQuery(
 }
 
 // App page title helper
-export function getPageTitle(history) {
-  const {
-    location: { pathname },
-  } = history
+export function getPageTitle(pathname = '/') {
   if (pathname === '/metafields') return 'Metafields Editor'
   if (pathname === '/csv-downloader') return 'CSV Downloader'
 
@@ -483,7 +483,14 @@ export function getCsrfToken(forGql = false) {
           container.remove()
           container = null
         })
-        .catch(reject)
+        .catch(e => {
+          console.error(
+            `[Poshify] - Error fetching CSRF Token - See the error below`,
+            e.message
+          )
+          console.error(e)
+          reject(new Error('NO_CSRF_TOKEN_FOUND'))
+        })
       return
     }
 

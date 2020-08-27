@@ -7,7 +7,7 @@ import Accordion from '../../../common/components/Accordion'
 import { Spinner } from '../../../common/components/Spinners'
 import useUnmountStatus from '../../../common/hooks/useUnmountStatus'
 
-import { resourceTypesArr, BASE_URL } from '../../../utils'
+import { resourceTypesArr, BASE_API_URL } from '../../../utils'
 
 // ------------------------------------------------------------------
 
@@ -19,7 +19,7 @@ function FormWrapperWithVariants({ resourceType, resource }) {
     ;(async () => {
       try {
         const { product } = await (
-          await fetch(`${BASE_URL}/products/${resource.id}.json`, {
+          await fetch(`${BASE_API_URL}/products/${resource.id}.json`, {
             headers: {
               accept: 'application/json',
               'content-type': 'application/json',

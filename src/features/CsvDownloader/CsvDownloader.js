@@ -18,8 +18,8 @@ import {
   forEach,
   filter,
   getShopifyAdminURL,
-  BASE_URL,
-  API_VERSION,
+  API_PREFIX,
+  BASE_API_URL,
   isObject,
   hfetch,
 } from '../../utils'
@@ -199,8 +199,7 @@ function CSVDownloader() {
         const key = newPageNum < currPageNum ? 'previous' : 'next'
         let nextUrl = (paginate[key] && paginate[key].url) || null
         if (process.env.NODE_ENV !== 'production' && nextUrl) {
-          const split = `/admin/api/${API_VERSION}`
-          nextUrl = `${BASE_URL}${nextUrl.split(split)[1]}`
+          nextUrl = `${BASE_API_URL}${nextUrl.split(API_PREFIX)[1]}`
         }
         setResourceListUrl(nextUrl)
         setCurrPageNum(newPageNum)
@@ -270,7 +269,7 @@ function CSVDownloader() {
     ;(async () => {
       try {
         setIsLoadingCount(true)
-        const totalResourceCountURL = `${BASE_URL}/products/count.json`
+        const totalResourceCountURL = `${BASE_API_URL}/products/count.json`
         const { count } = await hfetch(totalResourceCountURL, {
           headers: { 'content-type': 'application/json' },
           credentials: 'include',

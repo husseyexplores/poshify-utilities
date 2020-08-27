@@ -6,7 +6,7 @@ import {
   MemoryRouter as Router,
   Switch,
   Route,
-  useHistory,
+  useLocation,
 } from 'react-router-dom'
 
 import Home from './features/Home'
@@ -25,8 +25,8 @@ export const AppContext = React.createContext()
 getCsrfToken(false)
 
 function App() {
-  const history = useHistory()
-  const pageTitle = getPageTitle(history)
+  const location = useLocation()
+  const pageTitle = getPageTitle(location.pathname)
 
   const [toastState, setToastState] = useState({
     showToast: false,
@@ -120,20 +120,21 @@ function App() {
                   error={toastState.error}
                 />
               )}
+
               <Layout.Section>
-                {/* Each route */}
                 <Switch>
                   <Route exact path="/metafields">
                     <MetafieldsEditor />
                   </Route>
+
                   <Route exact path="/csv-downloader">
                     <CSVDownloader />
                   </Route>
+
                   <Route>
                     <Home />
                   </Route>
                 </Switch>
-
                 <Footer />
               </Layout.Section>
             </Layout>

@@ -1,4 +1,4 @@
-import { BASE_URL, getCsrfToken } from '../../../utils'
+import { BASE_URL, BASE_API_URL, getCsrfToken } from '../../../utils'
 
 const getLastItem = arr => arr[arr.length - 1]
 
@@ -8,7 +8,7 @@ let graphqlEndpoint
 if (process.env.NODE_ENV === 'production') {
   graphqlEndpoint = `${BASE_URL}/internal/web/graphql/core`
 } else {
-  graphqlEndpoint = `${BASE_URL}/api/2019-07/graphql.json`
+  graphqlEndpoint = `${BASE_API_URL}/graphql.json`
 }
 
 const queries = {

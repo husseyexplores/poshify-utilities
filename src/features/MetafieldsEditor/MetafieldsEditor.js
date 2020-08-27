@@ -12,8 +12,8 @@ import useInterval from '../../common/hooks/useInterval'
 import {
   getShopifyAdminURL,
   resourceTypesArr,
-  API_VERSION,
-  BASE_URL,
+  BASE_API_URL,
+  API_PREFIX,
 } from '../../utils'
 
 // ------------------------------------------------------------------
@@ -36,13 +36,8 @@ function MetafieldsEditor() {
     items: null,
     error: null,
     loading: true,
-    url: resourceType === 'shop' ? null : '',
   })
-  const [resourceListUrl, setResourceListUrl] = useState(
-    resourceType === 'shop'
-      ? null
-      : getShopifyAdminURL(resourceType, { limit: resultsPerPage })
-  )
+  const [resourceListUrl, setResourceListUrl] = useState(null)
 
   const [modalState, setModalState] = useState({
     isOpen: false,
@@ -68,61 +63,62 @@ function MetafieldsEditor() {
     setSearchQuery('')
   }, [])
 
-  // Data that needs to be fetched everytime an options is changed. e.g: resourceType, currPageNum
+  // Data that needs to be fetched everytime an options is changed. e.g: resourceType
   useEffect(() => {
     if (resourceType === 'shop') return
     ;(async () => {
       setResourceListState({ list: null, error: null, loading: true })
-      if (process.env.NODE_ENV === 'development')
-        fetch(
-          resourceListUrl ||
-            getShopifyAdminURL(resourceType, { limit: resultsPerPage }),
-          {
-            headers: {
-              accept: 'application/json',
-              'content-type': 'application/json',
-            },
-            credentials: 'include',
+      fetch(
+        resourceListUrl ||
+          getShopifyAdminURL(resourceType, { limit: resultsPerPage }),
+        {
+          headers: {
+            accept: 'application/json',
+            'content-type': 'application/json',
+          },
+          credentials: 'include',
+        }
+      )
+        .then(res => {
+          if (unmounted.current) return
+
+          const parsedLink = parseLinkHeader(res.headers.get('link'))
+          setPaginate(parsedLink || { next: false, previous: false })
+
+          if (res.ok) {
+            return res.json()
+          } else {
+            const err = new Error(
+              '[Poshify] Error completing the network request.'
+            )
+            err.status = res.status
+            throw err
           }
-        )
-          .then(res => {
-            const parsedLink = parseLinkHeader(res.headers.get('link'))
-            setPaginate(parsedLink || { next: false, previous: false })
+        })
+        .then(data => {
+          if (unmounted.current) return
+          const items = data[resourceType] || []
+          setResourceListState({ items, error: null, loading: false })
+        })
+        .catch(e => {
+          if (unmounted.current) return
 
-            if (res.ok) {
-              return res.json()
-            } else {
-              const err = new Error(
-                '[Poshify] Error completing the network request.'
-              )
-              err.status = res.status
-              throw err
-            }
-          })
-          .then(data => {
-            if (unmounted.current) return
-            const items = data[resourceType] || []
-            setResourceListState({ items, error: null, loading: false })
-          })
-          .catch(e => {
-            if (unmounted.current) return
+          console.error('[Poshify] - Error fetching products list')
 
-            console.error('[Poshify] - Error fetching products list')
+          errorCount++
+          let errMsg
 
-            errorCount++
-            let errMsg
+          if (e.statusCode === 404) {
+            errMsg = `Oops! could not load ${resourceType} 😕. Try refreshing the page to see if helps.`
+          } else {
+            errMsg =
+              errorCount > 4
+                ? `Unexpected error occured 😭. Please consider opening an issue in the github repo.\nError message: ${e.message}`
+                : `Error loading products 😞. Try again in a moment.`
+          }
 
-            if (e.statusCode === 404) {
-              errMsg = `Oops! could not load ${resourceType} 😕. Try refreshing the page to see if helps.`
-            } else {
-              errMsg =
-                errorCount > 4
-                  ? `Unexpected error occured 😭. Please consider opening an issue in the github repo.\nError message: ${e.message}`
-                  : `Error loading products 😞. Try again in a moment.`
-            }
-
-            setResourceListState({ list: null, error: errMsg, loading: false })
-          })
+          setResourceListState({ list: null, error: errMsg, loading: false })
+        })
     })()
   }, [resourceListUrl, resourceType, unmounted])
 
@@ -168,8 +164,7 @@ function MetafieldsEditor() {
     if (!paginate[key]) return
     let nextUrl = paginate[key].url
     if (process.env.NODE_ENV !== 'production') {
-      const split = `/admin/api/${API_VERSION}`
-      nextUrl = `${BASE_URL}${nextUrl.split(split)[1]}`
+      nextUrl = `${BASE_API_URL}${nextUrl.split(API_PREFIX)[1]}`
     }
     setResourceListUrl(nextUrl)
     setResourceListState(prevState => ({ ...prevState, items: null }))

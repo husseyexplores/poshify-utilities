@@ -1,5 +1,5 @@
 import parseLinkHeader from 'parse-link-header'
-import { forEach, BASE_URL } from '../../../utils'
+import { forEach, BASE_API_URL } from '../../../utils'
 
 export function makeCsvComptJson(productJson, reqFields) {
   // converts products variants into csv parseable json
@@ -47,7 +47,7 @@ export function fetchProductsDataForCsv(productIds) {
     let nextPageQs = null
     let currPage = 1
     const fetchedProducts = []
-    const baseEndpointURL = `${BASE_URL}/products.json`
+    const baseEndpointURL = `${BASE_API_URL}/products.json`
 
     function recursiveLookup() {
       if (productIds.length === 0) {

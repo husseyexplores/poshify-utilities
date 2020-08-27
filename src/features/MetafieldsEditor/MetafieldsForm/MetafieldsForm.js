@@ -36,8 +36,8 @@ import {
   capitalize,
   sortMetafields,
   hasJsonStructure,
-  BASE_URL,
-  API_VERSION,
+  BASE_API_URL,
+  API_PREFIX,
 } from '../../../utils'
 
 import './MetafieldsForm.scss'
@@ -82,8 +82,7 @@ async function getResourceMetafields(url) {
         nextPageUrl = nextPageUrl && nextPageUrl.next && nextPageUrl.next.url
 
         if (nextPageUrl && process.env.NODE_ENV !== 'production') {
-          const split = `/admin/api/${API_VERSION}`
-          nextPageUrl = `${BASE_URL}${nextPageUrl.split(split)[1]}`
+          nextPageUrl = `${BASE_API_URL}${nextPageUrl.split(API_PREFIX)[1]}`
         }
 
         const data = await res.json()
