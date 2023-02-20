@@ -1,0 +1,45 @@
+/* App root */
+:is(x-poshify-utils, .x-poshify-utils, .PoshifyUtils_Root) {
+  position: fixed;
+  top: 3.5rem;
+  width: 100%;
+  right: 0;
+  height: 100%;
+  z-index: 450;
+  display: grid;
+  justify-items: center;
+
+  transition: all 0.3s ease 0s;
+  transform: translateX(110%);
+  overflow: scroll;
+
+  /* bg */
+  background-color: rgba(31, 37, 51, 0.5);
+  cursor: pointer;
+
+  @media (min-width: 48.0625em) {
+    width: calc(100% - 240px);
+  }
+
+  &[aria-hidden='false'] {
+    // transform: translateX(0);
+    // `none` is needed for position `fixed` elements
+    transform: none;
+  }
+
+  .PoshifyUtils_AppWrapper {
+    width: calc(100% - 50px);
+    top: 0
+  }
+}
+
+/* Shopify nav link (left sidebar) */
+.PoshifyUtils_ToggleBtn {
+  svg {
+    filter: grayscale(1) !important;
+  }
+
+  &.PoshifyUtils_ToggleActive svg  {
+    filter: none !important;
+  }
+}

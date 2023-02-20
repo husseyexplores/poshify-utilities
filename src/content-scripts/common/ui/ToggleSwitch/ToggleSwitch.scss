@@ -1,0 +1,44 @@
+
+// TogglhToggleSwitch__Track {
+//   border: 1px solid var(--color);
+/* reset */
+.ToggleSwitch {
+  --size: 24px;
+  --width: calc(var(--size) * 2.1);
+  --height: calc(var(--size) / 0.875);
+  button {
+    all: unset;
+  }
+
+  .SwitchRoot {
+    width: var(--width);
+    height: var(--height);
+    background-color: var(--p-border);
+    border-radius: 9999px;
+    position: relative;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
+    -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  }
+  .SwitchRoot:focus {
+    box-shadow: 0 0 0 2px black;
+  }
+  .SwitchRoot[data-state='checked'] {
+    background-color: var(--color, var(--p-action-primary));
+  }
+
+  .SwitchThumb {
+    display: block;
+    width: var(--size);
+    height: var(--size);
+    background-color: white;
+    border-radius: 9999px;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.14);
+    transition: transform 100ms;
+    transform: translateX(2px);
+    will-change: transform;
+  }
+
+  .SwitchThumb[data-state='checked'] {
+    transform: translateX(calc(var(--width) - var(--size) - 1px));
+  }
+}

@@ -1,0 +1,40 @@
+.PoshifySearchInput {
+  position: relative;
+
+  .PoshifySearchInput__Loader {
+    background-color: var(--p-surface-subdued);
+    height: 0;
+    left: 0;
+    margin: -20px;
+    opacity: 0;
+    overflow: hidden;
+    position: absolute;
+    top: calc(100% + 23px);
+    transition: opacity 0.2s ease-out, bottom 0.2s ease-out, height 0.2s ease-out;
+    width: calc(100% + 40px);
+    z-index: 99;
+
+    &[aria-busy="true"] {
+      height: 60px;
+      opacity: 1;
+    }
+
+    .frame {
+      border-bottom: 1px solid var(--p-divider);
+      bottom: 0;
+      left: 0;
+      padding: 10px 20px 16px;
+      position: absolute;
+      width: 100%;
+
+      .box {
+        background-color: #ebf9fc;
+        border-radius: 4px;
+        color: #449da7;
+        display: flex;
+        gap: 0.4rem;
+        padding: 8px 12px 5px;
+      }
+    }
+  }
+}

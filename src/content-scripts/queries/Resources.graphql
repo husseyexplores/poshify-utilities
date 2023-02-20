@@ -1,0 +1,203 @@
+query Collections(
+  $first: Int
+  $last: Int
+  $after: String
+  $before: String
+  $sortKey: CollectionSortKeys!
+) {
+  collections(
+    first: $first
+    last: $last
+    after: $after
+    before: $before
+    sortKey: $sortKey
+  ) {
+    edges {
+      cursor
+      node {
+        id
+        legacyResourceId
+        title
+        handle
+      }
+    }
+    pageInfo {
+      endCursor
+      startCursor
+      hasNextPage
+      hasPreviousPage
+    }
+  }
+}
+
+
+
+query ResourcesPreview($ids: [ID!]!) {
+  nodes(ids: $ids) {
+    ...ResourcePreviewFragment
+  }
+}
+
+query ResourcePreview($id: ID!) {
+  node(id: $id) {
+    ...ResourcePreviewFragment
+  }
+}
+
+fragment ResourcePreviewFragment on Node {
+  __typename
+  ... on Node {
+    id
+    __typename
+  }
+  ... on GenericFile {
+    id
+    url
+    createdAt
+    preview {
+      image {
+        transformedSrc(
+          maxWidth: 200
+          maxHeight: 200
+          preferredContentType: PNG
+        )
+        originalSrc
+      }
+    }
+    __typename
+  }
+  ... on MediaImage {
+    id
+    #displayName
+    createdAt
+    alt
+    image {
+      id
+      thumbnail: url(transform: { maxWidth: 200 })
+      preview: url(transform: { maxWidth: 800 })
+      width
+      height
+      __typename
+    }
+    preview {
+      image {
+        transformedSrc(
+          maxWidth: 200
+          maxHeight: 200
+          preferredContentType: PNG
+        )
+        originalSrc
+      }
+    }
+    __typename
+  }
+  ...VideoFragment
+  # ... on OnlineStorePage {
+  #   id
+  #   title
+  #   __typename
+  # }
+  ... on Product {
+    id
+    title
+    handle
+    featuredImage {
+      id
+      altText
+      thumbnail: url(transform: { maxWidth: 200 })
+      __typename
+    }
+    __typename
+  }
+  ... on ProductVariant {
+    id
+    title
+    product {
+      id
+      title
+      featuredImage {
+        id
+        altText
+        thumbnail: url(transform: { maxWidth: 200 })
+        __typename
+      }
+      __typename
+    }
+    image {
+      id
+      altText
+      thumbnail: url(transform: { maxWidth: 200 })
+      __typename
+    }
+    __typename
+  }
+  ... on Metaobject {
+    id
+    #title
+    handle
+    type
+    definition {
+      id
+      name
+      type
+      __typename
+    }
+    __typename
+  }
+  ... on Collection {
+    id
+    title
+    handle
+    image {
+      id
+      altText
+      thumbnail: url(transform: { maxWidth: 200 })
+      __typename
+    }
+    __typename
+  }
+}
+
+fragment VideoFragment on Video {
+  id
+  #displayName
+  filename
+  createdAt
+  alt
+  #originalFileSize
+  duration
+  preview {
+    status
+    image {
+      id
+      width
+      height
+      url
+      transformedSrc(
+        maxWidth: 200
+        maxHeight: 200
+        preferredContentType: PNG
+      )
+      originalSrc
+      __typename
+    }
+    __typename
+  }
+  originalSource {
+    url
+    width
+    height
+    format
+    mimeType
+    __typename
+  }
+  sources {
+    url
+    width
+    height
+    format
+    mimeType
+    __typename
+  }
+  __typename
+}

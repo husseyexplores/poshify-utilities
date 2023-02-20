@@ -1,0 +1,84 @@
+# ONLY WORKS WITH UNSTABLE API AT THE MOMENT
+
+# # import "./MetafieldDefinition.graphql"
+
+# # owner: "gid://shopify/Product/1903212494937"
+# query metafields(
+#   $owner: ID!
+#   $first: Int
+#   $last: Int
+#   $after: String
+#   $before: String
+#   $namespace: String
+# ) {
+#   metafields(
+#     first: $first
+#     last: $last
+#     after: $after
+#     before: $before
+#     namespace: $namespace
+#     owner: $owner
+#   ) {
+#     edges {
+#       cursor
+#       node {
+#         ...MetafieldFragment
+#       }
+#       __typename
+#     }
+#     pageInfo {
+#       endCursor
+#       startCursor
+#       hasNextPage
+#       hasPreviousPage
+#       __typename
+#     }
+#   }
+# }
+
+# mutation metafieldsSet($metafields: [MetafieldsSetInput!]!) {
+#   metafieldsSet(metafields: $metafields) {
+#     metafields {
+#       ...MetafieldFragment
+#     }
+#     userErrors {
+#       field
+#       code
+#       message
+#       __typename
+#     }
+#     __typename
+#   }
+# }
+
+# mutation metafieldDelete($input: MetafieldDeleteInput!) {
+#   metafieldDelete(input: $input) {
+#     deletedId
+#     userErrors {
+#       field
+#       message
+#       __typename
+#     }
+#   }
+# }
+
+# ## @TODO: Mutatations for Metafield!
+# fragment MetafieldFragment on Metafield {
+#   id
+#   namespace
+#   key
+#   type
+#   description
+#   legacyResourceId
+#   value
+#   ownerType
+#   reference {
+#     __typename
+#   }
+#   updatedAt
+#   createdAt
+#   definition {
+#     ...MetafieldDefinitionFragment
+#   }
+#   __typename
+# }

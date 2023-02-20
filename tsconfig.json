@@ -1,0 +1,90 @@
+{
+  "ts-node": {
+    // these options are overrides used only by ts-node
+    // same as the --compilerOptions flag and the TS_NODE_COMPILER_OPTIONS environment variable
+    "compilerOptions": {
+      "module": "commonjs"
+    },
+    "jsx": "react-jsx",
+    "exclude": [
+      ".git",
+      ".app-cache",
+      ".npm",
+      ".npm-tmp",
+      "dist",
+      "dist*",
+      "node_modules",
+      "subfolder/dist",
+      "subfolder/node_modules",
+      "**/dist/*",
+      "**/node_modules/*"
+    ]
+  },
+  "compilerOptions": {
+    "target": "ESNext",
+    "useDefineForClassFields": true,
+    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "allowJs": true,
+    "noImplicitAny": false,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "forceConsistentCasingInFileNames": true,
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    // "isolatedModules": true,
+    "noEmit": true,
+    "jsx": "react-jsx",
+    "baseUrl": "./src",
+    "paths": {
+      "$query-clients": ["./content-scripts/query-clients.ts"],
+
+      "$queries": ["./content-scripts/queries"],
+      "$queries/*": ["./content-scripts/queries/*"],
+
+      "$router": ["./content-scripts/router"],
+      "$router/*": ["./content-scripts/router/*"],
+
+      "$routes": ["./content-scripts/routes"],
+      "$routes/*": ["./content-scripts/routes/*"],
+
+      "$lib": ["./lib"],
+      "$lib/*": ["./lib/*"],
+
+      "$utils": ["./utils"],
+      "$utils/*": ["./utils/*"],
+
+      "$common": ["./content-scripts/common"],
+      "$common/*": ["./content-scripts/common/*"],
+
+      "$ui": ["./content-scripts/common/ui"],
+      "$ui/*": ["./content-scripts/common/ui/*"],
+
+      "$hooks": ["./content-scripts/common/hooks"],
+      "$hooks/*": ["./content-scripts/common/hooks/*"],
+
+      "$gql": ["./content-scripts/generated/graphql.tsx"],
+      "$types": [
+        "./content-scripts/types",
+        "./content-scripts/types/global.d.ts"
+      ]
+    }
+  },
+  // "include": ["src"],
+  "exclude": [
+    ".git",
+    ".app-cache",
+    ".npm",
+    ".npm-tmp",
+    "dist",
+    "dist*",
+    "node_modules",
+    "subfolder/dist",
+    "subfolder/node_modules",
+    "**/dist/*",
+    "**/node_modules/*"
+  ]
+}

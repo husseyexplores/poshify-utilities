@@ -1,0 +1,16 @@
+.PoshMediaInline {
+
+  .Polaris-ResourceItem__Container {
+    padding:  0.625rem;
+    align-items: center;
+  }
+
+  .Polaris-ResourceItem__ListItem {
+    // border: 1px solid var(--p-border-neutral-subdued);
+  }
+
+  &+ & .Polaris-ResourceItem__Container {
+    border-top: 1px solid red;
+    margin-top: 0.625rem;
+  }
+}

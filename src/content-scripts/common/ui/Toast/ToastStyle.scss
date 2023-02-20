@@ -1,0 +1,11 @@
+.CustomToast.Polaris-Frame-Toast  {
+  margin-bottom: 0;
+
+  &.CustomToast--success {
+    background-color: rgba(0, 128, 96, 1);
+  }
+
+  &.CustomToast--warning {
+    background-color: rgba(202, 149, 0, 1);
+  }
+}

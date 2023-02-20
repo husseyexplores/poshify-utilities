@@ -1,0 +1,97 @@
+.PoshifyAccordionTrigger {
+  --thumb-size: 65px;
+  background-color: var(--p-surface);
+  text-align: left;
+  border: none;
+  width: 100%;
+  position: relative;
+  min-height: 2rem;
+  min-width: 3.6rem;
+  margin: 0;
+  padding: 0.8rem 0.8rem;
+  line-height: 1;
+  color: var(--p-text, rgb(49, 49, 49));
+  cursor: pointer;
+  user-select: none;
+  text-decoration: none;
+  transition-property: background, border, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: cubic-bezier(0.64, 0, 0.35, 1);
+
+  align-items: center;
+
+  &:focus {
+    outline: none;
+    box-shadow: inset 0.2rem 0 0 var(--p-text-primary);
+  }
+
+  &[data-state='open'] {
+    box-shadow: inset 0.2rem 0 0 var(--p-action-primary);
+    color: var(--p-text-primary);
+
+    .bold-when-open {
+      font-weight: var(--p-font-weight-bold);
+    }
+    .rotate-when-open > *{
+      transform: rotate(90deg);
+    }
+  }
+
+  &[data-state='closed'] {
+    font-weight: var(--p-font-weight-regular);
+  }
+
+  .title-text {
+    display: inline-block;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.6rem;
+    text-transform: none;
+    letter-spacing: normal;
+  }
+
+  .subtitle-text {
+    text-align: left;
+    width: 100%;
+    cursor: default;
+    pointer-events: none;
+    color: var(--p-text-subdued);
+  }
+
+  .Polaris-Icon {
+    margin: 0;
+    color: inherit;
+    fill: currentColor;
+    margin-top: 3px;
+  }
+
+  .rotate-when-open > *{
+    transition: transform 250ms ease-out;
+  }
+}
+
+@keyframes accordion-toggle-anim {
+  from {
+    height: 0;
+  }
+  to {
+    height: var(--radix-accordion-content-height);
+  }
+}
+@keyframes accordion-toggle-anim-rev {
+  from {
+    height: var(--radix-accordion-content-height);
+  }
+  to {
+    height: 0;
+  }
+}
+
+.PoshifyAccordionContent {
+  &[data-state='open'] {
+    animation: accordion-toggle-anim 250ms ease-out;
+  }
+  &[data-state='closed'] {
+    animation: accordion-toggle-anim-rev 250ms ease-out;
+  }
+}

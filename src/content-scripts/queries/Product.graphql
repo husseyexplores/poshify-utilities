@@ -1,0 +1,42 @@
+query productById($id: ID!) {
+  product(id: $id) {
+    id
+    title
+    handle
+    onlineStorePreviewUrl
+    featuredImage {
+      id
+      url
+      width
+      height
+    }
+  }
+}
+
+query variantById($id: ID!) {
+  productVariant(id: $id) {
+    id
+    legacyResourceId
+    title
+    sku
+    product {
+      id
+      title
+      handle
+      onlineStorePreviewUrl
+      featuredImage {
+        id
+        url
+        width
+        height
+      }
+    }
+    availableForSale
+    image {
+      id
+      url
+      width
+      height
+    }
+  }
+}

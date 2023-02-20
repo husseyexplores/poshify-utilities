@@ -1,0 +1,10 @@
+.Custom-Spinner {
+  &.Centered-Spinner {
+    text-align: center;
+  }
+
+  .Polaris-Spinner {
+    display: grid;
+    place-content: center;
+  }
+}

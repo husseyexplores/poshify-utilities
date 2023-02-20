@@ -1,0 +1,4 @@
+.Polaris-Checkbox__Input:focus+.Polaris-Checkbox__Backdrop:after {
+  box-shadow: 0 0 0 0.125rem var(--p-interactive);
+  outline: var(--p-border-width-1) solid #0000;
+}

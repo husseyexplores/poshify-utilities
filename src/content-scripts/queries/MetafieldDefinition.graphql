@@ -1,0 +1,132 @@
+query metafieldDefinition($id: ID!) {
+  metafieldDefinition(id: $id) {
+    ...MetafieldDefinitionFragment
+  }
+}
+
+query metafieldDefinitions(
+  $first: Int
+  $last: Int
+  $after: String
+  $before: String
+  $namespace: String
+  $key: String
+  $ownerType: MetafieldOwnerType!
+  $pinnedStatus: MetafieldDefinitionPinnedStatus
+  $query: String
+  $sortKey: MetafieldDefinitionSortKeys
+) {
+  metafieldDefinitions(
+    first: $first
+    last: $last
+    after: $after
+    before: $before
+    namespace: $namespace
+    key: $key
+    ownerType: $ownerType
+    pinnedStatus: $pinnedStatus
+    query: $query
+    sortKey: $sortKey
+  ) {
+    edges {
+      cursor
+      node {
+        ...MetafieldDefinitionFragment
+      }
+      __typename
+    }
+    pageInfo {
+      endCursor
+      startCursor
+      hasNextPage
+      hasPreviousPage
+      __typename
+    }
+  }
+}
+
+mutation metafieldDefinitionCreate($definition: MetafieldDefinitionInput!) {
+  metafieldDefinitionCreate(definition: $definition) {
+    createdDefinition {
+      ...MetafieldDefinitionFragment
+    }
+    userErrors {
+      code
+      field
+      message
+      __typename
+    }
+  }
+}
+
+mutation metafieldDefinitionUpdate(
+  $definition: MetafieldDefinitionUpdateInput!
+) {
+  metafieldDefinitionUpdate(definition: $definition) {
+    updatedDefinition {
+      ...MetafieldDefinitionFragment
+    }
+    userErrors {
+      code
+      field
+      message
+      __typename
+    }
+  }
+}
+
+mutation metafieldDefinitionDelete(
+  $id: ID!
+  $deleteAllAssociatedMetafields: Boolean
+) {
+  metafieldDefinitionDelete(
+    id: $id
+    deleteAllAssociatedMetafields: $deleteAllAssociatedMetafields
+  ) {
+    deletedDefinitionId
+    userErrors {
+      code
+      field
+      message
+      __typename
+    }
+  }
+}
+
+mutation metafieldDefinitionPin($id: ID!) {
+  metafieldDefinitionPin(definitionId: $id) {
+    pinnedDefinition {
+      ...MetafieldDefinitionFragment
+    }
+  }
+}
+
+mutation metafieldDefinitionUnpin($id: ID!) {
+  metafieldDefinitionUnpin(definitionId: $id) {
+    unpinnedDefinition {
+      ...MetafieldDefinitionFragment
+    }
+  }
+}
+
+fragment MetafieldDefinitionFragment on MetafieldDefinition {
+  id
+  name
+  namespace
+  key
+  validationStatus
+  pinnedPosition
+  description
+  type {
+    category
+    name
+    supportsDefinitionMigrations
+    supportedValidations {
+      name
+      type
+      __typename
+    }
+    __typename
+  }
+  __typename
+}

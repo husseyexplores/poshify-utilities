@@ -1,0 +1,8 @@
+query shopInfo {
+  shop {
+    name
+    id
+    url
+    myshopifyDomain
+  }
+}

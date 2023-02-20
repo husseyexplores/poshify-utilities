@@ -1,0 +1,70 @@
+query Search(
+  $first: Int!
+  $after: String
+  $types: [SearchResultType!]
+  $query: String!
+) {
+  shop {
+    id
+    search(first: $first, after: $after, types: $types, query: $query) {
+      edges {
+        cursor
+        node {
+          title
+          description
+          url
+          image {
+            url
+          }
+          reference {
+            id
+            __typename
+          }
+        }
+      }
+      pageInfo {
+        endCursor
+        startCursor
+        hasPreviousPage
+        hasNextPage
+      }
+    }
+  }
+}
+
+query SearchVariants($first: Int!, $after: String, $query: String, $sortKey: ProductVariantSortKeys!) {
+  productVariants(
+    first: $first
+    after: $after
+    query: $query
+    sortKey: $sortKey
+  ) {
+    edges {
+      cursor
+      node {
+        id
+        title
+        image {
+          url
+        }
+        product {
+          id
+          title
+          handle
+          url: onlineStorePreviewUrl
+          featuredImage {
+            url
+          }
+        }
+      }
+    }
+    pageInfo {
+      endCursor
+      startCursor
+      hasNextPage
+      hasPreviousPage
+    }
+  }
+}
+
+

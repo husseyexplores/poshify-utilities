@@ -1,0 +1,108 @@
+query Files(
+  $first: Int!
+  $after: String
+  $query: String
+  $sortKey: FileSortKeys!
+  $reverse: Boolean!
+) {
+  files(first: $first, after: $after, query: $query, sortKey: $sortKey, reverse: $reverse) {
+    edges {
+      node {
+        ... on GenericFile {
+          id
+          url
+          alt
+          createdAt
+          originalFileSize
+          preview {
+            image {
+              transformedSrc(
+                maxWidth: 100
+                maxHeight: 100
+                preferredContentType: PNG
+              )
+              originalSrc
+            }
+          }
+          __typename
+        }
+        ... on MediaImage {
+          id
+          mediaContentType
+          mimeType
+          alt
+          createdAt
+          originalSource {
+            fileSize
+          }
+          image {
+            originalSrc
+            height
+            width
+          }
+          preview {
+            image {
+              transformedSrc(
+                maxWidth: 100
+                maxHeight: 100
+                preferredContentType: PNG
+              )
+              originalSrc
+            }
+          }
+          __typename
+        }
+        ... on Video {
+          id
+          filename
+          mediaContentType
+          duration
+          alt
+          createdAt
+          originalSource {
+            url
+            fileSize
+            height
+            width
+          }
+          preview {
+            image {
+              transformedSrc(
+                maxWidth: 100
+                maxHeight: 100
+                preferredContentType: PNG
+              )
+              originalSrc
+            }
+          }
+          __typename
+        }
+        __typename
+      }
+      cursor
+    }
+    pageInfo {
+      hasNextPage
+      hasPreviousPage
+      startCursor
+      endCursor
+    }
+  }
+}
+
+mutation stagedUploadsCreate($input: [StagedUploadInput!]!) {
+  stagedUploadsCreate(input: $input) {
+    stagedTargets {
+      resourceUrl
+      url
+      parameters {
+        name
+        value
+      }
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}

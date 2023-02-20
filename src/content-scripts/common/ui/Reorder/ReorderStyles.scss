@@ -1,0 +1,73 @@
+.DragItems {
+
+  list-style: none;
+  padding: none;
+  background-color: #ffffff;
+
+  position: relative;
+}
+
+li:not(.DragItem) {
+  transform: none !important;
+}
+
+.DragItem {
+  &+& {
+    margin-top: 20px;
+  }
+  height: auto !important;
+  position: relative;
+  padding: 0.225rem 0.825rem;
+  background-color: #f1f3f7;
+  user-select: none;
+
+  &:not(.DragItem--Dragging) {
+    transform: none !important;
+  }
+
+  // display: grid;
+  // align-items: center;
+  // grid-template-columns: minmax(0, 1fr) min-content;
+  // gap: 0.825rem;
+
+  .DragItem__Inner {
+    display: grid;
+    grid-template-columns: min-content minmax(0, 1fr) min-content;
+    gap: 0.825rem;
+    align-items: center;
+  }
+
+  .DragItem__DragIcon,
+  .DragItem__DeleteIcon {
+    --icon-size: 28px;
+    --bg: #f0f0f0;
+    --text: rgb(114, 115, 117);
+    padding: 5px;
+    width: var(--icon-size);
+    height: var(--icon-size);
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  .DragItem__DragIcon {
+    cursor: grab;
+    --bg-size: 10px;
+    background-color: transparent;
+    background-image: radial-gradient(var(--text, black) 1px, transparent 0);
+    background-size: var(--bg-size) var(--bg-size);
+    padding: 0 !important;
+  }
+
+  &.DragItem--Dragging  {
+    z-index: 21 !important;
+    box-shadow: 0 4px 10px rgb(0 0 0 / 0.2);
+  }
+
+  &.DragItem--Dragging .DragItem__DragIcon {
+    cursor: grabbing;
+  }
+
+  .DragItem__Content {
+    width: 100%;
+  }
+}

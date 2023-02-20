@@ -1,0 +1,26 @@
+.Polaris-Checkbox__Input.Polaris-Checkbox__Input--indeterminate
+  + .Polaris-Checkbox__Backdrop,
+.Polaris-Checkbox__Input:active:not(:disabled) + .Polaris-Checkbox__Backdrop,
+.Polaris-Checkbox__Input:checked + .Polaris-Checkbox__Backdrop {
+  border-color: var(--p-action-primary);
+  --p-interactive: var(--p-action-primary);
+}
+
+.BulkActions--no-padding
+  .Polaris-ResourceList__ResourceListWrapperWithBulkActions {
+  padding-bottom: 0 !important;
+}
+
+
+.EmptyState__Loader {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 300px;
+
+  .Polaris-Spinner svg {
+    height: 4.75rem;
+    width: 4.75rem;
+  }
+}
+

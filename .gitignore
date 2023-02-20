@@ -1,0 +1,17 @@
+node_modules
+.DS_Store
+dist
+dist-ssr
+*.local
+
+_temp
+.env
+
+firefox
+firefox-review.zip
+source-code.zip
+build*.zip
+
+graphql.schema.json
+
+**/generated/graphql.tsx

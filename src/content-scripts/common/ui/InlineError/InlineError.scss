@@ -1,0 +1,22 @@
+.Poshify-Icon {
+  --icon-size: 1.25rem;
+  display: grid;
+  place-content: center;
+
+  .Polaris-Icon {
+    height: var(--icon-size);
+    width: var(--icon-size);
+  }
+
+  &[data-size="xs"] {
+    --icon-size: 0.825rem;
+  }
+
+  &[data-size="sm"] {
+    --icon-size: 1rem;
+  }
+
+  &[data-size="lg"] {
+    --icon-size: 1.5rem;
+  }
+}

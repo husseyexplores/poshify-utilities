@@ -1,0 +1,49 @@
+{
+  "name": "Poshify Utilities",
+  "version": "4.0.0",
+  "manifest_version": 3,
+  "action": {
+    "default_icon": {
+      "16": "assets/icon_grayscale.svg",
+      "48": "assets/icon_grayscale.svg",
+      "128": "assets/icon_grayscale.svg"
+    },
+    "default_title": "Poshify Utilities",
+    "default_popup": "popup/popup.html"
+  },
+  "icons": {
+    "16": "assets/icon_grayscale.svg",
+    "48": "assets/icon_grayscale.svg",
+    "128": "assets/icon_grayscale.svg"
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://*.myshopify.com/admin*",
+        "https://admin.shopify.com/store/*"
+      ],
+      "exclude_matches": [
+        "https://*.myshopify.com/admin/themes/*",
+        "https://*.myshopify.com/admin/*.xml*",
+        "https://admin.shopify.com/store/*/themes/*",
+        "https://admin.shopify.com/store/*/*.xml*"
+      ],
+      "js": ["assets/*.js"],
+      "css": ["assets/main.3a4743c7.css"],
+      "run_at": "document_end"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "matches": ["<all_urls>"],
+      "resources": ["assets/*", "monacoeditorwork/*"]
+    }
+  ],
+  "permissions": [
+    "https://*.myshopify.com/admin*",
+    "https://admin.shopify.com/store/*"
+  ]
+}

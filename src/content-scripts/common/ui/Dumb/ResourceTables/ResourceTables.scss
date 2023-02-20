@@ -1,0 +1,71 @@
+.PoshifyDataTable {
+  :is(th, td) {
+    &:first-child {
+      @apply pl-4 sm:pl-6;
+    }
+
+    &:last-child:not(.Tr__WithLink :is(th, td)) {
+      @apply pr-4 sm:pr-6;
+    }
+  }
+
+  .Tr__WithLink :is(th, td){
+    &:nth-last-child(2) {
+      @apply pr-4 sm:pr-6;
+    }
+
+    &:last-child {
+      padding: 0;
+      position: absolute;
+    }
+  }
+
+  tr {
+    position: relative;
+  }
+}
+
+// .PoshifyDataTable {
+//   @apply overflow-hidden overflow-x-auto shadow ring-1 ring-black ring-opacity-5 md:rounded-lg bg-white;
+
+//   table {
+//     @apply min-w-[44rem] w-full divide-y divide-gray-300;
+//   }
+
+//   :is(th, td) {
+//     &:first-child {
+//       @apply pl-4 sm:pl-6;
+//     }
+
+//     &:last-child:not(.Tr__WithLink :is(th, td)) {
+//       @apply pr-4 sm:pr-6;
+//     }
+//   }
+
+//   tr {
+//     display: grid;
+//     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+//     align-items: center;
+//     min-width: 100%;
+
+//     :is(td,th) {
+//       display: block;
+//       width: 100%;
+//     }
+//   }
+
+//   .Tr__WithLink :is(th, td){
+//     &:nth-last-child(2) {
+//       @apply pr-4 sm:pr-6;
+//     }
+
+//     &:last-child {
+//       padding: 0;
+//       position: absolute;
+//     }
+//   }
+
+//   tr {
+//     position: relative;
+//   }
+// }
