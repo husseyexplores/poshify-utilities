@@ -183,6 +183,14 @@ if (firefoxManifest.background?.service_worker) {
   bg.scripts = [bg.service_worker]
   delete bg.service_worker
 }
+
+// Add firefox extension id
+firefoxManifest.browser_specific_settings =
+  firefoxManifest.browser_specific_settings || {}
+firefoxManifest.browser_specific_settings.gecko = {
+  id: '{59b3965d-c6da-4d82-a587-1239584e1ee2}',
+}
+
 // Write firefox manifest
 writeFileSync(
   `${EXT.FIR.path}/manifest.json`,

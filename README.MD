@@ -1,5 +1,3 @@
-**NOTE**: The extension is fairly new and in active development. If you notice any bugs/app crashes etc., please file an issue here. If it is a critical bug, I will try to publish the fix ASAP! And make sure you always have the latest version installed.
-
 # Poshify Utilities
 Some posh utilities for Shopify developers and merchants 🎉
 
@@ -8,7 +6,8 @@ A browser extension to extend some Shopify functionalities, notably, editing met
 ## Installation
 Available as a browser extension:
  - [Install on Chrome](https://chrome.google.com/webstore/detail/shopify-metafields-editor/albldpmnhhhcjiladaacehfabibgbllk "Chrome")
- - [Install on FireFox](https://addons.mozilla.org/en-US/firefox/addon/poshify-utilities/ "FireFox")
+
+No longer available on Firefox due their incompatibilities with `manifest.json` version 3 and file size limit.
 
 ## Features
 - Metafields Editor
@@ -22,9 +21,12 @@ Following resources' CRUD metafield operations are currently supported:
  - Customer
  - Draft Order
  - Order
+ - Page
  - Product
+ - Product image
  - Variant
- - Shop/Store
+ - Location
+ - Shop
 
 ## Tech Stack
  - Typescript
