@@ -1,5 +1,6 @@
 import { extname } from 'path'
-import { readdirSync, writeFileSync } from 'fs'
+import { writeFileSync } from 'fs'
+import { execSync, exec } from 'child_process'
 import glob from 'glob'
 import packageJson from './package.json'
 
@@ -128,7 +129,88 @@ const manifest: chrome.runtime.ManifestV3 = {
   key: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAg/JoMhE6KbssQWHiALiB9pocK5OLz1FhCw8fgUBKXwtKcAa8WBFRZbKQD9DrC+1LXLUrEvbb2vTHl+h/yX9sksB3648NMwPv+XbAcaXa19fxbOQCQcYZ8p2mlENvhY7i9mCTTq0/Xk4pT6H8bif4JUVJ1osBxZf6imhdHA7ZTprKUTpIBRYGdOqPnQOOXs0jcFGQRPA8AfusBjDRvRuzc1qbn9tYWs8xg6vDSeySL+/g9H5YVZoAsIrUi7/BqWblYzeCdsf/zCbv3NJ410itnyG+VpjEE3pI8kyqf4u9gKeF/JqIjr3Fzl3RZcAQEo2xDhFsASG+qJU/3cdd1MlgZQIDAQAB',
 }
 
+// Build for Chrome and firefox
+
+// name/path must not end with `/`
+const EXT = {
+  CHR: {
+    name: '_chrome_',
+    get path() {
+      return `./dist/${this.name}`
+    },
+  },
+  FIR: {
+    name: '_firefox_',
+    get path() {
+      return `./dist/${this.name}`
+    },
+  },
+} as const
+
+execSync(`mkdir ${EXT.CHR.path}`)
+
+// Move all content into `_chrome_` dir
+execSync(
+  `cd dist && ls | grep -v ${EXT.CHR.name} | xargs mv -t ${EXT.CHR.name} && cd ..`
+)
+
+// Create `_firefox_` dir
+execSync(`mkdir ${EXT.FIR.path}`)
+
+// Move all `_chrome_` content into `_firefox_` content
+execSync(`cp -r ${EXT.CHR.path}/* ${EXT.FIR.path}`)
+
+/*
+Now we have:
+ - /dist/_chrome_/<all built files>
+ - /dist/_firefox_/<all built files>
+
+ Copy manifest into each directory
+*/
+
 const manifestString = JSON.stringify(manifest, null, 2)
-writeFileSync('dist/manifest.json', manifestString)
-console.log('Successfull patched `/dist/manifest.json`')
+writeFileSync(`${EXT.CHR.path}/manifest.json`, manifestString)
+
+// Firefox manifest
+const firefoxManifest: typeof manifest = JSON.parse(manifestString)
+
+// Remove the key
+delete firefoxManifest.key
+
+// Update the `background` to use `scripts` instead of service_worker
+if (firefoxManifest.background?.service_worker) {
+  const bg = firefoxManifest.background as any
+  bg.scripts = [bg.service_worker]
+  delete bg.service_worker
+}
+// Write firefox manifest
+writeFileSync(
+  `${EXT.FIR.path}/manifest.json`,
+  JSON.stringify(firefoxManifest, null, 2)
+)
+
+// Generate zip files
+const FOLDERS = (Object.keys(EXT) as Array<keyof typeof EXT>).map(key => {
+  const value = EXT[key]
+  return value.path
+})
+
+FOLDERS.forEach(path => {
+  // execSync(`zip -r ${path}/built.zip ${path}/*`)
+  exec(
+    `cd ${path} && zip -r poshify_utilities_${packageJson.version}.zip * && cd ..`,
+    (error, stdout, stderr) => {
+      if (error) {
+        console.error(`ZIP ERROR: ${error}`)
+        return
+      }
+
+      if (stderr) {
+        console.error(`ZIP STDERR: ${stderr}`)
+      }
+    }
+  )
+})
+
 console.log(manifestString)
+console.log('Successfull built extension')

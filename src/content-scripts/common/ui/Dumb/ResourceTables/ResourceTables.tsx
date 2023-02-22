@@ -77,7 +77,7 @@ const TdLink = forwardRef<
       <button
         ref={ref}
         type="button"
-        className={'absolute inset-0 z-1'}
+        className={'absolute block inset-0 z-1 w-full h-full'}
         {...props}
       ></button>
     </Td>
