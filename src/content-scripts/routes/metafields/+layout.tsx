@@ -81,6 +81,10 @@ function MetafieldsLayout() {
                       disabled={!shopifyOpenedResource}
                       onClick={() => {
                         // Goto resource...
+                        PARAMS.rItem.navigate({
+                          item: shopifyOpenedResource.item,
+                          resource: shopifyOpenedResource.resource,
+                        })
                       }}
                     >
                       Current resource

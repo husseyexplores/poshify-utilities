@@ -1,7 +1,7 @@
 {
   "name": "poshify-utilities",
   "description": "Some posh utilities for Shopify developers and merchants packaged as a browser extension 🎉",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "author": {
     "email": "husseyexplores@gmail.com",
     "name": "Husseyexplores",
@@ -22,7 +22,7 @@
     "test:w": "vitest watch",
     "coverage": "vitest run --coverage",
     "dev": "APP_ENV=development vite",
-    "build": "APP_ENV=production pnpm run tsc && pnpm run build:vite && pnpm run build:extension",
+    "build": "APP_ENV=production pnpm run tsc && APP_ENV=production pnpm run build:vite && APP_ENV=production pnpm run build:extension",
     "build:vite": "vite build",
     "build:extension": "ts-node build-extension.ts",
     "tsc": "tsc",

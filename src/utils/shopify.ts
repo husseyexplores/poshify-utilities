@@ -12,7 +12,7 @@ import {
   AnyRawNode,
   PreviewAbleNode,
 } from '$types'
-import { clamp, formatDate } from './basic'
+import { clamp, formatDate, SH } from './basic'
 
 export const resourceByRoute = R.indexBy(
   Resources['all'],
@@ -196,16 +196,17 @@ export function getMetafieldsEndpoint({
 }
 
 export function detectRouteFromUrl(
-  pathname: string = window.location.pathname
+  internalRoutePath: string = SH.getInternalRoutePath() ?? ''
 ): {
   resource: Resource
   item: ResourceItem<'variants'> | ResourceItem<'generic'>
 } | null {
   try {
-    const [admin, rawRoute, idString, subroute, subString] = pathname
+    if (!internalRoutePath) return null
+
+    const [rawRoute, idString, subroute, subString] = internalRoutePath
       .split('/')
       .filter(Boolean)
-    if (admin !== 'admin') return null
 
     const id = Number(idString || 0)
 

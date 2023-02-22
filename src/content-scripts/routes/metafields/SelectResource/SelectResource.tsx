@@ -1,13 +1,11 @@
 import { useState, useCallback, forwardRef } from 'react'
-import { Button, Popover, ActionList, ButtonGroup } from '@shopify/polaris'
+import { Button, Popover, ActionList } from '@shopify/polaris'
 import { Listbox } from '@headlessui/react'
-import { Dropdown, DropdownItem } from '$ui/Dumb'
+import { DropdownItem } from '$ui/Dumb'
 import { resourceByRoute } from '$utils'
-import useShopifyOpenedResource from '$common/hooks/useShopifyOpenedResource'
 
-import { Resource, ResourceItem, Resources, Routes } from '$types'
+import { Resource, Resources, Routes } from '$types'
 import { ComponentPropsWithoutRef } from 'react'
-import { RefObject } from 'react'
 
 // ------------------------------------------------------------------
 

@@ -16,10 +16,19 @@ function getProdApiUrls() {
   if (host === 'admin.shopify.com') {
     const [storeString, storename] = pathname.split('/').filter(Boolean)
     if (storeString === 'store') {
+      const pathPrefix = `/store/${storename}`
+      const root = `https://admin.shopify.com${pathPrefix}`
+
       return {
-        root: `https://admin.shopify.com/store/${storename}`,
+        root,
         gql: `https://admin.shopify.com/api/shopify/${storename}`,
-        rest: `https://admin.shopify.com/store/${storename}/api/${SH_API_VER}`,
+        rest: `https://admin.shopify.com${pathPrefix}/api/${SH_API_VER}`,
+        getInternalRoutePath: () => {
+          const p = window.location.pathname
+          if (!p.startsWith(pathPrefix)) return null
+          const rest = p.replace(pathPrefix, '')
+          return rest
+        },
       }
     }
   }
@@ -29,6 +38,12 @@ function getProdApiUrls() {
     root: `/admin`,
     gql: '/admin/internal/web/graphql/core',
     rest: `/admin/api/${SH_API_VER}`,
+    getInternalRoutePath: () => {
+      const p = window.location.pathname
+      if (!p.startsWith('/admin')) return null
+      const rest = p.replace('/admin', '')
+      return rest
+    },
   }
 }
 
@@ -39,12 +54,14 @@ export const SH = DEV
       API_VER: import.meta.env.VITE_SHOPIFY_API_VER,
       GQL_URL: `${SH_BASE_API_PATH}/graphql.json`,
       REST_URL: `${SH_BASE_API_PATH}`,
+      getInternalRoutePath: PROD_API_URLS.getInternalRoutePath,
     }
   : {
       ROOT: PROD_API_URLS.root,
       API_VER: import.meta.env.VITE_SHOPIFY_API_VER,
       GQL_URL: PROD_API_URLS.gql,
       REST_URL: PROD_API_URLS.rest,
+      getInternalRoutePath: PROD_API_URLS.getInternalRoutePath,
     }
 
 type AllDataTypes =

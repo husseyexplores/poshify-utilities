@@ -256,7 +256,13 @@ export const resourceItem = {
     id: number
   ): Promise<ProductWithVariantAndImgs> {
     const res = await restClient.get(`products/${id}.json`)
-    const data = (await res.json()) as { product: any }
+    const _data = (await res.json()) as { product: any }
+
+    // Firefox errror:
+    // `Not allowed to define cross-origin object as property on [Object] or [Array] XrayWrapper`
+    // Firefox does not allow to modify direct res.json()ed objects to modify
+    // So we deepclone it
+    const data = JSON.parse(JSON.stringify(_data)) as { product: any }
     const __parent: ProductWithVariantAndImgs['variants'][number]['__parent'] =
       {
         route: 'products',

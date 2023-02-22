@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { useInterval } from '$hooks'
 import { detectRouteFromUrl } from '$utils/shopify'
 import { Resource, ResourceItem } from '$types'
+import { SH } from '$utils'
 
 export default function useShopifyOpenedResource(): {
   resource: Resource
@@ -15,7 +16,7 @@ export default function useShopifyOpenedResource(): {
   const urlRef = useRef('')
 
   useInterval(() => {
-    const url = (window.top || window).location.pathname
+    const url = SH.getInternalRoutePath() ?? ''
 
     if (urlRef.current === url) return
     urlRef.current = url
