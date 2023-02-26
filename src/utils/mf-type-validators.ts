@@ -182,7 +182,8 @@ const MetafieldSavableTypeSingle: {
     type: 'page_reference',
     baseType: 'page_reference',
     searchResultType: SearchResultTypes.Enum.ONLINE_STORE_PAGE,
-    defaultStringValue: 'gid://shopify/OnlineStorePage/0',
+    //defaultStringValue: 'gid://shopify/OnlineStorePage/0',
+    defaultStringValue: '',
     validate: (id: any) => {
       if (typeof id !== 'string') return 'Value must be a string'
       return id.startsWith('gid://shopify/OnlineStorePage/') &&
@@ -209,7 +210,8 @@ const MetafieldSavableTypeSingle: {
     type: 'collection_reference',
     baseType: 'collection_reference',
     searchResultType: SearchResultTypes.Enum.COLLECTION,
-    defaultStringValue: 'gid://shopify/Collection/0',
+    //defaultStringValue: 'gid://shopify/Collection/0',
+    defaultStringValue: '',
     validate: (id: any) => {
       if (typeof id !== 'string') return 'Value must be a string'
       return id.startsWith('gid://shopify/Collection/') &&
@@ -236,7 +238,8 @@ const MetafieldSavableTypeSingle: {
     type: 'product_reference',
     baseType: 'product_reference',
     searchResultType: SearchResultTypes.Enum.PRODUCT,
-    defaultStringValue: 'gid://shopify/Product/0',
+    //defaultStringValue: 'gid://shopify/Product/0',
+    defaultStringValue: '',
     validate: (id: any) => {
       if (typeof id !== 'string') return 'Value must be a string'
       return id.startsWith('gid://shopify/Product/') &&
@@ -263,7 +266,8 @@ const MetafieldSavableTypeSingle: {
     type: 'variant_reference',
     baseType: 'variant_reference',
     searchResultType: SearchResultTypes.Enum.PRODUCT_VARIANT,
-    defaultStringValue: 'gid://shopify/ProductVariant/0',
+    //defaultStringValue: 'gid://shopify/ProductVariant/0',
+    defaultStringValue: '',
     validate: (id: any) => {
       if (typeof id !== 'string') return 'Value must be a string'
       return id.startsWith('gid://shopify/ProductVariant/') &&
@@ -291,7 +295,8 @@ const MetafieldSavableTypeSingle: {
     title: 'File reference',
     type: 'file_reference',
     baseType: 'file_reference',
-    defaultStringValue: 'gid://shopify/MediaImage/0',
+    //defaultStringValue: 'gid://shopify/MediaImage/0',
+    defaultStringValue: '',
     searchResultType: SearchResultTypes.Enum.FILE,
     validate: (id: any) => {
       if (typeof id !== 'string') return 'Value must be a string'
@@ -758,7 +763,8 @@ const MetafieldSavableTypeSingle: {
     title: 'Metaobject reference',
     type: 'metaobject_reference',
     baseType: 'metaobject_reference',
-    defaultStringValue: 'gid://shopify/Metaobject/0',
+    //defaultStringValue: 'gid://shopify/Metaobject/0',
+    defaultStringValue: '',
     validate: (id: any) => {
       return null
       return typeof id === 'string' &&
@@ -788,7 +794,8 @@ const MetafieldSavableTypeSingle: {
     title: 'Mixed (metaobject) reference',
     type: 'mixed_reference',
     baseType: 'mixed_reference',
-    defaultStringValue: 'gid://shopify/Metaobject/0',
+    //defaultStringValue: 'gid://shopify/Metaobject/0',
+    defaultStringValue: '',
     validate: (id: any) => {
       return null
       return typeof id === 'string' &&

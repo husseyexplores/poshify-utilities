@@ -429,12 +429,13 @@ export const resourceItem = {
                     title: node.title,
                     description: node.description,
                     image: node.image?.url,
-                    image_thumb: node.image?.url
-                      ? resizeShopifyImage(
-                          node.image.url,
-                          '_250x250_crop_center'
-                        )
-                      : null,
+                    image_thumb: node.image?.thumbnail ?? null,
+                    // image_thumb: node.image?.url
+                    //   ? resizeShopifyImage(
+                    //       node.image.url,
+                    //       '_250x250_crop_center'
+                    //     )
+                    //   : null,
                   }
                   acc.push(transformed)
                 }
@@ -465,7 +466,11 @@ export const resourceItem = {
           items: v.edges.reduce<ResourceItemSearch[]>((acc, { node }) => {
             const restId = gqlToRestId(node.id)
             if (!restId) return acc
-            const imgUrl = node.image?.url ?? node.product.featuredImage?.url
+            // const imgUrl = node.image?.url ?? node.product.featuredImage?.url
+            const image_thumb =
+              node.image?.thumbnail ??
+              node.product.featuredImage?.thumbnail ??
+              null
 
             acc.push({
               __kind: 'search',
@@ -474,11 +479,11 @@ export const resourceItem = {
               id: restId,
               // title: `${node.product.title} / ${node.title}`,
               title: node.title,
-              image: imgUrl,
+              image: image_thumb,
               description: node.product.title,
-              image_thumb: imgUrl
-                ? resizeShopifyImage(imgUrl, '_250x250_crop_center')
-                : null,
+              image_thumb,
+              //   ? resizeShopifyImage(imgUrl, '_250x250_crop_center')
+              //   : null,
               url: `${node.product.url}?variant=${R.last(node.id.split('/'))}`,
             })
             return acc

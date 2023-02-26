@@ -346,6 +346,7 @@ function FilePickerContent({
   const items = parsedFilesQ.allItems
 
   const { ref, inView } = useInView()
+  // @TODO: Check on velgen image remount
   useEffect(() => {
     if (inView) {
       if (!fileQ.isFetching && fileQ.hasNextPage) {
@@ -435,7 +436,7 @@ function FilePickerItem({
       />
       <label
         htmlFor={checkboxId}
-        className="absolute inset-0 z-2 cursor-pointer"
+        className="absolute inset-0 z-2 cursor-pointer w-full"
         aria-controls={checkboxId}
         aria-label={`Select file: ${item._displayName}`}
       ></label>

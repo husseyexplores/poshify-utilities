@@ -9,9 +9,13 @@ function MediaThumb(props: MediaThumbSrcProps): JSX.Element
 function MediaThumb(props: MediaThumbMediaProps): JSX.Element
 function MediaThumb(props: MediaThumbProps) {
   return (
-    <div className="h-10 w-10 flex-shrink-0">
+    <div className="h-14 w-14 flex-shrink-0">
       {props.src ? (
-        <img className="h-10 w-10 rounded-sm border" src={props.src} alt="" />
+        <img
+          className="h-14 w-14 rounded-sm border object-contain"
+          src={props.src}
+          alt=""
+        />
       ) : null}
       {props.media ?? null}
     </div>
@@ -19,7 +23,7 @@ function MediaThumb(props: MediaThumbProps) {
 }
 
 const MediaContentTitle = ({ children }: Children) => (
-  <div className="font-medium text-gray-900">{children}</div>
+  <div className="font-medium text-gray-900 break-all">{children}</div>
 )
 const MediaContentBody = ({ children }: Children) => (
   <div className="text-gray-500 text-sm">{children}</div>

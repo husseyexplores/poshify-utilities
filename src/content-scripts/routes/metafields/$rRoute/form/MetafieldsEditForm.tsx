@@ -146,11 +146,19 @@ function _MetafieldsEditForm({
         : mf.type === '_unsupported_'
         ? mf._orignalType
         : mf.type) as unknown as MetafieldType['any']
+      const savableType = MF_UTILS.savableType(type)
 
       const wasUsingEditor = getValues()._code_editor
       const displayEditor = mf
         ? MF_UTILS.canShowEditor(mf.type) && wasUsingEditor
         : wasUsingEditor
+
+      let values = mf?.values ?? [{ id: 'initial', value: '' }]
+
+      // Remove empty values
+      if (savableType.isList) {
+        values = values.filter(x => x.value !== '')
+      }
 
       resetForm({
         indexedMfs: _indexedMfs,
@@ -158,7 +166,7 @@ function _MetafieldsEditForm({
         namespace: mf?.namespace ?? '',
         key: mf?.key ?? '',
         saveAsType: type,
-        values: mf?.values ?? [{ id: 'initial', value: '' }],
+        values,
         value: mf?.value ?? '',
         _code_editor: displayEditor,
       })
@@ -546,22 +554,24 @@ function _MetafieldsEditForm({
                           const nextValue =
                             nextSavableBaseType.defaultStringValue ?? ''
 
-                          const nextSaveAsTypeIsJson =
-                            MF_UTILS.isMetafieldTypeJson(nextSaveAsType)
-                          if (!nextSaveAsTypeIsJson) {
+                          const canShowEditor =
+                            MF_UTILS.canShowEditor(nextSaveAsType)
+                          if (!canShowEditor) {
                             rhfSetValue('_code_editor', false)
                           }
 
-                          rhfSetValue(
-                            'values',
-                            [
-                              {
-                                id: generateUid(),
-                                value: nextValue,
-                              },
-                            ],
-                            RHF_SET_VALUE_OPTS
-                          )
+                          let values = [
+                            {
+                              id: generateUid(),
+                              value: nextValue,
+                            },
+                          ]
+                          // Remove empty from the list
+                          if (nextSavableType.isList) {
+                            values = values.filter(x => x.value !== '')
+                          }
+
+                          rhfSetValue('values', values, RHF_SET_VALUE_OPTS)
 
                           rhfSetValue(
                             'value',

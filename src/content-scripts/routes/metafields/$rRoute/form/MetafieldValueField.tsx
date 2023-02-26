@@ -156,29 +156,32 @@ export const MetafieldValueField = memo(
 
           // We're showing code editor
           // Convert `values` to `value` string list (JSON stringify)
-          const valuesArray = rhfGetValues('values').map(x => {
-            // validate each value
-            const validationError = saveableBaseType.validate(x.value)
-            const invalidValue = validationError != null
-            if (invalidValue) {
-              return savableType.isList
-                ? safeJsonParse(
-                    saveableBaseType.defaultStringValue,
-                    saveableBaseType.defaultStringValue
-                  )
-                : saveableBaseType.defaultStringValue
-            }
+          const valuesArray = rhfGetValues('values')
+            .map(x => {
+              // validate each value
+              const validationError = saveableBaseType.validate(x.value)
+              const invalidValue = validationError != null
+              if (invalidValue) {
+                return savableType.isList
+                  ? safeJsonParse(
+                      saveableBaseType.defaultStringValue,
+                      saveableBaseType.defaultStringValue
+                    )
+                  : saveableBaseType.defaultStringValue
+              }
 
-            // if valid - use it
-            // otherwise - use defualt value
-            return savableType.isList
-              ? safeJsonParse(x.value, x.value).toString()
-              : x.value
-          })
+              // if valid - use it
+              // otherwise - use defualt value
+              return savableType.isList
+                ? safeJsonParse(x.value, x.value).toString()
+                : x.value
+            })
+            .filter(x => x !== '')
 
           const value = savableType.isList
             ? JSON.stringify(valuesArray, null, 2)
             : valuesArray[0] || savableType.defaultStringValue
+          console.log(savableType.isList, valuesArray, { value })
           rhfSetValue('value', value)
         } else {
           // We're showing UI fields

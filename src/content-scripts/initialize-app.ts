@@ -9,6 +9,8 @@ import AppIconSvg from '../icon.svg'
 
 /*
 @TODO:
+  - Bug fix - file picker pagination keeps fetching till the last viewed page
+  - pagination for metafields
   - If the form is dirty, show confirm dialog before navigating
   - upload file
   - Bulk editor
