@@ -54,12 +54,17 @@ const TOKENS = {
     fetchConfig: {
       headers: {
         'x-shopify-web': '1',
+        accept: 'text/html, application/xhtml+xml, application/xml',
+        'accept-language': 'en-US,en;q=0.9',
       },
     },
     selector: 'meta[name=csrf-token]',
     getFromDoc(doc = document) {
-      const token = doc.querySelector(this.selector)?.getAttribute('content')
+      const csrfMeta = doc.querySelector('meta[name=csrf-token')
+      const token = csrfMeta && csrfMeta.getAttribute('content')
       return token || null
+      // const token = doc.querySelector(this.selector)?.getAttribute('content')
+      // return token || null
     },
     removeAllFromDoc(doc = document) {
       doc.querySelectorAll(this.selector).forEach(x => {
@@ -86,6 +91,8 @@ async function fetchFreshCsrfTokens(): Promise<CsrfFetchedToken> {
     `${SH.ROOT}/collections`,
     `${SH.ROOT}/orders`,
     `${SH.ROOT}/customers`,
+    `${SH.ROOT}/pages`,
+    `${SH.ROOT}/blogs`,
   ] as const
 
   const tokens = TOKENS_KEYS.map(
@@ -94,7 +101,7 @@ async function fetchFreshCsrfTokens(): Promise<CsrfFetchedToken> {
 
   // 0. Try to find in the current doc - before even fetching
   tokens.forEach(t => {
-    t.value = TOKENS[t.type].getFromDoc()
+    t.value = TOKENS[t.type].getFromDoc(document)
   })
 
   for (const url of possibleCsrfUrls) {
@@ -108,7 +115,9 @@ async function fetchFreshCsrfTokens(): Promise<CsrfFetchedToken> {
             .then(doc => {
               tokens.forEach(t => {
                 // Maybe found?
-                t.value = TOKENS[t.type].getFromDoc(doc)
+                if (t.value == null) {
+                  t.value = TOKENS[t.type].getFromDoc(doc)
+                }
               })
             })
         })
@@ -212,6 +221,7 @@ export async function fetchCsrfTokens({
           metadata: {
             tokens,
           },
+          log: true,
         })
         if (tokens.graphql || tokens.rest) {
           AppCache.mergePut('authTokens', tokens)
