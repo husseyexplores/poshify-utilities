@@ -52,6 +52,9 @@ export const gqlClient = new GraphQLClient(SH.GQL_URL, {
 //   },
 // })
 
+function last<T>(arr: T[]): T {
+  return arr[arr.length - 1]
+}
 export const restClient = ky.create({
   prefixUrl: SH.REST_URL,
   headers: {
@@ -69,6 +72,18 @@ export const restClient = ky.create({
               request.headers.set(key.toString(), value)
             }
           })
+        }
+
+        if (request.method === 'GET') {
+          // fix urls when passed via pagination header
+          const relativeUrl = last(request.url.split(`/api/${SH.API_VER}/`))
+          // Important: Keep this hook at the very end.
+          // https://github.com/sindresorhus/ky/issues/387#issuecomment-952719948
+          const nextReqeust = new Request(
+            `${SH.REST_URL}/${relativeUrl}`,
+            request
+          )
+          return nextReqeust
         }
       },
     ],
