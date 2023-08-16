@@ -30,9 +30,20 @@ const TOKENS = {
     selector:
       'script[data-serialized-id="csrf-token"],div[data-serialized-id="csrf-token"]',
     getFromDoc(doc = document): string | null {
-      const token: string | null = JSON.parse(
+      let token: string | null = JSON.parse(
         doc.querySelector(this.selector)?.textContent?.trim() || 'null'
       )
+
+      if (!token) {
+        try {
+          const serverData = JSON.parse(document.querySelector('script[type="text/json"][data-serialized-id="server-data"]')?.textContent || 'null')
+          if (serverData) {
+            token = serverData.csrfToken
+          }
+        }catch(e) {
+          // not found
+        }
+      }
 
       return token
     },
