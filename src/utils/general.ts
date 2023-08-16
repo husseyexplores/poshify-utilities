@@ -126,10 +126,7 @@ export function DOMLoaded(fn: () => any) {
 export const resetAppScroll = (() => {
   let _APP_ROOT: HTMLElement | null | undefined = null
   const GET_APP_ROOT = () =>
-    _APP_ROOT ||
-    (_APP_ROOT = document
-      .getElementById('PoshifyUtils_Root')
-      ?.querySelector('.PoshifyUtils_AppWrapper'))
+    _APP_ROOT || (_APP_ROOT = document.getElementById('PoshifyUtils_Root'))
 
   return () => {
     const ROOT_EL = GET_APP_ROOT()

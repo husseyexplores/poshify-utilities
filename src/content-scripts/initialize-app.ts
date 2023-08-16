@@ -29,103 +29,6 @@ const EL = {
     parentHighlightClasses: ['Polaris-Navigation__ItemInnerWrapper--selected'],
   },
 }
-/*
-class XPoshifyUtils extends HTMLElement {
-  _ac: null | AbortController
-  _showing: boolean
-  _instance: Root
-  _rendered: boolean
-  App?: () => JSX.Element
-  _toggleButton: ReturnType<typeof getSidebarButton>
-
-  constructor() {
-    super()
-    this._ac = null
-    this._showing = false
-    this._instance = createRoot(this)
-    this._rendered = false
-  }
-
-  connectedCallback() {
-    this.classList.add('PoshifyUtils_Root')
-
-    this._ac?.abort()
-    this._ac = new AbortController()
-
-    // Toggle on click
-    this.addEventListener(
-      'click',
-      ({ target }) => {
-        if (target === this) {
-          console.log('Toggle visiblity on click', { target })
-          this.toggleAppVisibility()
-        }
-      },
-      { signal: this._ac.signal }
-    )
-
-    this._toggleButton = getSidebarButton()
-    if (this._toggleButton) {
-      this._toggleButton.li.addEventListener(
-        'click',
-        () => {
-          this.toggleAppVisibility()
-        },
-        { signal: this._ac.signal }
-      )
-    }
-
-    this.toggleAppVisibility(false)
-  }
-
-  disconnectedCallback() {
-    this._ac?.abort()
-    this._ac = null
-  }
-
-  toggleAppVisibility(show?: boolean) {
-    const nextShowing = show != null ? !!show : !this._showing
-    const hidden = !nextShowing
-    // Toggle aria-hidden
-
-    this.setAttribute('aria-hidden', hidden.toString())
-
-    this._showing = nextShowing
-
-    // Update hightlited class of sidebar button
-    const toggleBtn = this._toggleButton
-    if (toggleBtn) {
-      const fn = nextShowing ? 'add' : 'remove'
-      EL.TOGGLE_BTN.highlightClassses.forEach(c => {
-        toggleBtn.anchor.classList[fn]?.(c)
-      })
-      EL.TOGGLE_BTN.parentHighlightClasses.forEach(c => {
-        toggleBtn.anchor.parentElement?.classList[fn]?.(c)
-      })
-    }
-  }
-
-  // Mounting logic
-  mount() {
-    const app = this.App
-    if (!app) throw new Error('No app found')
-    if (this._rendered) return
-    this._instance.render(createElement(app as any))
-    this._rendered = true
-  }
-  unmount() {
-    if (!this._rendered) return
-    this._instance.unmount()
-    this._rendered = false
-  }
-  toggleMount() {
-    this._rendered ? this.unmount() : this.mount()
-  }
-}
-if (!window.customElements.get('x-poshify-utils')) {
-  window.customElements.define('x-poshify-utils', XPoshifyUtils)
-}
-*/
 
 class PoshifyUtilsElement {
   node?: HTMLDivElement
@@ -149,7 +52,8 @@ class PoshifyUtilsElement {
     this.node = document.createElement('div')
     ;(this.node as any)._poshify_instance = this
     this._instance = createRoot(this.node)
-    this.node.classList.add('x-poshify-utils', 'PoshifyUtils_Root')
+    this.node.classList.add('x-poshify-utils', EL.ROOT.id)
+    this.node.id = EL.ROOT.id
 
     this._ac?.abort()
     this._ac = new AbortController()
