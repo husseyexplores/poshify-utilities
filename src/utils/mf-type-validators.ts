@@ -461,7 +461,7 @@ const MetafieldSavableTypeSingle: {
     example: {
       single: {
         description:
-          '[DEPRICATED] - Any valid JSONable string. (Array, Object, null, booleans, etc)',
+          'Any valid JSONable string. (Array, Object, null, booleans, etc)',
         value:
           '<code>[{ "key": "value" }, { "key": "value" }]</code> <br> Or <br> <code>{ "key1": "value1", "key2": "value" }</code>',
       },

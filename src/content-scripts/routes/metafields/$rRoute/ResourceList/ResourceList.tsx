@@ -1,4 +1,4 @@
-import { Text, Card, EmptyState, Button, Link } from '@shopify/polaris'
+import { Text, Card, EmptyState, Button, Link, BlockStack } from '@shopify/polaris'
 import {
   GenericItemTable,
   LocationItemTable,
@@ -87,7 +87,7 @@ export function ResourceList<T extends Routes['listable']>({
 
   return (
     <Card>
-      <Card.Section>
+      <BlockStack gap="1200">
         {items.length === 0 && (
           <EmptyState
             heading={`No ${resource?.title || 'Resources'}`}
@@ -100,11 +100,11 @@ export function ResourceList<T extends Routes['listable']>({
         )}
 
         {error && (
-          <Text color="critical" as="p" variant="bodySm">
+          <Text tone="critical" as="p" variant="bodySm">
             {error}
           </Text>
         )}
-      </Card.Section>
+      </BlockStack>
     </Card>
   )
 }

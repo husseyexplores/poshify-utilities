@@ -1,8 +1,8 @@
 import { useMemo } from 'react'
 import { z } from 'zod'
 import { useQuery } from '@tanstack/react-query'
-import { Button, Card, Stack, Text, TextContainer } from '@shopify/polaris'
-import { CancelSmallMinor } from '@shopify/polaris-icons'
+import { Button, Card, BlockStack, InlineStack, Text } from '@shopify/polaris'
+import { XSmallIcon } from '@shopify/polaris-icons'
 import { FocusScope } from '@radix-ui/react-focus-scope'
 import {
   useLoaderData,
@@ -175,77 +175,75 @@ function MetafieldsEditorFormRoute() {
   return (
     <FocusScope trapped={false} loop>
       <Card>
-        <Card.Section>
-          <Stack distribution="fill" vertical>
-            <Stack.Item fill>
-              <Stack>
-                <Stack.Item fill>
-                  <div className="grid gap-1 mb-2">
-                    <Text as="h2" variant="headingLg">
-                      {resourceItem.title}
-                    </Text>
-                    {subtitle && (
-                      <Text as="p" variant="bodySm" color="subdued">
-                        {subtitle}
-                      </Text>
-                    )}
-                  </div>
-                </Stack.Item>
-
-                <Stack.Item>
-                  <div className="PoshUtils_DullButton">
-                    <Button
-                      outline
-                      icon={CancelSmallMinor}
-                      onClick={() => {
-                        goBack()
-                      }}
-                    >
-                      Close
-                    </Button>
-                  </div>
-                </Stack.Item>
-              </Stack>
-
-              {serverError && (
-                <TextContainer>
-                  <Text color="critical" variant="bodyMd" as="p">
-                    {serverError}
+        <BlockStack gap="600">
+          <div>
+            <InlineStack align="space-between">
+              <div>
+                <div className="grid gap-1 mb-2">
+                  <Text as="h2" variant="headingLg">
+                    {resourceItem.title}
                   </Text>
-                </TextContainer>
-              )}
-
-              {metafieldsQuery.data && (
-                <MetafieldsEditForm
-                  resourceItem={resourceItem}
-                  metafields={metafieldsQuery.data.metafields}
-                  metafieldsIndexed={metafieldsQuery.data.metafieldsIndexed}
-                />
-              )}
-            </Stack.Item>
-
-            {resourceItem.__route === 'products' && (
-              <Stack.Item fill>
-                <div className="pt-10 pb-4 border-t border-slate-200 grid gap-8">
-                  <WithProduct id={resourceItem.id}>
-                    {({ product }) => (
-                      <>
-                        <VariantMetafieldsAccordions
-                          product={product}
-                          openedIds={openedIds.variant}
-                        />
-                        <ImageMetafieldsAccordions
-                          product={product}
-                          openedIds={openedIds.img}
-                        />
-                      </>
-                    )}
-                  </WithProduct>
+                  {subtitle && (
+                    <Text as="p" variant="bodySm" tone="subdued">
+                      {subtitle}
+                    </Text>
+                  )}
                 </div>
-              </Stack.Item>
+              </div>
+
+              <div>
+                <div className="PoshUtils_DullButton">
+                  <Button
+                    icon={XSmallIcon}
+                    onClick={() => {
+                      goBack()
+                    }}
+                    variant="tertiary"
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </InlineStack>
+
+            {serverError && (
+              <BlockStack gap="400">
+                <Text tone="critical" variant="bodyMd" as="p">
+                  {serverError}
+                </Text>
+              </BlockStack>
             )}
-          </Stack>
-        </Card.Section>
+
+            {metafieldsQuery.data && (
+              <MetafieldsEditForm
+                resourceItem={resourceItem}
+                metafields={metafieldsQuery.data.metafields}
+                metafieldsIndexed={metafieldsQuery.data.metafieldsIndexed}
+              />
+            )}
+          </div>
+
+          {resourceItem.__route === 'products' && (
+            <div>
+              <div className="pt-10 pb-4 border-t border-slate-200 grid gap-8">
+                <WithProduct id={resourceItem.id}>
+                  {({ product }) => (
+                    <>
+                      <VariantMetafieldsAccordions
+                        product={product}
+                        openedIds={openedIds.variant}
+                      />
+                      <ImageMetafieldsAccordions
+                        product={product}
+                        openedIds={openedIds.img}
+                      />
+                    </>
+                  )}
+                </WithProduct>
+              </div>
+            </div>
+          )}
+        </BlockStack>
       </Card>
     </FocusScope>
   )
@@ -274,7 +272,7 @@ export function WithProduct({
         ? productsQuery.error.message
         : 'Unable to fetch product'
     return (
-      <Text as="p" color="critical" variant="bodyMd">
+      <Text as="p" tone="critical" variant="bodyMd">
         {msg}
       </Text>
     )
@@ -413,7 +411,7 @@ function ItemMetafields({ resourceItem }: { resourceItem: ResourceItem }) {
         ? variantMfQuery.error.message
         : 'Unable to fetch metafields'
     return (
-      <Text as="p" color="critical" variant="bodyMd">
+      <Text as="p" tone="critical" variant="bodyMd">
         {msg}
       </Text>
     )

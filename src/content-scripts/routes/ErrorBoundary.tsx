@@ -1,4 +1,4 @@
-import { Card, Layout, Text } from '@shopify/polaris'
+import { BlockStack, Card, Layout, Text } from '@shopify/polaris'
 import { InlineError } from '$ui/Dumb'
 import { useRouteError, isRouteErrorResponse } from '$router'
 import { RouteValidationError } from '$types'
@@ -29,15 +29,13 @@ export function ErrorBoundary() {
       : fallbackErrorMesasge)
 
   return (
-    <Layout.Section fullWidth>
+    <Layout.Section>
       <Card>
-        <Card.Section
-          title={
-            <Text as="h3" variant="headingMd" fontWeight="bold">
-              {message}
-            </Text>
-          }
-        >
+        <BlockStack gap="600">
+          <Text as="h3" variant="headingMd" fontWeight="bold">
+            {message}
+          </Text>
+
           {issues && issues.length > 0 && (
             <ul className="grid gap-1">
               {issues.map((issue, i) => (
@@ -45,7 +43,7 @@ export function ErrorBoundary() {
               ))}
             </ul>
           )}
-        </Card.Section>
+        </BlockStack>
       </Card>
     </Layout.Section>
   )

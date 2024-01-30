@@ -27,10 +27,10 @@ export function WithShopInfo({
     const msg = query.error instanceof Error ? query.error.message : ''
     return (
       <div>
-        <Text as="p" color="critical" variant="bodyMd">
+        <Text as="p" tone="critical" variant="bodyMd">
           {msg}
         </Text>
-        <Text as="p" color="critical" variant="bodyMd">
+        <Text as="p" tone="critical" variant="bodyMd">
           Could not fetch shop info query. Refresh?
         </Text>
       </div>

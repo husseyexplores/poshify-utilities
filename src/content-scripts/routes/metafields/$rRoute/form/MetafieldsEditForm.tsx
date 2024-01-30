@@ -3,7 +3,7 @@ import { useForm, Controller, useWatch, FormProvider } from 'react-hook-form'
 // import { DevTool as HookFormDevtools } from '@hookform/devtools'
 import { useMutation } from '@tanstack/react-query'
 import { Button, Text, Icon } from '@shopify/polaris'
-import { AlertMinor } from '@shopify/polaris-icons'
+import { AlertDiamondIcon } from '@shopify/polaris-icons'
 import { zodResolver } from '$lib/zod-resolver'
 import * as api from '$lib/shopify-api'
 import { Select, MetafieldSelect } from '$ui/Select'
@@ -419,7 +419,7 @@ function _MetafieldsEditForm({
     <>
       <FormProvider {...rhf}>
         <div className="grid gap-6">
-          <Text as="h3" variant="headingMd" color="subdued">
+          <Text as="h3" variant="headingMd" tone="subdued">
             {currentMf ? `Editing ${currentMf._uid}` : 'Creating new metafield'}
           </Text>
 
@@ -523,7 +523,7 @@ function _MetafieldsEditForm({
                   {touchedFields.key && errors.key?.message && dupicateMf && (
                     <p>
                       Select{' '}
-                      <Button plain onClick={() => resetWith(dupicateMf)}>
+                      <Button variant="plain" onClick={() => resetWith(dupicateMf)}>
                         {dupicateMf._uid}
                       </Button>
                       ?
@@ -639,7 +639,6 @@ function _MetafieldsEditForm({
 
               <div className="flex justify-end gap-x-2">
                 <Button
-                  monochrome
                   onClick={() => {
                     const id = rhf.getValues('_uid')
                     const existing = id ? rhf.getValues('indexedMfs')[id] : null
@@ -663,8 +662,8 @@ function _MetafieldsEditForm({
                     {({ status, proceed, timer }) => (
                       <div style={{ color: 'var(--p-interactive-critical)' }}>
                         <Button
-                          outline
-                          monochrome
+                          variant="primary"
+                          tone="critical"
                           disabled={false}
                           loading={false}
                           onClick={proceed}
@@ -682,7 +681,8 @@ function _MetafieldsEditForm({
 
                 <Button
                   submit
-                  primary
+                  variant="primary"
+                  tone="success"
                   disabled={
                     !isDirtyForm || /* !isValidForm ||*/ hasPendingMutation
                   }
@@ -721,10 +721,10 @@ function ServerErrorMessage({
     <div className="">
       <div className="inline-flex  flex-wrap gap-1 rounded-[var(--p-border-radius-1)]">
         <div>
-          <Icon source={AlertMinor} color="critical" />
+          <Icon source={AlertDiamondIcon} tone="critical" />
         </div>
 
-        <Text color="critical" variant="bodyMd" as="p">
+        <Text tone="critical" variant="bodyMd" as="p">
           {prefixText} {errMsg ? errMsg : fallbackError}
         </Text>
       </div>
@@ -745,7 +745,7 @@ function ExampleValue({ saveAsType }: { saveAsType: MetafieldType['any'] }) {
   return (
     <div className="grid gap-2 justify-items-start">
       <Button
-        plain
+        variant="plain"
         disclosure={showing ? 'up' : 'down'}
         onClick={() => {
           setShowing(!showing)

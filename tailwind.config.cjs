@@ -4,12 +4,18 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        surface: 'var(--p-surface)',
-        'surface-hovered': 'var(--p-surface-hovered)',
-        'surface-subdued': 'var(--p-surface-subdued)',
+        surface: 'var(--p-color-bg-surface)',
+        'surface-hovered': 'var(--p-color-bg-surface-hover)',
+        'surface-subdued': 'var(--p-color-bg-surface-disabled)',
       },
       fontFamily: {
         mono: ['var(--p-font-family-mono)'],
+      },
+      borderRadius: {
+        'p200': 'var(--p-border-radius-200)'
+      },
+      borderColor: {
+        'brand': 'var(--p-color-border-brand)',
       },
       typography: theme => ({
         DEFAULT: {

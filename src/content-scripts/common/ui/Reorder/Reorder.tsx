@@ -8,7 +8,7 @@ import {
   DraggableProps,
 } from 'framer-motion'
 import { Icon } from '@shopify/polaris'
-import { DragHandleMinor } from '@shopify/polaris-icons'
+import { DragHandleIcon } from '@shopify/polaris-icons'
 import clsx from 'clsx'
 import { ClearButton } from '$ui/Dumb'
 import './ReorderStyles.scss'
@@ -138,4 +138,4 @@ function DeleteIcon({ className }: { className?: string }) {
 }
 
 const deleteIconJsx = <DeleteIcon className="DragItem__DeleteIcon" />
-const dragHandleIconJsx = <Icon source={DragHandleMinor} color="base" />
+const dragHandleIconJsx = <Icon source={DragHandleIcon} tone="base" />

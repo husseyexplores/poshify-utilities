@@ -1,6 +1,6 @@
 import { forwardRef, ComponentPropsWithoutRef, useId } from 'react'
 import { Icon } from '@shopify/polaris'
-import { CircleAlertMajor } from '@shopify/polaris-icons'
+import { AlertCircleIcon } from '@shopify/polaris-icons'
 import './InlineError.scss'
 
 type ElementProps = ComponentPropsWithoutRef<'div'>
@@ -17,7 +17,7 @@ export const InlineError = forwardRef<HTMLInputElement, Props>(function Input(
           className="Polaris-InlineError__Icon Poshify-Icon"
           data-size={size}
         >
-          <Icon source={CircleAlertMajor} />
+          <Icon source={AlertCircleIcon} />
         </div>
         {props.children}
       </div>

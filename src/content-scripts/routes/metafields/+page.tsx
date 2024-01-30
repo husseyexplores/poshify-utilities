@@ -28,50 +28,48 @@ function MetafieldsIndex() {
 
   return (
     <Card>
-      <Card.Section>
-        <div className="grid grid-cols-3 gap-8 CardLikeButtons">
-          {RESOURCE_LISTABLE.map(r => (
-            <RoutedLink
-              as="button"
-              size="large"
-              outline
-              onClick={() => {
-                LS.API.ActiveResourceRouteListable = r.route
-              }}
-              key={r.route}
-              aria-disabled={pendingNavigation || undefined}
-              activeProps={{}}
-              replace
-              to={PARAMS.rRoute.url(r.route)}
-            >
-              {r.title}
-            </RoutedLink>
-          ))}
-
+      <div className="grid grid-cols-3 gap-8 CardLikeButtons">
+        {RESOURCE_LISTABLE.map(r => (
           <RoutedLink
             as="button"
             size="large"
-            outline
+            variant="secondary"
             onClick={() => {
-              LS.API.ActiveResourceRouteListable = 'shop'
+              LS.API.ActiveResourceRouteListable = r.route
             }}
+            key={r.route}
             aria-disabled={pendingNavigation || undefined}
-            activeProps={{
-              disabled: true,
-            }}
+            activeProps={{}}
             replace
-            to={PARAMS.rItem.url({ item: shopInfo, resource: Resource.shop })}
+            to={PARAMS.rRoute.url(r.route)}
           >
-            {Resource.shop.title}
+            {r.title}
           </RoutedLink>
+        ))}
 
-          {/* <ResourcePicker
+        <RoutedLink
+          as="button"
+          size="large"
+          variant="secondary"
+          onClick={() => {
+            LS.API.ActiveResourceRouteListable = 'shop'
+          }}
+          aria-disabled={pendingNavigation || undefined}
+          activeProps={{
+            disabled: true,
+          }}
+          replace
+          to={PARAMS.rItem.url({ item: shopInfo, resource: Resource.shop })}
+        >
+          {Resource.shop.title}
+        </RoutedLink>
+
+        {/* <ResourcePicker
             onChange={console.log}
             multiple={true}
             searchType={SearchResultTypes.Enum.FILE}
           /> */}
-        </div>
-      </Card.Section>
+      </div>
     </Card>
   )
 }

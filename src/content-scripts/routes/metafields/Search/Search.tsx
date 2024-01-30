@@ -1,15 +1,15 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 import clsx from 'clsx'
 import { Thumbnail, Avatar, Spinner, Badge, Icon } from '@shopify/polaris'
 import Downshift from 'downshift'
 
 import { useDebouncedValue, useUpdateEffect } from '$hooks'
 import { useSearchQuery } from '$hooks/useSearchQuery'
-import { BulkCheckbox } from '$common/state/selected-items'
+// import { BulkCheckbox } from '$common/state/selected-items'
 import { AriaPresentation, Dropdown, DropdownItem, Input } from '$ui/Dumb'
 import { ResourceItemSearch, Routes, SearchResultTypes } from '$types'
 import { getErrorMessage, resourceByRoute } from '$utils'
-import { SearchMinor } from '@shopify/polaris-icons'
+import { SearchIcon } from '@shopify/polaris-icons'
 
 // ------------------------------------------------------------------
 
@@ -146,7 +146,7 @@ export function Search({
           return (
             <div>
               <Input
-                prefix={<Icon source={SearchMinor} />}
+                prefix={<Icon source={SearchIcon} />}
                 {...getInputProps({
                   name,
                   disabled: disabled,

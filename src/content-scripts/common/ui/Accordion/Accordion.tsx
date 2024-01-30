@@ -1,7 +1,7 @@
 import { ReactNode } from 'react'
 import * as Acc from '@radix-ui/react-accordion'
 import { Icon } from '@shopify/polaris'
-import { ChevronRightMinor } from '@shopify/polaris-icons'
+import { ChevronRightIcon } from '@shopify/polaris-icons'
 
 import './Accordion.scss'
 
@@ -51,7 +51,7 @@ export function Accordion<T extends 'single' | 'multiple'>({
                 <div>
                   <div className="grid gap-1 grid-cols-[20px_minmax(0,1fr)]">
                     <div className="rotate-when-open">
-                      <Icon source={ChevronRightMinor} />
+                      <Icon source={ChevronRightIcon} />
                     </div>
                     <div className="space-y-0.5">
                       <span className="title-text">

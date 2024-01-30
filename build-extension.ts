@@ -221,4 +221,4 @@ FOLDERS.forEach(path => {
 })
 
 console.log(manifestString)
-console.log('Successfull built extension')
+console.log('Successfuly built extension')

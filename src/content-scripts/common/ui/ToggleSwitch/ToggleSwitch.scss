@@ -13,7 +13,7 @@
   .SwitchRoot {
     width: var(--width);
     height: var(--height);
-    background-color: var(--p-border);
+    background-color: var(--p-color-border, #ccc);
     border-radius: 9999px;
     position: relative;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.14);
@@ -23,7 +23,7 @@
     box-shadow: 0 0 0 2px black;
   }
   .SwitchRoot[data-state='checked'] {
-    background-color: var(--color, var(--p-action-primary));
+    background-color: var(--p-color-bg-fill-success, rgba(41, 132, 90, 1));
   }
 
   .SwitchThumb {

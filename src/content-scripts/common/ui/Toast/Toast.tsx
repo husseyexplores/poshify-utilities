@@ -1,5 +1,10 @@
 import { Icon, IconSource, Spinner } from '@shopify/polaris'
-import { AlertMinor, CircleTickMinor, RiskMinor } from '@shopify/polaris-icons'
+import {
+  AlertCircleIcon,
+  CheckCircleIcon,
+  AlertTriangleIcon,
+  InfoIcon,
+} from '@shopify/polaris-icons'
 import { ReactNode } from 'react'
 import './ToastStyle.scss'
 
@@ -12,10 +17,10 @@ type ToastProps = {
   onMouseOut?: () => any
 }
 const ICONS = {
-  error: AlertMinor,
-  success: CircleTickMinor,
-  warning: RiskMinor,
-  info: AlertMinor,
+  error: AlertCircleIcon,
+  success: CheckCircleIcon,
+  warning: AlertTriangleIcon,
+  info: InfoIcon,
 } as const
 
 const errClass = 'Polaris-Frame-Toast--error'

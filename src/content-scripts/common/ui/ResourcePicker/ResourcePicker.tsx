@@ -22,7 +22,7 @@ import { useFilesQuery } from '$hooks/useFilesQuery'
 import './ResourcePicker.scss'
 import { SearchInput, InlineMedia } from '$ui/Dumb'
 import { useId, useUpdateEffect } from 'ariakit-react-utils'
-import { PlusMinor } from '@shopify/polaris-icons'
+import { PlusIcon } from '@shopify/polaris-icons'
 
 // import * as SEED from './seed'
 
@@ -108,7 +108,7 @@ export function ResourcePicker({
     <Modal
       limitHeight={true}
       activator={
-        <Button onClick={toggleOpen} icon={PlusMinor}>
+        <Button onClick={toggleOpen} icon={PlusIcon}>
           Select {entityName ?? 'resource'}
         </Button>
       }

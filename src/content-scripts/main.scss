@@ -38,13 +38,13 @@
   .Polaris-Layout,
   .Polaris-Layout__AnnotatedSection,
   .Polaris-Layout__Section {
-    margin-top: 0;
+    // margin-top: 0;
     margin-left:  0;
     max-width: 100%;
   }
   .Polaris-Layout {
     margin-top: 5px;
-    gap: var(--p-space-4);
+    // gap: var(--p-space-4);
   }
 
   .Polaris-Frame {
@@ -80,12 +80,34 @@
   }
 
   .CardLikeButtons .Polaris-Button.Polaris-Button--sizeLarge {
-    padding-block: 2rem;
+    padding-block: 1rem;
+    // border: 1px solid currentColor;
 
     .Polaris-Button__Content {
       text-transform: uppercase;
       font-weight: bold;
     }
+  }
+
+  .Polaris-ShadowBevel {
+    z-index: initial;
+
+    &::before {
+      z-index: initial;
+    }
+
+    > .Polaris-Box {
+      border-radius: var(--pc-shadow-bevel-border-radius);
+    }
+  }
+
+  .Polaris-ShadowBevel,
+  .Polaris-Box {
+    overflow: initial !important;
+  }
+
+  .Polaris-Page > div > .Polaris-Layout > .Polaris-Layout__Section:first-child {
+    // z-index: 10;
   }
 }
 
@@ -109,7 +131,7 @@
   .Polaris-Button {
     background: #f7f7f6;
     border: none;
-    padding: 5px 16px;
+    // padding: 5px 16px;
     min-height: 0;
     color: #585858;
 
@@ -262,7 +284,7 @@ a[disabled] {
   & > .Polaris-Card__Section {
     z-index: 2;
     position: relative;
-    background: var(--p-surface, #ffffff);
+    background: var(--p-color-bg-surface, #ffffff);
   }
 }
 

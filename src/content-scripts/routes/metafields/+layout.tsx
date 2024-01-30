@@ -1,5 +1,5 @@
 import { useCallback } from 'react'
-import { Card, Stack, Button, Layout } from '@shopify/polaris'
+import { Card, InlineStack, Button, Layout } from '@shopify/polaris'
 import { useLocalStorage } from 'usehooks-ts'
 import { Outlet, RouteObject, router, useNavigate, useParams } from '$router'
 import { PARAMS } from '$router/utils'
@@ -70,51 +70,50 @@ function MetafieldsLayout() {
 
   return (
     <>
-      <Layout.Section fullWidth>
+      <Layout.Section>
         <Card>
-          <Card.Section>
-            <Stack wrap={false} alignment="leading" spacing="tight">
-              <Stack.Item>
-                <Stack alignment="center" spacing="tight">
-                  {shopifyOpenedResource && (
-                    <Button
-                      disabled={!shopifyOpenedResource}
-                      onClick={() => {
-                        // Goto resource...
-                        PARAMS.rItem.navigate({
-                          item: shopifyOpenedResource.item,
-                          resource: shopifyOpenedResource.resource,
-                        })
-                      }}
-                    >
-                      Current resource
-                    </Button>
-                  )}
-                  <SelectResource
-                    onSelect={handleResourceChange}
-                    selectedRoute={rRoute}
-                  />
-                </Stack>
-              </Stack.Item>
-              <Stack.Item fill>
-                <Search
-                  searchType={resource?.searchType}
-                  disabled={loadingData /*|| !resource || !resource.listable*/}
-                  onItemSelect={onItemSelect}
-                  showBulk={false}
-                  placeholder={
-                    resource && resource.searchType
-                      ? `Search ${resource.route.replaceAll('_', ' ')}`
-                      : `Search from the store`
-                  }
+          <div className="grid gap-4 grid-cols-[max-content_1fr]">
+       
+              <InlineStack gap="400">
+                {shopifyOpenedResource && (
+                  <Button
+                    disabled={!shopifyOpenedResource}
+                    onClick={() => {
+                      // Goto resource...
+                      PARAMS.rItem.navigate({
+                        item: shopifyOpenedResource.item,
+                        resource: shopifyOpenedResource.resource,
+                      })
+                    }}
+                  >
+                    Current resource
+                  </Button>
+                )}
+                <SelectResource
+                  onSelect={handleResourceChange}
+                  selectedRoute={rRoute}
                 />
-              </Stack.Item>
-            </Stack>
-          </Card.Section>
+              </InlineStack>
+   
+
+       
+              <Search
+                searchType={resource?.searchType}
+                disabled={loadingData /*|| !resource || !resource.listable*/}
+                onItemSelect={onItemSelect}
+                showBulk={false}
+                placeholder={
+                  resource && resource.searchType
+                    ? `Search ${resource.route.replaceAll('_', ' ')}`
+                    : `Search from the store`
+                }
+              />
+       
+          </div>
         </Card>
       </Layout.Section>
 
-      <Layout.Section fullWidth>
+      <Layout.Section>
         <Outlet />
       </Layout.Section>
     </>

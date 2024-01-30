@@ -1,4 +1,4 @@
-import { Card, Layout, Stack } from '@shopify/polaris'
+import { Card, Layout, InlineStack } from '@shopify/polaris'
 import { RoutedLink } from '$ui/RoutedLink'
 import { RouteObject } from '$router'
 
@@ -15,28 +15,25 @@ function Home() {
   return (
     <Layout.Section>
       <Card>
-        <Card.Section>
-          <Stack vertical spacing="extraLoose">
-            <Stack.Item>
-              <RoutedLink
-                // to={
-                //   cachedRoute
-                //     ? cachedRoute === 'shop'
-                //       ? PARAMS.rItem.url({
-                //           item: shopInfo,
-                //           resource: Resource.shop,
-                //         })
-                //       : PARAMS.rRoute.url(cachedRoute)
-                //     : `/metafields`
-                // }
-                to={`/metafields`}
-                as="button"
-              >
-                Metafields Editor
-              </RoutedLink>
-            </Stack.Item>
-          </Stack>
-        </Card.Section>
+        <InlineStack gap="1600">
+          <RoutedLink
+            // to={
+            //   cachedRoute
+            //     ? cachedRoute === 'shop'
+            //       ? PARAMS.rItem.url({
+            //           item: shopInfo,
+            //           resource: Resource.shop,
+            //         })
+            //       : PARAMS.rRoute.url(cachedRoute)
+            //     : `/metafields`
+            // }
+            to={`/metafields`}
+            as="button"
+            size="medium"
+          >
+            Metafields Editor
+          </RoutedLink>
+        </InlineStack>
       </Card>
     </Layout.Section>
   )

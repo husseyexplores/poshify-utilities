@@ -18,8 +18,8 @@ import {
   Controller,
   useFormContext,
 } from 'react-hook-form'
-import { Button, ButtonGroup, SkeletonBodyText } from '@shopify/polaris'
-import { PlusMinor } from '@shopify/polaris-icons'
+import { Button, ButtonGroup } from '@shopify/polaris'
+import { PlusIcon } from '@shopify/polaris-icons'
 import { Select } from '$ui/Select'
 import { ToggleSwitch } from '$ui/ToggleSwitch'
 import {
@@ -242,7 +242,7 @@ export const MetafieldValueField = memo(
               </div>
 
               <Button
-                plain
+                variant="plain"
                 onClick={() => {
                   onToggleCodeEditor(!isCodeEditor)
                 }}
@@ -427,15 +427,13 @@ export const MetafieldValueField = memo(
             {savableType.isList && !savableBaseType.searchResultType && (
               <div>
                 <Button
-                  icon={PlusMinor}
+                  icon={PlusIcon}
                   onClick={() => {
                     fieldArray.append({
                       id: generateUid(),
                       value: savableBaseType.defaultStringValue,
                     })
                   }}
-                  outline
-                  primary
                 >
                   Add more
                 </Button>

@@ -31,9 +31,9 @@ export const DropdownItem = forwardRef<HTMLButtonElement, DropdownItemProps>(
           separator === 'top' && 'border-t',
           separator === 'bottom' && 'border-b',
           'block w-full text-left',
-          highlighted && 'font-bold bg-[var(--p-surface-hovered)]',
+          highlighted && 'font-bold bg-[var(--p-color-bg-surface-hover)]',
           selected &&
-            'font-bold bg-[var(--p-surface-success-subdued)] text-[var(--p-text-success)]',
+            'font-bold bg-[var(--p-color-bg-surface-inverse)] text-[var(--p-color-bg-surface)]',
           className
         )}
         {...props}
@@ -71,13 +71,16 @@ export const Dropdown = forwardRef<HTMLDivElement, DropdownProps>(
 
     return (
       <div
-        className="relative w-full top-0 absolute"
+        className="relative w-full top-0"
         style={{ visibility: isOpen ? 'visible' : 'hidden' }}
       >
         <div
-          className={clsx('Polaris-PositionedOverlay w-full', {
-            'Polaris-Card': isOpen,
-          })}
+          className={clsx(
+            'Polaris-PositionedOverlay w-full bg-surface border-brand border rounded-p200',
+            {
+              'Polaris-Card': isOpen,
+            }
+          )}
         >
           {title && (
             <p className="px-4 py-2 text-xs text-gray-500 border-b bg-slate-50">

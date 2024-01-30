@@ -5,7 +5,7 @@ import {
   useState,
 } from 'react'
 import { Icon } from '@shopify/polaris'
-import { SearchMinor } from '@shopify/polaris-icons'
+import { SearchIcon } from '@shopify/polaris-icons'
 import { Input } from './Input'
 import { useDebouncedValue, useLiveRef, useUpdateEffect } from '$common/hooks'
 import './SearchInput.scss'
@@ -53,7 +53,7 @@ export const SearchInput = forwardRef<HTMLInputElement, InputComponentProps>(
           autoComplete="off"
           labelHidden
           label={label}
-          prefix={<Icon source={SearchMinor} />}
+          prefix={<Icon source={SearchIcon} />}
           placeholder={label}
           value={value}
           onChange={onChangeHandler}

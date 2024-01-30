@@ -1,4 +1,3 @@
-import * as React from 'react'
 import { ComponentPropsWithoutRef, forwardRef } from 'react'
 import { Badge, BadgeProps } from '@shopify/polaris'
 import { FALLBACK_IMG_SRC } from '$utils/general'
@@ -239,7 +238,7 @@ export function ProductItemTable({
 
             <Table.td className="capitalize text-right">
               <Badge
-                status={
+                tone={
                   item.status === 'draft'
                     ? 'info'
                     : item.status === 'active'
@@ -317,7 +316,7 @@ export function CustomerItemTable({
             </Table.td>
 
             <Table.td className="capitalize text-right">
-              <Badge status={item.verified_email ? 'success' : undefined}>
+              <Badge tone={item.verified_email ? 'success' : undefined}>
                 {item.verified_email ? '✔' : '✗'}
               </Badge>
             </Table.td>
@@ -334,7 +333,7 @@ const OrderFinalcialStatusBadge: {
   [key in ResourceItem<'orders'>['financial_status']]:
     | {
         progess?: BadgeProps['progress']
-        status?: BadgeProps['status']
+        tone?: BadgeProps['tone']
       }
     | undefined
 } = {
@@ -342,13 +341,13 @@ const OrderFinalcialStatusBadge: {
   // invoice_sent: { status: 'attention', progess: 'incomplete' },
   // open: { status: 'new', progess: 'incomplete' },
   // unknown: { status: undefined, progess: 'incomplete' },
-  paid: { status: undefined, progess: 'complete' },
-  refunded: { status: undefined, progess: 'complete' },
-  voided: { status: undefined, progess: 'complete' },
-  partially_refunded: { status: undefined, progess: 'partiallyComplete' },
-  authorized: { status: 'attention', progess: 'partiallyComplete' },
-  partially_paid: { status: 'attention', progess: 'partiallyComplete' },
-  pending: { status: 'warning', progess: 'incomplete' },
+  paid: { tone: undefined, progess: 'complete' },
+  refunded: { tone: undefined, progess: 'complete' },
+  voided: { tone: undefined, progess: 'complete' },
+  partially_refunded: { tone: undefined, progess: 'partiallyComplete' },
+  authorized: { tone: 'attention', progess: 'partiallyComplete' },
+  partially_paid: { tone: 'attention', progess: 'partiallyComplete' },
+  pending: { tone: 'warning', progess: 'incomplete' },
   unknown: undefined,
 }
 
@@ -408,9 +407,7 @@ export function OrderItemTable({
                 progress={
                   OrderFinalcialStatusBadge[item.financial_status]?.progess
                 }
-                status={
-                  OrderFinalcialStatusBadge[item.financial_status]?.status
-                }
+                tone={OrderFinalcialStatusBadge[item.financial_status]?.tone}
               >
                 {item.financial_status}
               </Badge>
@@ -428,14 +425,14 @@ const DraftOrderStatusBadge: {
   [key in ResourceItem<'draft_orders'>['status']]:
     | {
         progess?: BadgeProps['progress']
-        status?: BadgeProps['status']
+        tone?: BadgeProps['tone']
       }
     | undefined
 } = {
-  completed: { status: 'success', progess: 'complete' },
-  invoice_sent: { status: 'attention', progess: 'incomplete' },
-  open: { status: 'new', progess: 'incomplete' },
-  unknown: { status: undefined, progess: 'incomplete' },
+  completed: { tone: 'success', progess: 'complete' },
+  invoice_sent: { tone: 'attention', progess: 'incomplete' },
+  open: { tone: 'new', progess: 'incomplete' },
+  unknown: { tone: undefined, progess: 'incomplete' },
 }
 
 export function DraftOrderItemTable({
@@ -495,7 +492,7 @@ export function DraftOrderItemTable({
             <Table.td className="capitalize text-right">
               <Badge
                 progress={DraftOrderStatusBadge[item.status]?.progess}
-                status={DraftOrderStatusBadge[item.status]?.status}
+                tone={DraftOrderStatusBadge[item.status]?.tone}
               >
                 {item.status}
               </Badge>

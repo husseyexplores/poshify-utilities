@@ -1,7 +1,7 @@
 import React from 'react'
-import { Icon, Page, Frame, Layout, Button, Loading } from '@shopify/polaris'
-import { MobileChevronMajor } from '@shopify/polaris-icons'
-import { useSnapshot } from 'valtio'
+import { Icon, Page, Frame, Layout, Button } from '@shopify/polaris'
+import { ChevronLeftIcon } from '@shopify/polaris-icons'
+// import { useSnapshot } from 'valtio'
 import {
   Outlet,
   RouteObject,
@@ -14,7 +14,7 @@ import { queries, qClient } from '$queries'
 
 import { Spinner } from '$ui/Spinners'
 import { Footer } from '$ui/Footer'
-import * as Bulk from '$common/state/selected-items'
+// import * as Bulk from '$common/state/selected-items'
 import { getPageTitle } from '$utils'
 import { ResourceItem, RouteValidationError } from '$types'
 
@@ -90,7 +90,7 @@ function TopNav() {
           <Button
             icon={
               <span className="sm-icon">
-                <Icon source={MobileChevronMajor} />
+                <Icon source={ChevronLeftIcon} />
               </span>
             }
             onClick={() => goBack()}

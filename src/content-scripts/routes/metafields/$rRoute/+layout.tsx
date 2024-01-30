@@ -1,8 +1,8 @@
 // import * as R from 'remeda'
 import { useCallback, useEffect, useLayoutEffect } from 'react'
-import { Stack, Pagination } from '@shopify/polaris'
+import { Pagination } from '@shopify/polaris'
 import { useQuery } from '@tanstack/react-query'
-import { promise, z } from 'zod'
+import { z } from 'zod'
 
 import {
   useNavigate,
@@ -250,7 +250,7 @@ function ResourceListLayout() {
   )
 
   return (
-    <Stack.Item fill>
+    <div>
       {resource.listable && (
         <>
           {
@@ -293,6 +293,6 @@ function ResourceListLayout() {
           </div>
         </>
       )}
-    </Stack.Item>
+    </div>
   )
 }

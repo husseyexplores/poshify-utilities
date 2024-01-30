@@ -110,7 +110,7 @@ MediaInline.Title = ({ children }: { children: ReactNode }) => (
 )
 
 MediaInline.Subtitle = ({ children }: { children: ReactNode }) => (
-  <Text as="span" variant="bodySm" color="subdued">
+  <Text as="span" variant="bodySm" tone="subdued">
     {children}
   </Text>
 )

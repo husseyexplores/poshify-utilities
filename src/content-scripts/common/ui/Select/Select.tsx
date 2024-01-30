@@ -1,10 +1,11 @@
 import { useId } from 'react'
 import * as React from 'react'
 import { Icon, Labelled, LabelledProps } from '@shopify/polaris'
-import type { Error } from '@shopify/polaris/build/ts/latest/src/index'
-import { SelectMinor } from '@shopify/polaris-icons'
+import type { Error } from '@shopify/polaris/build/ts/src/index'
+import { SelectIcon } from '@shopify/polaris-icons'
 import clsx from 'clsx'
 
+// .js file
 import styles from '@shopify/polaris/build/esm/components/Select/Select.scss'
 
 // Duplicate of `@shopify/polaris` `Select` component
@@ -154,7 +155,7 @@ export const Select = React.forwardRef<HTMLSelectElement, SelectProps>(
         {prefixMarkup}
         <span className={styles.SelectedOption}>{selectedOption.label}</span>
         <span className={styles.Icon}>
-          <Icon source={SelectMinor} />
+          <Icon source={SelectIcon} />
         </span>
       </div>
     )
