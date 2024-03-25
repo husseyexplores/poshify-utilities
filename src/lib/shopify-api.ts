@@ -548,6 +548,11 @@ function withShopifyErrors<TReturn, TArg extends any[]>(
     } catch (e) {
       if (e instanceof ky.HTTPError) {
         const errorJson = await e.response.json()
+
+        if (errorJson.error && typeof errorJson.error === 'string') {
+          throw new ApiValidationError(errorJson.error)
+        }
+
         const errors: string | [string] | { value: string[] } = errorJson.errors
 
         let msg = `[${e.response.status}]: Error occured`
