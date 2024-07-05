@@ -71,7 +71,7 @@ export const MetafieldOwnerType = z.enum([
   _MetafieldOwnerType.Draftorder,
   _MetafieldOwnerType.Product,
   _MetafieldOwnerType.Productvariant,
-  _MetafieldOwnerType.Productimage,
+  _MetafieldOwnerType.MediaImage,
   _MetafieldOwnerType.Location,
   _MetafieldOwnerType.Shop,
   // _MetafieldOwnerType.Brand,
@@ -767,7 +767,7 @@ export const Resource = {
     listable: false,
     itemSchema: ResourceItemProductImage,
     entity: 'product image',
-    metafieldOwnerType: MetafieldOwnerType.Enum.PRODUCTIMAGE,
+    metafieldOwnerType: MetafieldOwnerType.Enum.MEDIA_IMAGE,
   },
   shop: {
     title: 'Shop',

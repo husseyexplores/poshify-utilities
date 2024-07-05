@@ -1,7 +1,7 @@
 {
   "name": "poshify-utilities",
   "description": "Some posh utilities for Shopify developers and merchants packaged as a browser extension 🎉",
-  "version": "4.6.1",
+  "version": "4.7.1",
   "author": {
     "email": "husseyexplores@gmail.com",
     "name": "Husseyexplores",
@@ -40,8 +40,8 @@
     "@radix-ui/react-accordion": "^1.0.0",
     "@radix-ui/react-focus-scope": "^1.0.1",
     "@radix-ui/react-switch": "^1.0.1",
-    "@shopify/polaris": "^12.11.1",
-    "@shopify/polaris-icons": "^8.1.0",
+    "@shopify/polaris": "^13.6.1",
+    "@shopify/polaris-icons": "^9.2.0",
     "@tanstack/react-query": "^4.20.4",
     "@tanstack/react-query-devtools": "^4.20.4",
     "@web3-storage/parse-link-header": "^3.1.0",
@@ -124,5 +124,5 @@
       "react-dom": "^18.2.0"
     }
   },
-  "packageManager": "^pnpm@8.6.6"
+  "packageManager": "pnpm@9.4.0"
 }

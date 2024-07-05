@@ -55,6 +55,7 @@ const buildOptions =
   DEV || TEST
     ? {}
     : {
+        target: 'es2020',
         minify: true,
         rollupOptions: {
           output: {

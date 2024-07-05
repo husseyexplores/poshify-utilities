@@ -6,7 +6,7 @@ import { SelectIcon } from '@shopify/polaris-icons'
 import clsx from 'clsx'
 
 // .js file
-import styles from '@shopify/polaris/build/esm/components/Select/Select.scss'
+import styles from '@shopify/polaris/build/esm/components/Select/Select.css.js'
 
 // Duplicate of `@shopify/polaris` `Select` component
 // enhanced with forwardRef

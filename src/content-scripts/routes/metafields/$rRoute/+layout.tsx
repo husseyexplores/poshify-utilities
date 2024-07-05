@@ -122,7 +122,7 @@ export const route = {
         // Fetch the product images metafield definitions
         isProductRoute
           ? queries.metafield.definitions({
-              ownerType: MetafieldOwnerType.Enum.PRODUCTIMAGE,
+              ownerType: MetafieldOwnerType.Enum.MEDIA_IMAGE,
               first: 20,
             })
           : null,

@@ -11,8 +11,14 @@ import { DEV } from '$utils'
 import './base.scss'
 import './main.scss'
 import './global.scss'
+import { useEffect } from 'react'
 
 export default function App() {
+  useEffect(() => {
+    return () => {
+      qClient.clear()
+    }
+  }, [])
   return (
     <>
       <div className="PoshifyUtils_AppWrapper" data-poshify-app>
