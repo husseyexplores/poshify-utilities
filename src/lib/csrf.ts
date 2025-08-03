@@ -71,10 +71,9 @@ const TOKENS = {
     },
     selector: 'meta[name=csrf-token]',
     getFromDoc(doc = document) {
-      const csrfMeta = doc.querySelector('meta[name=csrf-token')
-      const token = csrfMeta && csrfMeta.getAttribute('content')
-      return token || null
-      // const token = doc.querySelector(this.selector)?.getAttribute('content')
+      return TOKENS.graphql.getFromDoc(doc)
+      // const csrfMeta = doc.querySelector('meta[name=csrf-token')
+      // const token = csrfMeta && csrfMeta.getAttribute('content') || TOKENS.graphql.getFromDoc(doc)
       // return token || null
     },
     removeAllFromDoc(doc = document) {
@@ -116,6 +115,9 @@ async function fetchFreshCsrfTokens(): Promise<CsrfFetchedToken> {
   })
 
   for (const url of possibleCsrfUrls) {
+    const allFound = tokens.every(t => !!t.value)
+    if (allFound) break
+
     try {
       // Fetch each url separately in parallel
       // Both tokens requires different headers
@@ -133,9 +135,6 @@ async function fetchFreshCsrfTokens(): Promise<CsrfFetchedToken> {
             })
         })
       )
-
-      const allFound = tokens.every(t => !!t.value)
-      if (allFound) break
     } catch (e) {
       if (e instanceof Error) {
         console.warn(`Error on path: ${url}: `, e.message)

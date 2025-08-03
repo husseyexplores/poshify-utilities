@@ -24,6 +24,10 @@ const Component = React.memo(RootRoute)
 export const route = {
   element: <Component />,
   loader: async () => {
+    console.log('Poshify - Root layout loading ran')
+
+    qClient.clear()
+
     // fetch shop info query on root route - so that it's available through out the app
     try {
       const shopInfo =
@@ -62,6 +66,12 @@ function RootRoute() {
           title={`Poshify Utilities${pageTitle ? ` | ${pageTitle}` : ''}`}
           subtitle="Some posh utilities for Shopify developers and merchants 🎉"
           titleMetadata={pending ? <Spinner /> : null}
+          secondaryActions={[{
+            content: 'Clear cache',
+            onAction() {
+              qClient.clear()
+            },
+          }]}
         >
           <TopNav />
           <Layout>

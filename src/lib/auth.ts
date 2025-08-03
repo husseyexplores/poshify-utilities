@@ -15,6 +15,7 @@ async function getAuthHeaders(gql = true) {
       // if (tokens.rest) {
       // }
 
+      headers['accept'] = 'application/json'
       headers['x-shopify-web-force-proxy'] = '1'
 
       headers['x-csrf-token'] = gql ? tokens?.graphql : tokens?.rest

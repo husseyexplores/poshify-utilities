@@ -18,6 +18,10 @@ import { route as metafields_$rRoute_form_$rItem_route } from '$routes/metafield
 import { route as metafields_$rRoute_route } from '$routes/metafields/$rRoute/+layout'
 import { route as metafields_index_route } from '$routes/metafields/+page'
 import { route as metafields_route } from '$routes/metafields/+layout'
+
+import { route as bulk_mutation_index_route } from '$routes/bulk-mutation/+page'
+import { route as bulk_mutation_route } from '$routes/bulk-mutation/+layout'
+
 import { route as root_route } from '$routes/+layout'
 import { route as index_route } from '$routes/+page'
 
@@ -39,6 +43,10 @@ const routes: IntertnalRouteObject[] = [
     children: [
       withDefaults(index_route),
       withDefaults({
+        ...bulk_mutation_route,
+        children: [withDefaults(bulk_mutation_index_route)],
+      }),
+      withDefaults({
         ...metafields_route,
         children: [
           withDefaults(metafields_index_route),
@@ -58,11 +66,6 @@ export const router = PROD
 
 export const RouterProvider = () => <RRDRouterProvider router={router} />
 
-const defaultPendingComponent = () => (
-  <div className={`p-2 text-2xl`}>
-    <Spinner />
-  </div>
-)
 
 // -----------------------------------------------------------
 
@@ -78,6 +81,8 @@ const BACKABLE_ROUTE_SHAPES = [
   [['metafields', PARAM], 1, 'RESOURCE_LIST'],
 
   [['metafields'], 1, 'SELECT_RESOURCE'],
+
+  [['bulk-mutation'], 1, 'BULK_MUTATION'],
 
   [[], 0, 'HOME'],
 ] as const
@@ -161,7 +166,7 @@ export function useBackNavigate(keepParams: boolean | string[] = false) {
     let nextSearch = ''
 
     if (backablePath !== null) {
-      let nextbackablePath = backablePath
+      const nextbackablePath = backablePath
       if (search && search.length > 1) {
         if (typeof keepParams === 'boolean') {
           if (keepParams) nextSearch = search

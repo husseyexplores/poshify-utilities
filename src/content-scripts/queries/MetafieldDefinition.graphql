@@ -1,5 +1,5 @@
-query metafieldDefinition($id: ID!) {
-  metafieldDefinition(id: $id) {
+query metafieldDefinition($identifier: MetafieldDefinitionIdentifierInput) {
+  metafieldDefinition(identifier: $identifier) {
     ...MetafieldDefinitionFragment
   }
 }

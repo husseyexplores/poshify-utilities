@@ -51,6 +51,7 @@ import {
   MetafieldDefinitionsQuery,
   MetafieldDefinitionsQueryVariables,
   MetafieldDefinitionsDocument,
+  BulkOperation,
 } from '$gql'
 import { restClient, gqlClient } from '$query-clients'
 import {
@@ -500,20 +501,43 @@ export const resourceItem = {
     const fileNodes: FileNode[] = result.files.edges.map(x => {
       let title = ''
       let nodeUrl: string | null | undefined = null
+      let _createAtFormatted = ''
+      let _uid = ''
 
       if (x.node.__typename === 'Video') {
         title = x.node.filename
+        _createAtFormatted = x.node.createdAt
+        _uid = x.node.id
       } else if (x.node.__typename === 'MediaImage') {
         nodeUrl = x.node.preview?.image?.originalSrc
+        _createAtFormatted = x.node.createdAt
+        _uid = x.node.id
       } else if (x.node.__typename === 'GenericFile') {
         nodeUrl = x.node.url
+        _createAtFormatted = x.node.createdAt
+        _uid = x.node.id
       }
+
       if (nodeUrl) title = getFilenameFromUrl(nodeUrl) || title
 
-      const _createAtFormatted = formatDate(x.node.createdAt, {
-        long: true,
-      })
-      return { ...x.node, _displayName: title, _createAtFormatted }
+      if (_createAtFormatted) {
+        _createAtFormatted = formatDate(_createAtFormatted, {
+          long: true,
+        })
+      }
+
+      if (!_uid && x.node) {
+        if (
+          'id' in x.node &&
+          (typeof x.node.id === 'string' || typeof x.node.id === 'number')
+        ) {
+          _uid = x.node.id.toString()
+        } else {
+          _uid = JSON.stringify(x.node)
+        }
+      }
+
+      return { ...x.node, _displayName: title, _createAtFormatted, _uid }
     })
     return { pageInfo: result.files.pageInfo, items: fileNodes }
   },
@@ -796,6 +820,97 @@ export const metafield = {
     return metafiedDefs
   },
 } as const
+
+export const bulkOp = {
+  async bulkOperationRunMutation(variables: {
+    mutation: string
+    stagedUploadPath: string
+    clientIdentifier?: string
+  }) {
+    const bulkQuery = await gqlClient.request<{
+      bulkOperationRunMutation: {
+        bulkOperation: BulkOperation
+      }
+      userErrors: {
+        message: string
+        field?: string[]
+        code?:
+          | 'INTERNAL_FILE_SERVER_ERROR'
+          | 'INVALID_MUTATION'
+          | 'INVALID_STAGED_UPLOAD_FILE'
+          | 'NO_SUCH_FILE'
+          | 'OPERATION_IN_PROGRESS'
+      }[]
+    }>(
+      /* GraphQL */ `
+        mutation bulkOperationRunMutation(
+          $mutation: String!
+          $stagedUploadPath: String!
+          $clientIdentifier: String
+        ) {
+          bulkOperationRunMutation(
+            mutation: $mutation
+            stagedUploadPath: $stagedUploadPath,
+            clientIdentifier: $clientIdentifier
+          ) {
+            bulkOperation {
+              id
+              query
+              createdAt
+              rootObjectCount
+              objectCount
+              type
+              status
+              errorCode
+              url
+              partialDataUrl
+              completedAt
+              fileSize
+            }
+            userErrors {
+              message
+              field
+              code
+            }
+          }
+        }
+      `,
+      variables
+    )
+
+    return bulkQuery
+  },
+
+  async checkStatus(variables: { id: string }) {
+    const result = await gqlClient.request<{
+      node: null | BulkOperation
+    }>(
+      /* GraphQL */ `
+        query bulkOperation($id: ID!) {
+          node(id: $id) {
+            ... on BulkOperation {
+              id
+              query
+              createdAt
+              rootObjectCount
+              objectCount
+              type
+              status
+              errorCode
+              url
+              partialDataUrl
+              completedAt
+              fileSize
+            }
+          }
+        }
+      `,
+      variables
+    )
+
+    return result.node
+  },
+}
 
 // -----------------------------------------
 

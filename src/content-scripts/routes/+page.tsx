@@ -1,6 +1,7 @@
 import { Card, Layout, InlineStack } from '@shopify/polaris'
 import { RoutedLink } from '$ui/RoutedLink'
 import { RouteObject } from '$router'
+import { DEV } from '$utils'
 
 export const route = {
   // path: '/',
@@ -33,6 +34,12 @@ function Home() {
           >
             Metafields Editor
           </RoutedLink>
+
+          {DEV ? (
+            <RoutedLink to={`/bulk-mutation`} as="button" size="medium">
+              Bulk Mutation (.jsonl)
+            </RoutedLink>
+          ) : null}
         </InlineStack>
       </Card>
     </Layout.Section>

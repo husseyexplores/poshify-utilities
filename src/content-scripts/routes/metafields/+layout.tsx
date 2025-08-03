@@ -1,6 +1,5 @@
 import { useCallback } from 'react'
 import { Card, InlineStack, Button, Layout } from '@shopify/polaris'
-import { useLocalStorage } from 'usehooks-ts'
 import { Outlet, RouteObject, router, useNavigate, useParams } from '$router'
 import { PARAMS } from '$router/utils'
 

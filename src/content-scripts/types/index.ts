@@ -20,6 +20,7 @@ export type PreviewAbleNode = (AnyRawNode | BaseNode) & {
   _image_thumb?: string | null
 }
 export type FileNode = FilesQuery['files']['edges'][number]['node'] & {
+  _uid: string
   _displayName: string
   _createAtFormatted: string
 }
@@ -51,9 +52,9 @@ export const SearchResultTypes = z.enum([
   SearchResultType.Collection,
   SearchResultType.Customer,
   SearchResultType.DraftOrder,
-  SearchResultType.OnlineStoreArticle,
-  SearchResultType.OnlineStoreBlog,
-  SearchResultType.OnlineStorePage,
+  SearchResultType.Article,
+  SearchResultType.Blog,
+  SearchResultType.Page,
   SearchResultType.Order,
   SearchResultType.Product,
   SearchResultType.File,
@@ -171,9 +172,9 @@ export const OwnerResource = z.enum([
 export type OwnerResource = z.infer<typeof OwnerResource>
 
 export const search_ref_typename_lookup: { [K: string]: Routes['any'] } = {
-  OnlineStoreArticle: 'articles',
-  OnlineStoreBlog: 'blogs',
-  OnlineStorePage: 'pages',
+  Article: 'articles',
+  Blog: 'blogs',
+  Page: 'pages',
   Collection: 'collections',
   DraftOrder: 'draft_orders',
   Customer: 'customers',
@@ -186,9 +187,9 @@ export const search_ref_typename_lookup: { [K: string]: Routes['any'] } = {
 
 export const route_to_graphql_id_lookup: { [Route in Routes['any']]: string } =
   {
-    articles: 'OnlineStoreArticle',
-    blogs: 'OnlineStoreBlog',
-    pages: 'OnlineStorePage',
+    articles: 'Article',
+    blogs: 'Blog',
+    pages: 'Page',
     collections: 'Collection',
     draft_orders: 'DraftOrder',
     customers: 'Customer',
@@ -663,7 +664,7 @@ export const Resource = {
     title: 'Articles',
     route: 'articles',
     ownerResource: 'article',
-    searchType: SearchResultType.OnlineStoreArticle,
+    searchType: SearchResultType.Article,
     listable: true,
     itemSchema: ResourceItemArticle,
     entity: 'article',
@@ -673,7 +674,7 @@ export const Resource = {
     title: 'Blogs',
     route: 'blogs',
     ownerResource: 'blog',
-    searchType: SearchResultType.OnlineStoreBlog,
+    searchType: SearchResultType.Blog,
     listable: true,
     itemSchema: ResourceItemBlog,
     entity: 'blog',
@@ -723,7 +724,7 @@ export const Resource = {
     title: 'Pages',
     route: 'pages',
     ownerResource: 'page',
-    searchType: SearchResultType.OnlineStorePage,
+    searchType: SearchResultType.Page,
     listable: true,
     itemSchema: ResourceItemPage,
     entity: 'page',

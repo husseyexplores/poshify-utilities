@@ -16,6 +16,7 @@ import {
 export const gqlClient = new GraphQLClient(SH.GQL_URL, {
   headers: {
     accept: 'application/json',
+    'Content-Type': 'application/json',
   },
   requestMiddleware: async req => {
     const authHeaders = await getGqlHeaders()
@@ -24,6 +25,7 @@ export const gqlClient = new GraphQLClient(SH.GQL_URL, {
       headers: {
         ...req.headers,
         ...authHeaders,
+        'Content-Type': 'application/json',
       },
     }
   },
@@ -59,7 +61,7 @@ export const restClient = ky.create({
   prefixUrl: SH.REST_URL,
   headers: {
     accept: 'application/json',
-    'content-type': 'application/json',
+    'Content-Type': 'application/json',
   },
   retry: 0,
   hooks: {

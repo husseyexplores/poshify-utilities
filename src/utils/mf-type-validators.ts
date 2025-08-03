@@ -56,30 +56,30 @@ const moneySchema = z.object({
 })
 export type MetafieldSavableType<T = MetafieldType['any']> =
   T extends MetafieldType['any']
-    ? {
-        _unsupported?: boolean
-        partialSupport?: boolean
-        title: string
-        type: T
-        baseType: MetafieldType['single']
-        defaultStringValue: string
-        validate: (value: any) => null | string
-        isList: boolean
-        deprecated?: boolean
-        jsonSchema?: any
-        searchResultType?: SearchResultTypes
-        example?: {
-          single: {
-            description: string
-            value: string
-          }
-          list: {
-            description: string
-            value: string
-          }
-        }
+  ? {
+    _unsupported?: boolean
+    partialSupport?: boolean
+    title: string
+    type: T
+    baseType: MetafieldType['single']
+    defaultStringValue: string
+    validate: (value: any) => null | string
+    isList: boolean
+    deprecated?: boolean
+    jsonSchema?: any
+    searchResultType?: SearchResultTypes
+    example?: {
+      single: {
+        description: string
+        value: string
       }
-    : never
+      list: {
+        description: string
+        value: string
+      }
+    }
+  }
+  : never
 
 function validateSpecialJsonType(
   value: any,
@@ -181,12 +181,12 @@ const MetafieldSavableTypeSingle: {
     title: 'Page reference',
     type: 'page_reference',
     baseType: 'page_reference',
-    searchResultType: SearchResultTypes.Enum.ONLINE_STORE_PAGE,
+    searchResultType: SearchResultTypes.Enum.PAGE,
     //defaultStringValue: 'gid://shopify/OnlineStorePage/0',
     defaultStringValue: '',
     validate: (id: any) => {
       if (typeof id !== 'string') return 'Value must be a string'
-      return id.startsWith('gid://shopify/OnlineStorePage/') &&
+      return (id.startsWith('gid://shopify/OnlineStorePage/') || id.startsWith('gid://shopify/Page/')) &&
         /\d+$/.test(id) &&
         !id.endsWith('/0')
         ? null
@@ -915,12 +915,12 @@ const MetafieldSavableTypeList = MetafieldType['single'].options.reduce(
     const isJsonBaseType = isMetafieldTypeJson(baseType.type)
     const schema = baseType.jsonSchema
       ? {
-          type: 'array',
-          items: {
-            type: 'object',
-            ...baseType.jsonSchema,
-          },
-        }
+        type: 'array',
+        items: {
+          type: 'object',
+          ...baseType.jsonSchema,
+        },
+      }
       : undefined
 
     const nextValue = {
@@ -932,7 +932,7 @@ const MetafieldSavableTypeList = MetafieldType['single'].options.reduce(
         key.endsWith('_reference') || baseType.defaultStringValue === ''
           ? JsonStringify([], 2)
           : isJsonBaseType
-          ? JsonStringify(
+            ? JsonStringify(
               [
                 safeJsonParse(
                   baseType.defaultStringValue,
@@ -942,7 +942,7 @@ const MetafieldSavableTypeList = MetafieldType['single'].options.reduce(
               ],
               2
             )
-          : JsonStringify([baseType.defaultStringValue], 2),
+            : JsonStringify([baseType.defaultStringValue], 2),
       example: baseType.example,
       validate: (value: any) => {
         let arr: any[] | null = value

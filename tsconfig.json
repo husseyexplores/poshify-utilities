@@ -17,7 +17,9 @@
       "subfolder/dist",
       "subfolder/node_modules",
       "**/dist/*",
-      "**/node_modules/*"
+      "**/node_modules/*",
+      "content-scripts/generated",
+      "**/content-scripts/generated/*"
     ]
   },
   "compilerOptions": {
@@ -85,6 +87,9 @@
     "subfolder/dist",
     "subfolder/node_modules",
     "**/dist/*",
-    "**/node_modules/*"
+    "**/node_modules/*",
+    "content-scripts/generated",
+    "**/content-scripts/generated/**",
+    "src/content-scripts/generated/graphql.tsx"
   ]
 }

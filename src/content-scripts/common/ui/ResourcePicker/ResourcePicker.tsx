@@ -379,11 +379,11 @@ function FilePickerContent({
           {!isLoading &&
             items.map((item, index, list) => (
               <FilePickerItem
-                key={item.id}
+                key={item._uid || item._createAtFormatted + item._displayName}
                 item={item}
                 index={index}
                 list={list}
-                selected={selectedItemsSet.has(item.id)}
+                selected={selectedItemsSet.has(item._uid)}
                 onSelectionChange={onSelectionChange}
               />
             ))}
@@ -417,7 +417,7 @@ function FilePickerItem({
 
   return (
     <div
-      key={item.id}
+      key={item._uid}
       className="relative py-4 px-5 grid gap-4 grid-cols-[auto_1fr] items-center hover:bg-slate-50"
     >
       <Checkbox
@@ -426,12 +426,12 @@ function FilePickerItem({
         labelHidden={true}
         id={checkboxId}
         onChange={_selected => {
-          onSelectionChange(_selected, item.id)
+          onSelectionChange(_selected, item._uid)
         }}
       />
       <InlineMedia.Singleton
         title={item._displayName}
-        src={item.preview?.image?.transformedSrc || FALLBACK_IMG_SRC.small}
+        src={(item as any).preview?.image?.transformedSrc || FALLBACK_IMG_SRC.small}
         subtitle={item._createAtFormatted}
       />
       <label
