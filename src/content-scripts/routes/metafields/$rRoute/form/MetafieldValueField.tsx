@@ -32,7 +32,7 @@ import {
 import { InlineError, Input, InputNumber, Label, TextArea } from '$ui/Dumb'
 import { HookFormError } from '$ui/HookFormError'
 import { ColorPicker } from '$ui/ColorPicker'
-import { MetafielValueMonaco } from './MetafieldValueMonaco'
+// import { MetafielValueMonaco } from './MetafieldValueMonaco'
 import type { EditorRef } from './MetafieldValueMonaco'
 import { Reorder } from '$ui/Reorder'
 import { useLiveRef, useUpdateEffect } from '$hooks'
@@ -42,12 +42,6 @@ import { Metafield, MetafieldType } from '$types'
 import { JsonStringify, safeJsonParse } from '$utils'
 import { MetafieldFormSchema } from './mf-form-schema'
 import { ResourcePicker } from '$common/ui/ResourcePicker'
-
-// const MetafielValueMonacoLazy = lazy(() =>
-//   import('./MetafieldValueMonaco').then(mod => ({
-//     default: mod.MetafielValueMonaco,
-//   }))
-// )
 
 const monacoSupportedLangs = [
   { label: 'HTML', value: 'html' },
@@ -115,10 +109,11 @@ export const MetafieldValueField = memo(
       // eslint-disable-next-line
     }, [isDirty, currentMf, submitCount, isSubmitted])
 
-    const isCodeEditor = useWatch({
+    const _isCodeEditor = useWatch({
       control,
       name: '_code_editor',
     })
+    const isCodeEditor = false
 
     const setIsCodeEditor = useCallback(
       (bool: boolean) => {
@@ -222,7 +217,7 @@ export const MetafieldValueField = memo(
       ? MF_UTILS.isMetafieldTypeJson(saveAsType)
       : false
 
-    const showCodeEditorToggle = MF_UTILS.canShowEditor(saveAsType)
+    const showCodeEditorToggle = false // MF_UTILS.canShowEditor(saveAsType)
 
     // eslint-disable-next-line
     const Component = COMPONENT_MAP[savableType.baseType]
@@ -442,7 +437,7 @@ export const MetafieldValueField = memo(
           </div>
         )}
 
-        {isCodeEditor && (
+        {/* {isCodeEditor && (
           <Controller
             name="value"
             control={control}
@@ -468,7 +463,7 @@ export const MetafieldValueField = memo(
               )
             }}
           />
-        )}
+        )} */}
 
         {isJsonType &&
           showCodeEditorToggle &&
